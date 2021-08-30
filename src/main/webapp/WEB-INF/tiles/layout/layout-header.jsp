@@ -47,6 +47,7 @@
 				<li><a href="/enrollment/achievement_new.do">성취표</a></li>
 			</ul>			
 		</li>
+		<!-- 
 		<li class="has-sub">
 			<a href="javascript:;">
 				<i class="fa fa-book"></i>
@@ -114,7 +115,8 @@
 					</ul>
 				</li>
 			</ul>			
-		</li>		
+		</li>	
+		 -->	
 		<li class="has-sub">
 			<a href="javascript:;">
 				<i class="ion-ios-list bg-green"></i>
@@ -133,7 +135,8 @@
 				<li><a href="/test/correct_speaking_list.do">Speaking 첨삭 관리</a></li>
 				-->
 			</ul>			
-		</li>		
+		</li>	
+		<!-- 	
 		<li class="has-sub">
 			<a href="javascript:;">
 				<i class="ion-ios-map bg-gradient-orange"></i>
@@ -141,7 +144,6 @@
 				<b class="caret"></b>
 			</a>
 			<ul class="sub-menu">
-				<!-- <li><a href="/batch/video.do">동영상 관리</a></li> -->
 				<li><a href="/batch/direction.do">Direction 관리</a></li>
 				<li class="has-sub">
 					<a href="javascript:;">
@@ -157,11 +159,9 @@
 				</li>
 				<li><a href="/batch/schedule.do">Schedule 관리</a></li>
 				<li><a href="/batch/consultation.do">상담 관리</a></li>
-				<!--<li><a href="/batch/consultation_chanmgang.do">상담 관리(참강)</a></li>-->
 				
 				<li><a href="/batch/course_result.do">배치고사 성적현황</a></li>
 
-				<!--<li><a href="/batch/consultation_stats_list.do">신규 상담 현황</a></li>-->
 				<li><a href="/batch/consultation_schedule_detail.do">신규 상담 현황(상세)</a></li>
 				<li><a href="/batch/consultation_schedule_list.do">신규 상담 현황(달력)</a></li>
 			</ul>
@@ -360,6 +360,7 @@
 				</li>
 			</ul>
 		</li>
+		 -->
 		<li class="menu-control menu-control-left">
 			<a href="javascript:;" data-click="prev-menu"><i class="fa fa-angle-left"></i></a>
 		</li>
