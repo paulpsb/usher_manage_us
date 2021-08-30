@@ -391,7 +391,7 @@ function search_daliy_schedule()
 
 function doResult(section, practice_type, practice_result_id, result_url, isReal)
 {
-	var exam_url = "http://exam.usher.co.kr/";
+	var exam_url = "http://exam-us.usher.co.kr/";
 	var url = "";
 	if(result_url){
 		url = "https://study.usher.co.kr"+result_url;
@@ -475,14 +475,14 @@ function student_login(username, course_enrollment_id)
 					}
 				}).then((confirm) => {
 				    if (confirm) {
-						var exam_url = "http://exam.usher.co.kr/";
+						var exam_url = "http://exam-us.usher.co.kr/";
 						//var exam_url = "http://127.0.0.1:8080/";
 						var url = exam_url + "/member/login_manage.do?username="+v_username+"&&course_enrollment_id="+v_course_enrollment_id;
 						window.open(url, "student_exam");
 				    }
 				});
 			}else{
-				var exam_url = "http://exam.usher.co.kr/";
+				var exam_url = "http://exam-us.usher.co.kr/";
 				//var exam_url = "http://127.0.0.1:8080/";
 				var url = exam_url + "/member/login_manage.do?username="+v_username+"&&course_enrollment_id="+v_course_enrollment_id;
 				window.open(url, "student_exam");

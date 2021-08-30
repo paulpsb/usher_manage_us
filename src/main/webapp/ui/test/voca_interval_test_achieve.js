@@ -506,7 +506,7 @@ function create_student_result()
 
 function go_result(v_id)
 {
-	var exam_url = "https://exam.usher.co.kr/";
+	var exam_url = "https://exam-us.usher.co.kr/";
 	var url = exam_url + "exam/voca_interval/result.do?id="+v_id;
 	window.open(url, "voca_interval_result");
 }

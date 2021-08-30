@@ -537,5 +537,5 @@ function go_school(school_gubun, school_foreign_gubun , school_area1 , school_ar
 
 function openOath(username,course_enrollment_id, orientation_code)
 {
-	window.open("https://exam.usher.co.kr/main/oath/oath.do?username="+username+"&&course_enrollment_id="+course_enrollment_id+"&&orientation_code="+orientation_code, "oath");
+	window.open("https://exam-us.usher.co.kr/main/oath/oath.do?username="+username+"&&course_enrollment_id="+course_enrollment_id+"&&orientation_code="+orientation_code, "oath");
 }

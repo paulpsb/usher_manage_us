@@ -426,7 +426,7 @@ function create_achievement(gubun)
 
 function student_login(username)
 {
-	var exam_url = "http://exam.usher.co.kr/";
+	var exam_url = "http://exam-us.usher.co.kr/";
 	//var exam_url = "http://127.0.0.1:8080/";
 	var url = exam_url + "/member/login_manage.do?username="+username;
 	window.open(url, "student_exam");
@@ -494,7 +494,7 @@ function move_result(section, practice_type,course_enrollment_id, date, book, vo
 function go_result(section, practice_type, practice_result_id)
 {
 	var url;
-	var exam_url = "http://exam.usher.co.kr/";
+	var exam_url = "http://exam-us.usher.co.kr/";
 	if(practice_type == "VOCA"){
 		url = exam_url + "/exam/voca/result.do?id="+practice_result_id;
 	}else if(practice_type == "SPEECH"){

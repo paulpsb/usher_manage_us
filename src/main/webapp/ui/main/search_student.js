@@ -169,7 +169,7 @@ function go_course_achieve(v_course_id)
 
 function go_course_enrollment_achieve(v_course_enrollment_id)
 {
-	window.open('https://exam.usher.co.kr/achieve/achieve_enrollment.do?course_enrollment_id='+v_course_enrollment_id,'enrollment_achievement');
+	window.open('https://exam-us.usher.co.kr/achieve/achieve_enrollment.do?course_enrollment_id='+v_course_enrollment_id,'enrollment_achievement');
 }
 
 function go_memoirs(v_memoirs_id)

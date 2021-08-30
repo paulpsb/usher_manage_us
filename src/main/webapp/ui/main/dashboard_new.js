@@ -2830,14 +2830,14 @@ function go_student_login(username, course_enrollment_id)
 					}
 				}).then((confirm) => {
 				    if (confirm) {
-						var exam_url = "http://exam.usher.co.kr/";
+						var exam_url = "http://exam-us.usher.co.kr/";
 						//var exam_url = "http://127.0.0.1:8080/";
 						var url = exam_url + "/member/login_manage.do?username="+s_username+"&&course_enrollment_id="+s_course_enrollment_id;
 						window.open(url, "student_exam");
 				    }
 				});
 			}else{
-				var exam_url = "http://exam.usher.co.kr/";
+				var exam_url = "http://exam-us.usher.co.kr/";
 				//var exam_url = "http://127.0.0.1:8080/";
 				var url = exam_url + "/member/login_manage.do?username="+s_username+"&&course_enrollment_id="+s_course_enrollment_id;
 				window.open(url, "student_exam");

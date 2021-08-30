@@ -1104,7 +1104,7 @@ function create_combo_exam()
 function go_result(section, practice_type, practice_result_id)
 {
 	var url;
-	var exam_url = "http://exam.usher.co.kr/";
+	var exam_url = "http://exam-us.usher.co.kr/";
 	if(practice_type == "VOCA"){
 		url = exam_url + "/exam/voca/result.do?id="+practice_result_id;
 	}else if(practice_type == "VOCA_INTERVAL"){
@@ -1203,14 +1203,14 @@ function student_login(username, course_enrollment_id)
 					}
 				}).then((confirm) => {
 				    if (confirm) {
-						var exam_url = "http://exam.usher.co.kr/";
+						var exam_url = "http://exam-us.usher.co.kr/";
 						//var exam_url = "http://127.0.0.1:8080/";
 						var url = exam_url + "/member/login_manage.do?username="+s_username+"&&course_enrollment_id="+s_course_enrollment_id;
 						window.open(url, "student_exam");
 				    }
 				});
 			}else{
-				var exam_url = "http://exam.usher.co.kr/";
+				var exam_url = "http://exam-us.usher.co.kr/";
 				//var exam_url = "http://127.0.0.1:8080/";
 				var url = exam_url + "/member/login_manage.do?username="+s_username+"&&course_enrollment_id="+s_course_enrollment_id;
 				window.open(url, "student_exam");
@@ -1225,7 +1225,7 @@ function student_login(username, course_enrollment_id)
 
 function student_achieve(username, course_enrollment_id, v_datae)
 {
-	var exam_url = "http://exam.usher.co.kr/";
+	var exam_url = "http://exam-us.usher.co.kr/";
 	//var exam_url = "http://127.0.0.1:8080/";
 	var url = exam_url + "/achieve/achieve_main.do?username="+username+"&&course_enrollment_id="+course_enrollment_id+"&&date="+v_datae;
 	window.open(url, "student_achieve");
@@ -1233,5 +1233,5 @@ function student_achieve(username, course_enrollment_id, v_datae)
 function showAchieve(v_course_enrollment_id, v_date)
 {
 	var options = 'toolbar=no,location=no,width=450,height=600,resizable=no,scrollbars=no,status=no';
-	window.open('https://exam.usher.co.kr/achieve/achieve.do?course_enrollment_id='+v_course_enrollment_id+'&&date='+v_date,'achieve',options);
+	window.open('https://exam-us.usher.co.kr/achieve/achieve.do?course_enrollment_id='+v_course_enrollment_id+'&&date='+v_date,'achieve',options);
 }

@@ -210,7 +210,7 @@ function minusToEmptyUrl(val, practice_result_id)
 {
 	if(val < 0) return "&nbsp";
 	
-	var exam_url = "http://exam.usher.co.kr/";
+	var exam_url = "http://exam-us.usher.co.kr/";
 	
 	url = exam_url + "/study/voca/result.do?id="+practice_result_id;
 	

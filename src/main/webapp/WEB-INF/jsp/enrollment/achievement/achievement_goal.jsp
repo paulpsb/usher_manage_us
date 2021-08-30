@@ -604,7 +604,7 @@ function save_practice_fail()
 
 function openOath(username,course_enrollment_id, orientation_code)
 {
-	var examUrl = "http://exam.usher.co.kr/"
+	var examUrl = "http://exam-us.usher.co.kr/"
 	var url = examUrl + "main/oath/oath.do?username="+username+"&&course_enrollment_id="+course_enrollment_id+"&&orientation_code="+orientation_code;
 	window.open(url, "oath");
 }

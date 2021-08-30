@@ -279,7 +279,7 @@ function go_user(v_user_id)
 			user_id:v_user_id
 		},
 		success:function(data){
-			var exam_url = "http://exam.usher.co.kr/";
+			var exam_url = "http://exam-us.usher.co.kr/";
 			//var exam_url = "http://127.0.0.1:8080/";
 			var url = exam_url + "/achieve/achieve_main.do?username="+data.username+"&&course_enrollment_id="+data.course_enrollment_id+"&&date="+data.date;
 			window.open(url, "student_achieve");
