@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseBookDao">
+	<select id="getBaseBookList" resultType="com.usher.dto.BaseBookDto" parameterType="com.usher.dto.BaseBookDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			concat(coalesce(b.last_name,''),coalesce(b.first_name,'')) as created_name,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.modified_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as modified_name,
+			a.status,
+			a.section,
+			a.book_name,
+			a.book_amount,
+			a.book_kyobo_amount,
+			a.book_image,
+			a.book_url,
+			a.book_sort
+		from
+			base_book a
+			left join auth_user b on a.created_id = b.id
+			left join auth_user c on a.modified_id = c.id
+		where 1=1
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		<if test="status != null and status !='' ">			
+			and a.status = #{status}
+		</if>
+		<if test="book_name != null and book_name !='' ">			
+			and a.book_name like concat('%',#{book_name},'%')
+		</if>
+		order by a.book_sort
+	</select>
+	<select id="getBaseBook" resultType="com.usher.dto.BaseBookDto" parameterType="com.usher.dto.BaseBookDto">
+		select
+			a.id,
+			a.created,
+			a.created_id,
+			concat(coalesce(b.last_name,''),coalesce(b.first_name,'')) as created_name,
+			a.modified,
+			a.modified_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as modified_name,
+			a.status,
+			a.section,
+			a.book_name,
+			a.book_amount,
+			a.book_kyobo_amount,
+			a.book_image,
+			a.book_url,
+			a.book_sort
+		from
+			base_book a
+			left join auth_user b on a.created_id = b.id
+			left join auth_user c on a.modified_id = c.id
+		where
+			a.id = #{id}
+	</select>
+	
+	<insert id="insertBaseBook" parameterType="com.usher.dto.BaseBookDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into base_book (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			status,
+			section,
+			book_name,
+			book_amount,
+			book_kyobo_amount,
+			book_image,
+			book_url,
+			book_sort
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{status},
+			#{section},
+			#{book_name},
+			#{book_amount},
+			#{book_kyobo_amount},
+			#{book_image},
+			#{book_url},
+			#{book_sort}
+		)
+	</insert>
+	<update id="updateBaseBook" parameterType="com.usher.dto.BaseBookDto">
+		update base_book set 
+			modified = now(),
+			modified_id = #{modified_id},
+			status = #{status},
+			section = #{section},
+			book_name = #{book_name},
+			book_amount = #{book_amount},
+			book_kyobo_amount = #{book_kyobo_amount},
+			book_image = #{book_image},
+			book_url = #{book_url},
+			book_sort = #{book_sort}
+		where
+			id = #{id}
+	</update>
+	<delete id="deleteBaseBook" parameterType="com.usher.dto.BaseBookDto">
+		delete from base_book 
+		where
+			id = #{id}
+	</delete>
+</mapper>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CoursesCourseBookDao">
+	<select id="getCourseGroupBookList" resultType="com.usher.dto.CoursesCourseBookDto" parameterType="com.usher.dto.CoursesCourseBookDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.status,
+			a.course_id,
+			a.book_id,
+			b.section,
+			b.book_name,
+			b.book_amount,
+			b.book_kyobo_amount,
+			b.book_image,
+			b.book_url
+		from
+			courses_course_book a
+			join base_book b on a.book_id = b.id
+		where
+			a.status = 'ACTIVE'
+			and b.status = 'ACTIVE'
+			and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+		order by a.course_id, b.book_sort
+	</select>
+	
+	<select id="getCourseBookList" resultType="com.usher.dto.CoursesCourseBookDto" parameterType="com.usher.dto.CoursesCourseBookDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.status,
+			a.course_id,
+			a.book_id,
+			b.section,
+			b.book_name,
+			b.book_amount,
+			b.book_kyobo_amount,
+			b.book_image,
+			b.book_url
+		from
+			courses_course_book a
+			join base_book b on a.book_id = b.id
+		where
+			a.status = 'ACTIVE'
+			and b.status = 'ACTIVE'
+			and a.course_id  = #{course_id}
+		order by a.course_id, b.book_sort
+	</select>
+	
+	<select id="getCourseBook" resultType="com.usher.dto.CoursesCourseBookDto" parameterType="com.usher.dto.CoursesCourseBookDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.status,
+			a.course_id,
+			a.book_id,
+			b.section,
+			b.book_name,
+			b.book_amount,
+			b.book_kyobo_amount,
+			b.book_image,
+			b.book_url
+		from
+			courses_course_book a
+			join base_book b on a.book_id = b.id
+		where
+			a.status = 'ACTIVE'
+			and b.status = 'ACTIVE'
+			and a.course_id  = #{course_id}
+			and a.book_id  = #{book_id}
+	</select>
+		
+	<insert id="insertCourseBook" parameterType="com.usher.dto.CoursesCourseBookDto">
+		insert into courses_course_book (
+			created,
+			modified,
+			status,
+			course_id,
+			book_id
+		)values(
+			now(),
+			now(),
+			#{status},
+			#{course_id},
+			#{book_id}
+		)
+	</insert>
+	
+	<delete id="deleteCourseBook" parameterType="com.usher.dto.CoursesCourseBookDto">
+		delete
+		from
+			courses_course_book
+		where
+			course_id = #{course_id}
+	</delete>
+</mapper>

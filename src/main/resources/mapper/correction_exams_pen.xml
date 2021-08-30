@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CorrectionExamsPenDao">
+	<select id="getCorrectionExamsPen" parameterType="com.usher.dto.CorrectionExamsPenDto" resultType="com.usher.dto.CorrectionExamsPenDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.pen_id,
+			concat(b.last_name,b.first_name) as pen_name,
+			a.pen_comment,
+			a.pen_comment_review,
+			a.correction_exams_answer_id
+		from
+			correction_exams_pen a
+			join auth_user b on a.pen_id = b.id
+		where
+			a.correction_exams_answer_id = #{correction_exams_answer_id}
+	</select>
+	<insert id="insertCorrectionExamsPen" parameterType="com.usher.dto.CorrectionExamsPenDto">
+		with upsert as (
+			update correction_exams_pen set
+				modified = now(),
+				pen_id = #{pen_id},
+				pen_comment = #{pen_comment},
+				pen_comment_review = #{pen_comment_review}
+			where
+				correction_exams_answer_id = #{correction_exams_answer_id}
+			returning * 
+		)
+		insert into correction_exams_pen(
+			created,
+			modified,
+			pen_id,
+			pen_comment,
+			pen_comment_review,
+			correction_exams_answer_id			
+		)
+		select
+			now(),
+			now(),
+			#{pen_id},
+			#{pen_comment},
+			#{pen_comment_review},
+			#{correction_exams_answer_id}
+		where not exists( select * from upsert)
+	</insert>
+	<insert id="insertCorrectionExamsPenLog" parameterType="com.usher.dto.CorrectionExamsPenDto">
+		insert into correction_exams_pen_log(
+			created,
+			modified,
+			pen_id,
+			pen_comment,
+			pen_comment_review,
+			correction_exams_answer_id			
+		)
+		select
+			created,
+			modified,
+			pen_id,
+			pen_comment,
+			pen_comment_review,
+			correction_exams_answer_id		
+		from
+			correction_exams_pen
+		where
+			correction_exams_answer_id = #{correction_exams_answer_id}
+	</insert>	
+</mapper>

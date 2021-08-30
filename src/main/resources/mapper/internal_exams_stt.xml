@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsSttDao">
+	<select id="getSttCount" resultType="com.usher.dto.InternalExamsSttDto" parameterType="com.usher.dto.InternalExamsSttDto">
+		select count(*) as total_count
+		from 
+			internal_exams_stt 
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and volume = #{volume}
+		</if>						
+	</select>
+	
+	<select id="getSttList" resultType="com.usher.dto.InternalExamsSttDto" parameterType="com.usher.dto.InternalExamsSttDto">
+		select 
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			coalesce(c.short_title,'') as short_title
+		from
+			internal_exams_stt a
+			left join (
+				select
+					a.section,
+					a.section_order,
+					b.book,
+					b.book_order,
+					c.volume,
+					c.volume_order,
+					coalesce(d.group,'') as group,
+					coalesce(d.group_order,0) as group_order
+				from
+					practices_practicesection a
+					join practices_practicebook b on a.id = b.practice_section_id
+					join practices_practicevolume c on b.practice_section_id = c.practice_section_id and b.id = c.practice_book_id
+					left join practices_practicegroup d on c.practice_section_id = d.practice_section_id and c.practice_book_id = d.practice_book_id and c.id = d.practice_volume_id			
+			) b on a.section = b.section and a.book = b.book and a.volume = b.volume and a.group = b.group	
+			left join practices_practiceproblem c  on a.section = c.section and a.book = c.book and a.volume = c.volume and a.group = c.group and a.article = c.article
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and a.book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and a.volume = #{volume}
+		</if>	
+		order by coalesce(b.section_order,0), a.section, coalesce(b.book_order,0), a.book, coalesce(b.volume_order,0), a.volume, coalesce(b.group_order,0), a.group, a.article
+		limit #{row_num} offset #{first_num}
+	</select>
+
+	<select id="getStt" resultType="com.usher.dto.InternalExamsSttDto" parameterType="com.usher.dto.InternalExamsSttDto">
+		select 
+			id,
+			section,
+			book,
+			"group",
+			volume,
+			article,
+			contents,
+			paragraph1,
+			paragraph2,
+			paragraph3,
+			paragraph4,
+			paragraph5,
+			paragraph6,
+			paragraph7,
+			paragraph8,
+			paragraph9,
+			paragraph10
+		from
+			internal_exams_stt
+		where
+			id = #{id}
+	</select>
+	
+	<insert id="insertStt" parameterType="com.usher.dto.InternalExamsSttDto"  useGeneratedKeys="true" keyProperty="id">
+		insert into internal_exams_stt (
+			created,
+			modified,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+			contents,
+			paragraph1,
+			paragraph2,
+			paragraph3,
+			paragraph4,
+			paragraph5,
+			paragraph6,
+			paragraph7,
+			paragraph8,
+			paragraph9,
+			paragraph10
+		) values (
+			now(),
+			now(),
+			#{section},
+			#{book},
+			#{volume},
+			#{group},
+			#{article},
+			#{contents},
+			#{paragraph1},
+			#{paragraph2},
+			#{paragraph3},
+			#{paragraph4},
+			#{paragraph5},
+			#{paragraph6},
+			#{paragraph7},
+			#{paragraph8},
+			#{paragraph9},
+			#{paragraph10}
+		)
+	</insert>
+	
+	<update id="updateStt" parameterType="com.usher.dto.InternalExamsSttDto">
+		update internal_exams_stt set
+			modified = now(),
+			contents = #{contents},
+			paragraph1 = #{paragraph1},
+			paragraph2 = #{paragraph2},
+			paragraph3 = #{paragraph3},
+			paragraph4 = #{paragraph4},
+			paragraph5 = #{paragraph5},
+			paragraph6 = #{paragraph6},
+			paragraph7 = #{paragraph7},
+			paragraph8 = #{paragraph8},
+			paragraph9 = #{paragraph9},
+			paragraph10 = #{paragraph10}
+		where
+			id = #{id}	
+	</update>
+
+	<delete id="deleteStt" parameterType="com.usher.dto.InternalExamsSttDto">
+		delete from internal_exams_stt
+		where
+			id = #{id}	
+	</delete>
+		
+</mapper>

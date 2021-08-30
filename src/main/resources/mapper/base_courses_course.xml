@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseCoursesCourseDao">
+	<select id="getBaseCoursesCourseList" parameterType="com.usher.dto.BaseCoursesCourseDto" resultType="com.usher.dto.BaseCoursesCourseDto">
+		select
+			id,
+			name,
+			difficulty,
+			inner_difficulty,
+			lecture_code,
+			life_cycle,
+			base_course_group_id
+		from
+			base_courses_course
+		where
+			base_course_group_id = #{base_course_group_id}
+		order by difficulty, inner_difficulty
+	</select>
+	
+	<select id="getBaseCoursesCourseAllList" parameterType="com.usher.dto.BaseCoursesCourseDto" resultType="com.usher.dto.BaseCoursesCourseDto">
+		select
+			b.id,
+			a.test_type,
+			a.student_type,
+			a.lecture_type,
+			a.name as course_group_name,
+			a.days,
+			a."time",
+			b.name,
+			b.difficulty,
+			b.inner_difficulty,
+			b.lecture_code,
+			b.life_cycle,
+			b.base_course_group_id
+		from
+			base_courses_coursegroup a
+			join base_courses_course b on a.id = b.base_course_group_id
+		where
+			1 = 1
+		<if test="test_type != null and test_type !='' ">			
+			and a.test_type = #{test_type}
+		</if>				
+		<if test="student_type != null and student_type !='' ">			
+			and a.student_type = #{student_type}
+		</if>				
+		<if test="lecture_type != null and lecture_type !='' ">			
+			and a.lecture_type = #{lecture_type}
+		</if>				
+		order by a.test_type, a.student_type, a.lecture_type, a.name, b.difficulty, b.inner_difficulty	
+	</select>
+		
+	<select id="getBaseCoursesCourse" parameterType="com.usher.dto.BaseCoursesCourseDto" resultType="com.usher.dto.BaseCoursesCourseDto">
+		select
+			id,
+			name,
+			difficulty,
+			inner_difficulty,
+			lecture_code,
+			life_cycle,
+			base_course_group_id
+		from
+			base_courses_course
+		where
+			id = #{id}
+	</select>
+	
+	<select id="getBaseCoursesCourseAll" parameterType="com.usher.dto.BaseCoursesCourseDto" resultType="com.usher.dto.BaseCoursesCourseDto">
+		select
+			b.id,
+			a.test_type,
+			a.student_type,
+			a.lecture_type,
+			a.name as course_group_name,
+			a.days,
+			a."time",
+			b.name,
+			b.difficulty,
+			b.inner_difficulty,
+			b.lecture_code,
+			b.life_cycle,
+			b.base_course_group_id
+		from
+			base_courses_coursegroup a
+			join base_courses_course b on a.id = b.base_course_group_id
+		where
+			b.id = #{id}
+	</select>
+		
+	<insert id="insertBaseCoursesCourse" parameterType="com.usher.dto.BaseCoursesCourseDto">
+		insert into base_courses_course(
+			created,
+			modified,
+			name,
+			difficulty,
+			inner_difficulty,
+			lecture_code,
+			life_cycle,
+			base_course_group_id
+		) values (
+			now(),
+			now(),
+			#{name},
+			#{difficulty},
+			#{inner_difficulty},
+			#{lecture_code},
+			#{life_cycle},
+			#{base_course_group_id}
+		)
+	</insert>	
+	<update id="updateBaseCoursesCourse" parameterType="com.usher.dto.BaseCoursesCourseDto">
+		update base_courses_course set
+			modified = now(),
+			name = #{name},
+			difficulty = #{difficulty},
+			inner_difficulty = #{inner_difficulty},
+			lecture_code = #{lecture_code},
+			life_cycle = #{life_cycle},
+			base_course_group_id = #{base_course_group_id}
+		where
+			id = #{id}
+	</update>	
+	<delete id="deleteBaseCoursesCourse" parameterType="com.usher.dto.BaseCoursesCourseDto">
+		delete from base_courses_course
+		where
+			id = #{id}
+	</delete>	
+</mapper>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchExamReadingDao">
+	<select id="getBatchExamReadingNumList" resultType="com.usher.dto.BatchExamReadingDto" parameterType="com.usher.dto.BatchExamReadingDto">
+		select 
+			type,
+			num
+		from
+			batch_exam_reading
+		group by type, num
+		order by 2
+	</select>
+	
+	<select id="getBatchExamReadingNum" resultType="com.usher.dto.BatchExamReadingDto" parameterType="com.usher.dto.BatchExamReadingDto">
+		select 
+			coalesce(max(num) + 1,1) as num 
+		from 
+			batch_exam_reading 
+		where 
+			type = #{type}
+	</select>	
+	<select id="getBatchExamReadingList" resultType="com.usher.dto.BatchExamReadingDto" parameterType="com.usher.dto.BatchExamReadingDto">
+		select
+			type,
+			num,
+			sub_num,
+			q_num
+		from
+			batch_exam_reading
+		where
+			type = #{type}
+			and num = #{num}
+		order by sub_num
+	</select>	
+	<select id="getBatchExamReading" resultType="com.usher.dto.BatchExamReadingDto" parameterType="com.usher.dto.BatchExamReadingDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd HH24:MI:SS') as created,
+			a.created_id,
+			concat(b.last_name, b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd HH24:MI:SS') as modified,
+			a.modified_id,
+			concat(c.last_name, c.first_name) as modified_name,
+			a.type,
+			a.num,
+			a.sub_num,
+			a.q_num,
+			a.passage,
+			a.paragraph1,
+			a.paragraph2,
+			a.paragraph3,
+			a.paragraph4,
+			a.paragraph5,
+			a.paragraph6,
+			a.paragraph7,
+			a.paragraph8,
+			a.paragraph9,
+			a.paragraph10
+		from
+			batch_exam_reading a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+		where
+			type = #{type}
+			and num = #{num}
+			and sub_num = #{sub_num}
+	</select>
+	
+	<insert id="insertBatchExamReading" parameterType="com.usher.dto.BatchExamReadingDto">
+		insert into batch_exam_reading (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			type,
+			num,
+			sub_num
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{type},
+			#{num},
+			#{sub_num}
+		)
+	</insert>	
+	
+	<update id="updateBatchExamReading" parameterType="com.usher.dto.BatchExamReadingDto">
+		update batch_exam_reading  set
+			modified = now(),
+			modified_id = #{modified_id},
+			q_num = #{q_num},
+			passage = #{passage},
+			paragraph1 = #{paragraph1},
+			paragraph2 = #{paragraph2},
+			paragraph3 = #{paragraph3},
+			paragraph4 = #{paragraph4},
+			paragraph5 = #{paragraph5},
+			paragraph6 = #{paragraph6},
+			paragraph7 = #{paragraph7},
+			paragraph8 = #{paragraph8},
+			paragraph9 = #{paragraph9},
+			paragraph10 = #{paragraph10}
+		where
+			type = #{type}
+			and num = #{num}
+			and sub_num = #{sub_num}
+	</update>			
+</mapper>

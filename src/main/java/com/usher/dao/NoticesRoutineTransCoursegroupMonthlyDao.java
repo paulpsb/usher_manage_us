@@ -1,0 +1,17 @@
+package com.usher.dao;
+
+
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import com.usher.dto.NoticesRoutineTransCoursegroupMonthlyDto;
+
+@Repository
+public interface NoticesRoutineTransCoursegroupMonthlyDao{
+	public List<NoticesRoutineTransCoursegroupMonthlyDto> getNoticesRoutineTransCoursegroupMonthlyGroupList(NoticesRoutineTransCoursegroupMonthlyDto dto) throws Exception;
+	public List<NoticesRoutineTransCoursegroupMonthlyDto> getNoticesRoutineTransCoursegroupMonthlyList(NoticesRoutineTransCoursegroupMonthlyDto dto) throws Exception;
+	public List<NoticesRoutineTransCoursegroupMonthlyDto> getNoticesRoutineTransCoursegroupMonthlyAsGroupList(NoticesRoutineTransCoursegroupMonthlyDto dto) throws Exception;
+	public void insertNoticesRoutineTransCoursegroupMonthly(NoticesRoutineTransCoursegroupMonthlyDto dto) throws Exception;
+	public void deleteNoticesRoutineTransCoursegroupMonthly(NoticesRoutineTransCoursegroupMonthlyDto dto) throws Exception;
+}

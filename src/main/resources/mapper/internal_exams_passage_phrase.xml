@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsPassagePhraseDao">
+	<select id="getPassagePhraseList" resultType="com.usher.dto.InternalExamsPassagePhraseDto" parameterType="com.usher.dto.InternalExamsPassagePhraseDto">
+		select 
+			id,
+			spell,
+			meaning,
+			passage_id,
+			paragraph,
+			question_num
+		from
+			internal_exams_passage_phrase
+		where 
+			passage_id = #{passage_id}
+		order by question_num, id
+	</select>
+
+	<insert id="insertPassagePhrase" parameterType="com.usher.dto.InternalExamsPassagePhraseDto">
+		insert into internal_exams_passage_phrase (
+			created,
+			modified,
+			spell,
+			meaning,
+			passage_id,
+			paragraph,
+			question_num
+		) values (
+			now(),
+			now(),
+			#{spell},
+			#{meaning},
+			#{passage_id},
+			#{paragraph},
+			#{question_num}
+		)
+	</insert>
+	
+	<update id="updatePassagePhrase" parameterType="com.usher.dto.InternalExamsPassagePhraseDto">
+		update internal_exams_passage_phrase set
+			modified = now(),
+			spell = #{spell},
+			meaning = #{meaning},
+			paragraph = #{paragraph},
+			question_num = #{question_num}
+		where
+			id = #{id}	
+	</update>
+	
+	<delete id="deletePassagePhrase" parameterType="com.usher.dto.InternalExamsPassagePhraseDto">
+		delete from internal_exams_passage_phrase
+		where
+			id = #{id}	
+	</delete>
+	
+</mapper>

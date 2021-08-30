@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseCoursesCoursePracticeDao">
+	<select id="getBaseCoursesCoursePracticeList" parameterType="com.usher.dto.BaseCoursesCoursePracticeDto" resultType="com.usher.dto.BaseCoursesCoursePracticeDto">
+		select
+			id,
+			section,
+			practice_type,
+			base_course_id
+		from
+			base_courses_course_practice
+		where
+			status = 'ACTIVE'
+			and base_course_id = #{base_course_id}
+		order by section, practice_type
+	</select>
+	
+	<insert id="insertBaseCoursesCoursePractice" parameterType="com.usher.dto.BaseCoursesCoursePracticeDto">
+		insert into base_courses_course_practice(
+			created,
+			modified,
+			status,
+			section,
+			practice_type,
+			base_course_id
+		) values (
+			now(),
+			now(),
+			#{status},
+			#{section},
+			#{practice_type},
+			#{base_course_id}
+		)
+	</insert>	
+	
+	<delete id="deleteBaseCoursesCoursePractice" parameterType="com.usher.dto.BaseCoursesCoursePracticeDto">
+		delete from base_courses_course_practice
+		where
+			base_course_id = #{base_course_id}
+	</delete>	
+</mapper>

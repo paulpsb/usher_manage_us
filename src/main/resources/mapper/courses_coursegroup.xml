@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CoursesCoursegroupDao">
+	<select id="getCoursegroupList" resultType="com.usher.dto.CoursesCoursegroupDto" parameterType="com.usher.dto.CoursesCoursegroupDto">
+		select
+			id,
+			name,
+			test_type,
+			student_type,
+			lecture_type,
+			days,
+			time,
+			open,
+			to_char(start_date,'yyyy-mm-dd') as start_date,
+			to_char(end_date,'yyyy-mm-dd') as end_date,
+			schedule,
+			life_cycle,
+			semester_id,
+			repetition_date
+		from 
+			courses_coursegroup 
+		where
+			semester_id = #{semester_id}
+		<if test="test_type != null and test_type !='' ">			
+			and test_type = #{test_type}
+		</if>
+		order by id
+	</select>
+	<select id="getCoursegroup" resultType="com.usher.dto.CoursesCoursegroupDto" parameterType="com.usher.dto.CoursesCoursegroupDto">
+		select
+			a.id,
+			a.name,
+			a.test_type,
+			a.student_type,
+			a.lecture_type,
+			a.days,
+			a.time,
+			a.open,
+			to_char(a.start_date,'yyyy-mm-dd') as start_date,
+			to_char(a.end_date,'yyyy-mm-dd') as end_date,
+			a.schedule,
+			a.life_cycle,
+			a.semester_id,
+			a.repetition_date,
+			to_char(now(),'hh24:mi') as current_time,
+			to_char(now(),'yyyy-mm-dd') as current_date,
+			to_char(b.date + interval '1 months','yyyy-mm') as next_semester_date
+		from 
+			courses_coursegroup a
+			join courses_semester b on a.semester_id = b.id
+		where
+			a.id = #{id}
+		order by a.id
+	</select>	
+	<select id="getCoursegroupAsPrevDate" resultType="com.usher.dto.CoursesCoursegroupDto" parameterType="com.usher.dto.CoursesCoursegroupDto">
+		select
+			a.id,
+			max(a.schedule) as schedule
+		from
+			(
+				select
+					id,
+					unnest(string_to_array(schedule, ',')) as schedule
+				from
+					courses_coursegroup
+				where
+					id = #{id}
+			) a
+		where 1=1
+		<if test="schedule != null and schedule !='' ">
+			<![CDATA[ and a.schedule < #{schedule} ]]>
+		</if>
+		<if test="schedule == null or schedule =='' ">
+			<![CDATA[ and a.schedule < to_char(current_date,'yyyy-mm-dd') ]]>
+		</if>		
+		group by a.id
+	</select>		
+	<select id="getCoursegroupAsPrevDateCourse" resultType="com.usher.dto.CoursesCoursegroupDto" parameterType="com.usher.dto.CoursesCoursegroupDto">
+		select
+			a.id,
+			max(a.schedule) as schedule
+		from
+			(
+				select
+					id,
+					unnest(string_to_array(schedule, ',')) as schedule
+				from
+					courses_coursegroup
+				where
+					id in ( select course_group_id from courses_course where id = #{course_id})
+			) a
+		where 1=1
+		<if test="schedule != null and schedule !='' ">
+			<![CDATA[ and a.schedule < #{schedule} ]]>
+		</if>
+		<if test="schedule == null or schedule =='' ">
+			<![CDATA[ and a.schedule < to_char(current_date,'yyyy-mm-dd') ]]>
+		</if>		
+		group by a.id
+	</select>		
+	<update id="updateCourseGroupRepetitionDate" parameterType="com.usher.dto.CoursesCoursegroupDto">
+		update courses_coursegroup set
+			repetition_date = #{repetition_date}
+		where
+			id = #{id}
+	</update>
+</mapper>

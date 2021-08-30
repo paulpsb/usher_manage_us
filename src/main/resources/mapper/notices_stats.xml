@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesStatsDao">
+	<select id="getNoticesMonthlyStatsNewStudentList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			target_id as user_id,
+			course_group_name,
+			course_name,
+			sum(student_count) as total_count,
+			sum(student_training_count) as success_count
+		from
+			notices_new_student
+		where
+			to_char(new_date,'yyyy-mm') = #{stats_date}
+		group by target_id, course_group_name, course_name
+		order by 1, 2, 3			
+	</select>
+	<select id="getNoticesMonthlyStatsAttendList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			target_id as user_id,
+			course_group_name,
+			course_name,
+			sum(student_count) as total_count,
+			sum(attend_count) as success_count
+		from
+			notices_attend
+		where
+			to_char(attend_date,'yyyy-mm') = #{stats_date}
+		group by target_id, course_group_name, course_name
+		order by 1, 2, 3			
+	</select>
+	<select id="getNoticesMonthlyStatsPracticeList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			a.user_id,
+			c.name as course_group_name,
+			b.name as course_name,
+			sum(course_count) as total_count,
+			sum(course_last_success_count) as success_count,
+			sum(course_last_giveup_count) as giveup_count
+		from
+			notices_practice a
+			join courses_course b on a.course_id = b.id
+			join courses_coursegroup c on b.course_group_id = c.id
+		where
+			to_char(a.date,'yyyy-mm') = #{stats_date}
+		group by a.user_id, c.name, b.name
+		order by 1, 2, 3			
+	</select>
+	<select id="getNoticesMonthlyStatsRoutineMonthlyList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			schedule_target_id as user_id,
+			course_group_name,
+			course_name,
+			sum(schedule_work_count) as total_count,
+			sum(schedule_success_count) as success_count,
+			coalesce(sum(schedule_ignore_count),0) as ignore_count,
+			coalesce(sum(schedule_problem_count),0) as problem_count
+		from
+			notices_schedule
+		where
+			to_char(schedule_date,'yyyy-mm') = #{stats_date}
+			and schedule_category in ('MONTHLY','YEARLY')
+		group by schedule_target_id, course_group_name, course_name
+		order by 1, 2, 3			
+	</select>
+	<select id="getNoticesMonthlyStatsRoutineDailyList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			schedule_target_id as user_id,
+			course_group_name,
+			course_name,
+			sum(schedule_work_count) as total_count,
+			sum(schedule_success_count) as success_count,
+			coalesce(sum(schedule_ignore_count),0) as ignore_count,
+			coalesce(sum(schedule_problem_count),0) as problem_count
+		from
+			notices_schedule
+		where
+			to_char(schedule_date,'yyyy-mm') = #{stats_date}
+			and schedule_category = 'DAILY'
+		group by schedule_target_id, course_group_name, course_name
+		order by 1, 2, 3			
+	</select>
+	<select id="getNoticesMonthlyStatsTaskList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			task_user_id as user_id,
+			count(*) as total_count,
+			sum(case when task_status = 'REQUEST' then 1 else 0 end) as request_count,
+			sum(case when task_status = 'TIMEING' then 1 else 0 end) as timeing_count,
+			sum(case when task_status = 'WORKING' then 1 else 0 end) as working_count,
+			sum(case when task_status = 'RESPONSE' then 1 else 0 end) as response_count,
+			sum(case when task_status = 'RETURN' then 1 else 0 end) as return_count,
+			sum(case when task_status = 'COMPLETE' then 1 else 0 end) as complete_count
+		from
+			notices_task
+		where
+			to_char(task_date,'yyyy-mm') = #{stats_date}
+		group by task_user_id
+		order by 1			
+	</select>
+	<select id="getNoticesMonthlyUserStatsNewStudentList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			target_id as user_id,
+			course_group_name,
+			course_name,
+			to_char(new_date,'yyyy-mm-dd') as stats_date,
+			sum(student_count) as total_count,
+			sum(student_training_count) as success_count
+		from
+			notices_new_student
+		where
+			to_char(new_date,'yyyy-mm') = #{stats_date}
+			and target_id = #{user_id}
+		group by target_id, course_group_name, course_name, to_char(new_date,'yyyy-mm-dd')
+		order by 1, 2, 3, 4			
+	</select>	
+	<select id="getNoticesMonthlyUserStatsAttendList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			target_id as user_id,
+			course_group_name,
+			course_name,
+			to_char(attend_date,'yyyy-mm-dd') as stats_date,
+			sum(student_count) as total_count,
+			sum(attend_count) as success_count
+		from
+			notices_attend
+		where
+			to_char(attend_date,'yyyy-mm') = #{stats_date}
+			and target_id = #{user_id}
+		group by target_id, course_group_name, course_name, to_char(attend_date,'yyyy-mm-dd')
+		order by 1, 2, 3, 4			
+	</select>
+	<select id="getNoticesMonthlyUserStatsPracticeList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			a.user_id,
+			c.name as course_group_name,
+			b.name as course_name,
+			to_char(date,'yyyy-mm-dd') as stats_date,
+			sum(course_count) as total_count,
+			sum(course_last_success_count) as success_count,
+			sum(course_last_giveup_count) as giveup_count
+		from
+			notices_practice a
+			join courses_course b on a.course_id = b.id
+			join courses_coursegroup c on b.course_group_id = c.id
+		where
+			to_char(a.date,'yyyy-mm') = #{stats_date}
+			and a.user_id = #{user_id}
+		group by a.user_id, c.name, b.name, to_char(date,'yyyy-mm-dd')
+		order by 1, 2, 3, 4 			
+	</select>
+	<select id="getNoticesMonthlyUserStatsRoutineMonthlyList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			schedule_target_id as user_id,
+			course_group_name,
+			course_name,
+			to_char(schedule_date,'yyyy-mm-dd') as stats_date,
+			sum(schedule_work_count) as total_count,
+			sum(schedule_success_count) as success_count,
+			coalesce(sum(schedule_ignore_count),0) as ignore_count,
+			coalesce(sum(schedule_problem_count),0) as problem_count
+		from
+			notices_schedule
+		where
+			to_char(schedule_date,'yyyy-mm') = #{stats_date}
+			and schedule_target_id = #{user_id}
+			and schedule_category in ('MONTHLY','YEARLY')
+		group by schedule_target_id, course_group_name, course_name, to_char(schedule_date,'yyyy-mm-dd') 
+		order by 1, 2, 3, 4			
+	</select>
+	<select id="getNoticesMonthlyUserStatsRoutineDailyList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			schedule_target_id as user_id,
+			course_group_name,
+			course_name,
+			to_char(schedule_date,'yyyy-mm-dd') as stats_date,
+			sum(schedule_work_count) as total_count,
+			sum(schedule_success_count) as success_count,
+			coalesce(sum(schedule_ignore_count),0) as ignore_count,
+			coalesce(sum(schedule_problem_count),0) as problem_count
+		from
+			notices_schedule
+		where
+			to_char(schedule_date,'yyyy-mm') = #{stats_date}
+			and schedule_target_id = #{user_id}
+			and schedule_category = 'DAILY'
+		group by schedule_target_id, course_group_name, course_name, to_char(schedule_date,'yyyy-mm-dd') 
+		order by 1, 2, 3, 4			
+	</select>
+	<select id="getNoticesMonthlyUserStatsTaskList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			task_user_id as user_id,
+			to_char(task_date,'yyyy-mm-dd') as stats_date,
+			count(*) as total_count,
+			sum(case when task_status = 'REQUEST' then 1 else 0 end) as request_count,
+			sum(case when task_status = 'TIMEING' then 1 else 0 end) as timeing_count,
+			sum(case when task_status = 'WORKING' then 1 else 0 end) as working_count,
+			sum(case when task_status = 'RESPONSE' then 1 else 0 end) as response_count,
+			sum(case when task_status = 'RETURN' then 1 else 0 end) as return_count,
+			sum(case when task_status = 'COMPLETE' then 1 else 0 end) as complete_count
+		from
+			notices_task
+		where
+			to_char(task_date,'yyyy-mm') = #{stats_date}
+			and task_user_id = #{user_id}
+		group by task_user_id, to_char(task_date,'yyyy-mm-dd')
+		order by 1, 2
+	</select>	
+	<select id="getNoticesDailyStatsNewStudentList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			target_id as user_id,
+			course_group_name,
+			course_name,
+			sum(student_count) as total_count,
+			sum(student_training_count) as success_count
+		from
+			notices_new_student
+		where
+			to_char(new_date,'yyyy-mm-dd') = #{stats_date}
+		group by target_id, course_group_name, course_name
+		order by 1, 2, 3			
+	</select>	
+	<select id="getNoticesDailyStatsAttendList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			target_id as user_id,
+			course_group_name,
+			course_name,
+			sum(student_count) as total_count,
+			sum(attend_count) as success_count
+		from
+			notices_attend
+		where
+			to_char(attend_date,'yyyy-mm-dd') = #{stats_date}
+		group by target_id, course_group_name, course_name
+		order by 1, 2, 3			
+	</select>
+	<select id="getNoticesDailyStatsPracticeList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			a.user_id,
+			c.name as course_group_name,
+			b.name as course_name,
+			sum(course_count) as total_count,
+			sum(course_last_success_count) as success_count,
+			sum(course_last_giveup_count) as giveup_count
+		from
+			notices_practice a
+			join courses_course b on a.course_id = b.id
+			join courses_coursegroup c on b.course_group_id = c.id
+		where
+			to_char(a.date,'yyyy-mm-dd') = #{stats_date}
+		group by a.user_id, c.name, b.name
+		order by 1, 2, 3			
+	</select>
+	<select id="getNoticesDailyStatsRoutineMonthlyList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			schedule_target_id as user_id,
+			course_group_name,
+			course_name,
+			sum(schedule_work_count) as total_count,
+			sum(schedule_success_count) as success_count,
+			coalesce(sum(schedule_ignore_count),0) as ignore_count,
+			coalesce(sum(schedule_problem_count),0) as problem_count
+		from
+			notices_schedule
+		where
+			to_char(schedule_date,'yyyy-mm-dd') = #{stats_date}
+			and schedule_category in ('MONTHLY','YEARLY')
+		group by schedule_target_id, course_group_name, course_name
+		order by 1, 2, 3			
+	</select>
+	<select id="getNoticesDailyStatsRoutineDailyList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			schedule_target_id as user_id,
+			course_group_name,
+			course_name,
+			sum(schedule_work_count) as total_count,
+			sum(schedule_success_count) as success_count,
+			coalesce(sum(schedule_ignore_count),0) as ignore_count,
+			coalesce(sum(schedule_problem_count),0) as problem_count
+		from
+			notices_schedule
+		where
+			to_char(schedule_date,'yyyy-mm-dd') = #{stats_date}
+			and schedule_category = 'DAILY'
+		group by schedule_target_id, course_group_name, course_name
+		order by 1, 2, 3			
+	</select>
+	<select id="getNoticesDailyStatsTaskList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		select 
+			task_user_id as user_id,
+			count(*) as total_count,
+			sum(case when task_status = 'REQUEST' then 1 else 0 end) as request_count,
+			sum(case when task_status = 'TIMEING' then 1 else 0 end) as timeing_count,
+			sum(case when task_status = 'WORKING' then 1 else 0 end) as working_count,
+			sum(case when task_status = 'RESPONSE' then 1 else 0 end) as response_count,
+			sum(case when task_status = 'RETURN' then 1 else 0 end) as return_count,
+			sum(case when task_status = 'COMPLETE' then 1 else 0 end) as complete_count
+		from
+			notices_task
+		where
+			to_char(task_date,'yyyy-mm-dd') = #{stats_date}
+		group by task_user_id
+		order by 1			
+	</select>
+	
+	
+	<select id="getNoticesLogCount" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		with notice_temp as (
+			select
+				a.id as notice_id,
+				'class' as notice_type,
+				'new_student' as notice_category,
+				'' as section,
+				'' as practice_type,
+				to_char(a.new_date,'yyyy-mm-dd') as notice_date,
+				a.new_time as notice_time,
+				'' as notice_title,
+				a.target_id as notice_user_id,
+				concat(c.last_name, c.first_name) as notice_user_name,
+				concat(a.course_group_name,' ', a.course_name) as notice_course_name,
+				'신규학생' as notice_sub_title,
+				'' as status,
+				student_count as total_count,
+				student_training_count as success_count,
+				0 as giveup_count,
+				case when student_count = student_training_count then 'Y' else 'N' end as is_success
+			from
+				notices_new_student a
+				join auth_user c on a.target_id = c.id
+			where
+				a.new_date = to_date(#{notice_date},'yyyy-mm-dd')
+			union all
+			select
+				a.id as notice_id,
+				'class' as notice_type,
+				'attend' as notice_category,
+				'' as section,
+				'' as practice_type,
+				to_char(a.attend_date,'yyyy-mm-dd') as notice_date,
+				a.attend_time as notice_time,
+				'' as notice_title,
+				a.target_id as notice_user_id,
+				concat(c.last_name, c.first_name) as notice_user_name,
+				concat(a.course_group_name,' ', a.course_name) as notice_course_name,
+				'출결' as notice_sub_title,
+				'' as status,
+				student_count as total_count,
+				attend_count as success_count,
+				0 as giveup_count,
+				case when student_count = attend_count then 'Y' else 'N' end as is_success	
+			from
+				notices_attend a
+				join auth_user c on a.target_id = c.id
+			where
+				a.attend_date = to_date(#{notice_date},'yyyy-mm-dd')
+			union all
+			select
+				0 as notice_id,
+				'class' as notice_type,
+				'practice' as notice_category,
+				a.section as section,
+				a.practice_type as practice_type,
+				to_char(a.date,'yyyy-mm-dd') as notice_date,
+				b.start_time as notice_time,
+				concat(c.short_title_kr,' ',d.practice_name)  as notice_title,
+				a.user_id as notice_user_id,
+				concat(g.last_name, g.first_name) as notice_user_name,
+				concat(f.name,' ', e.name) as notice_course_name,
+				'' as notice_sub_title,
+				'' as status,
+				sum(a.course_count) as total_count,
+				sum(a.course_last_success_count) as success_count,
+				sum(a.course_last_giveup_count) as giveup_count,
+				case when (sum(a.course_last_success_count) + sum(a.course_last_giveup_count)) = sum(a.course_count) then 'Y' else 'N' end as is_success	
+			from 
+				notices_practice a
+				join courses_course_practice_daily b on a.section = b.section and a.practice_type = b.practice_type and a.course_id = b.course_id and a.date = b.date and b.status = 'ACTIVE'
+				join practices_practicesection c on a.section = c.section
+				join practices_practicetype d on a.practice_type = d.practice_type
+				join courses_course e on a.course_id = e.id
+				join courses_coursegroup f on e.course_group_id = f.id
+				join auth_user g on a.user_id = g.id
+			where
+				a.date = to_date(#{notice_date},'yyyy-mm-dd')
+			group by to_char(a.date,'yyyy-mm-dd'), a.section, a.practice_type, b.start_time, c.short_title_kr, d.practice_name, a.user_id, g.last_name, g.first_name, f.name, e.name 
+			union all
+			select
+				b.id as notice_id,
+				'schedule' as notice_type,
+				a.schedule_category as notice_category,
+				'' as section,
+				'' as practice_type,
+				to_char(a.schedule_date,'yyyy-mm-dd') as notice_date,
+				a.schedule_time as notice_time,
+				a.schedule_title as notice_title,
+				a.schedule_target_id as notice_user_id,
+				concat(c.last_name, c.first_name) as notice_user_name,
+				concat(a.course_group_name,' ', a.course_name) as notice_course_name,
+				b.schedule_detail_reference_title as notice_sub_title,
+				case when b.schedule_detail_is_ignore = true then 'IGNORE' else 
+					case when b.schedule_detail_is_problem = true then 'PROBLEM' else 
+						case when b.schedule_detail_is_success = true then 'SUCCESS' else 'ACTIVE' end end end as status,
+				0 as total_count,
+				0 as success_count,
+				0 as giveup_count,
+				case when b.schedule_detail_is_ignore = true or b.schedule_detail_is_ignore = true or b.schedule_detail_is_success = true then 'Y' else 'N' end  as is_success	
+			from
+				notices_schedule a
+				join notices_schedule_detail b on a.id = b.schedule_id
+				join auth_user c on a.schedule_target_id = c.id
+			where
+				a.schedule_date = to_date(#{notice_date},'yyyy-mm-dd')
+			union all
+			select
+				a.id as notice_id,
+				'task' as notice_type,
+				'task' as notice_category,
+				'' as section,
+				'' as practice_type,
+				to_char(a.task_date,'yyyy-mm-dd') as notice_date,
+				a.task_time as notice_time,
+				a.task_title as notice_title,
+				a.task_user_id as notice_user_id,
+				concat(c.last_name, c.first_name) as notice_user_name,
+				to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as notice_course_name,
+				'' as notice_sub_title,
+				a.task_status as status,
+				0 as total_count,
+				0 as success_count,
+				0 as giveup_count,
+				case when a.task_status = 'COMPLETE' then 'Y' else 'N' end as is_success	
+			from
+				notices_task a
+				join auth_user c on a.task_user_id = c.id
+			where
+				a.task_date = to_date(#{notice_date},'yyyy-mm-dd')
+		)
+		select count(*) as page_total_count
+		from notice_temp
+		where 1=1
+		<if test="notice_type != null and notice_type !='' ">			
+			and notice_type = #{notice_type}
+		</if>	
+		<if test="notice_category != null and notice_category !='' ">			
+			and notice_category = #{notice_category}
+		</if>	
+		<if test="notice_user_name != null and notice_user_name !='' ">			
+			and notice_user_name like concat('%',#{notice_user_name},'%')
+		</if>
+		<if test="is_success != null and is_success !='' ">			
+			and is_success = #{is_success}
+		</if>			
+	</select>
+
+	<select id="getNoticesLogList" resultType="com.usher.dto.NoticesStatsDto" parameterType="com.usher.dto.NoticesStatsDto">
+		with notice_temp as (
+			select
+				a.id as notice_id,
+				'class' as notice_type,
+				'new_student' as notice_category,
+				'' as section,
+				'' as practice_type,
+				a.course_id as notice_course_id,
+				to_char(a.new_date,'yyyy-mm-dd') as notice_date,
+				a.new_time as notice_time,
+				'신규학생' as notice_title,
+				a.target_id as notice_user_id,
+				concat(c.last_name, c.first_name) as notice_user_name,
+				concat(a.course_group_name,' ', a.course_name) as notice_course_name,
+				'신규학생' as notice_sub_title,
+				'' as status,
+				student_count as total_count,
+				student_training_count as success_count,
+				0 as giveup_count,
+				case when student_count = student_training_count then 'Y' else 'N' end as is_success
+			from
+				notices_new_student a
+				join auth_user c on a.target_id = c.id
+			where
+				a.new_date = to_date(#{notice_date},'yyyy-mm-dd')
+			union all
+			select
+				a.id as notice_id,
+				'class' as notice_type,
+				'attend' as notice_category,
+				'' as section,
+				'' as practice_type,
+				a.course_id as notice_course_id,
+				to_char(a.attend_date,'yyyy-mm-dd') as notice_date,
+				a.attend_time as notice_time,
+				'출결' as notice_title,
+				a.target_id as notice_user_id,
+				concat(c.last_name, c.first_name) as notice_user_name,
+				concat(a.course_group_name,' ', a.course_name) as notice_course_name,
+				'출결' as notice_sub_title,
+				'' as status,
+				student_count as total_count,
+				attend_count as success_count,
+				0 as giveup_count,
+				case when student_count = attend_count then 'Y' else 'N' end as is_success	
+			from
+				notices_attend a
+				join auth_user c on a.target_id = c.id
+			where
+				a.attend_date = to_date(#{notice_date},'yyyy-mm-dd')
+			union all
+			select
+				0 as notice_id,
+				'class' as notice_type,
+				'practice' as notice_category,
+				a.section as section,
+				a.practice_type as practice_type,
+				a.course_id as notice_course_id,
+				to_char(a.date,'yyyy-mm-dd') as notice_date,
+				b.start_time as notice_time,
+				concat(c.short_title_kr,' ',d.practice_name)  as notice_title,
+				a.user_id as notice_user_id,
+				concat(g.last_name, g.first_name) as notice_user_name,
+				concat(f.name,' ', e.name) as notice_course_name,
+				'' as notice_sub_title,
+				'' as status,
+				sum(a.course_count) as total_count,
+				sum(a.course_last_success_count) as success_count,
+				sum(a.course_last_giveup_count) as giveup_count,
+				case when (sum(a.course_last_success_count) + sum(a.course_last_giveup_count)) = sum(a.course_count) then 'Y' else 'N' end as is_success	
+			from 
+				notices_practice a
+				join courses_course_practice_daily b on a.section = b.section and a.practice_type = b.practice_type and a.course_id = b.course_id and a.date = b.date and b.status = 'ACTIVE'
+				join practices_practicesection c on a.section = c.section
+				join practices_practicetype d on a.practice_type = d.practice_type
+				join courses_course e on a.course_id = e.id
+				join courses_coursegroup f on e.course_group_id = f.id
+				join auth_user g on a.user_id = g.id
+			where
+				a.date = to_date(#{notice_date},'yyyy-mm-dd')
+			group by to_char(a.date,'yyyy-mm-dd'), a.section, a.practice_type, a.course_id, b.start_time, c.short_title_kr, d.practice_name, a.user_id, g.last_name, g.first_name, f.name, e.name 
+			union all
+			select
+				b.id as notice_id,
+				'schedule' as notice_type,
+				a.schedule_category as notice_category,
+				'' as section,
+				'' as practice_type,
+				a.course_id as notice_course_id,
+				to_char(a.schedule_date,'yyyy-mm-dd') as notice_date,
+				a.schedule_time as notice_time,
+				a.schedule_title as notice_title,
+				a.schedule_target_id as notice_user_id,
+				concat(c.last_name, c.first_name) as notice_user_name,
+				concat(a.course_group_name,' ', a.course_name) as notice_course_name,
+				b.schedule_detail_reference_title as notice_sub_title,
+				case when b.schedule_detail_is_ignore = true then 'IGNORE' else 
+					case when b.schedule_detail_is_problem = true then 'PROBLEM' else 
+						case when b.schedule_detail_is_success = true then 'SUCCESS' else 'ACTIVE' end end end as status,
+				0 as total_count,
+				0 as success_count,
+				0 as giveup_count,
+				case when b.schedule_detail_is_ignore = true or b.schedule_detail_is_ignore = true or b.schedule_detail_is_success = true then 'Y' else 'N' end  as is_success	
+			from
+				notices_schedule a
+				join notices_schedule_detail b on a.id = b.schedule_id
+				join auth_user c on a.schedule_target_id = c.id
+			where
+				a.schedule_date = to_date(#{notice_date},'yyyy-mm-dd')
+			union all
+			select
+				a.id as notice_id,
+				'task' as notice_type,
+				'task' as notice_category,
+				'' as section,
+				'' as practice_type,
+				0 as notice_course_id,
+				to_char(a.task_date,'yyyy-mm-dd') as notice_date,
+				a.task_time as notice_time,
+				a.task_title as notice_title,
+				a.task_user_id as notice_user_id,
+				concat(c.last_name, c.first_name) as notice_user_name,
+				to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as notice_course_name,
+				'' as notice_sub_title,
+				a.task_status as status,
+				0 as total_count,
+				0 as success_count,
+				0 as giveup_count,
+				case when a.task_status = 'COMPLETE' then 'Y' else 'N' end as is_success	
+			from
+				notices_task a
+				join auth_user c on a.task_user_id = c.id
+			where
+				a.task_date = to_date(#{notice_date},'yyyy-mm-dd')
+		)
+		select
+			notice_id,
+			notice_type,
+			notice_category,
+			section,
+			practice_type,
+			notice_course_id,
+			notice_date,
+			notice_time,
+			notice_title,
+			notice_user_id,
+			notice_user_name,
+			notice_course_name,
+			notice_sub_title,
+			status,
+			total_count,
+			success_count,
+			giveup_count,
+			is_success
+		from notice_temp
+		where 1=1
+		<if test="notice_type != null and notice_type !='' ">			
+			and notice_type = #{notice_type}
+		</if>	
+		<if test="notice_category != null and notice_category !='' ">			
+			and notice_category = #{notice_category}
+		</if>	
+		<if test="notice_user_name != null and notice_user_name !='' ">			
+			and notice_user_name like concat('%',#{notice_user_name},'%')
+		</if>
+		<if test="is_success != null and is_success !='' ">			
+			and is_success = #{is_success}
+		</if>
+		order by notice_date, notice_time, notice_type, notice_category
+		limit #{row_num} offset #{first_num}		
+	</select>
+	
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchExamListeningDao">
+	<select id="getBatchExamListeningList" resultType="com.usher.dto.BatchExamListeningDto" parameterType="com.usher.dto.BatchExamListeningDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd HH24:MI:SS') as created,
+			a.created_id,
+			concat(b.last_name, b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd HH24:MI:SS') as modified,
+			a.modified_id,
+			concat(c.last_name, c.first_name) as modified_name,
+			a.type,
+			a.num,
+			a.sub_num,
+			a.article_num,
+			a.exam_type,
+			a.image
+		from
+			batch_exam_listening a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+		where
+			type = #{type}
+		<if test="num > 0 ">
+			and num = #{num}
+		</if>	
+		order by a.type, a.num, a.sub_num, a.article_num		
+	</select>
+	
+	<select id="getBatchExamListening" resultType="com.usher.dto.BatchExamListeningDto" parameterType="com.usher.dto.BatchExamListeningDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd HH24:MI:SS') as created,
+			a.created_id,
+			concat(b.last_name, b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd HH24:MI:SS') as modified,
+			a.modified_id,
+			concat(c.last_name, c.first_name) as modified_name,
+			a.type,
+			a.num,
+			a.sub_num,
+			a.article_num,
+			a.exam_type,
+			a.image
+		from
+			batch_exam_listening a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+		where
+			a.id = #{id}	
+	</select>	
+	
+	<insert id="insertBatchExamListening" parameterType="com.usher.dto.BatchExamListeningDto">
+		insert into batch_exam_listening (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			type,
+			num,
+			sub_num,
+			article_num,
+			exam_type,
+			image
+		)values(
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{type},
+			#{num},
+			#{sub_num},
+			#{article_num},
+			#{exam_type},
+			#{image}
+		)
+	</insert>
+	
+	<update id="updateBatchExamListening" parameterType="com.usher.dto.BatchExamListeningDto">
+		update batch_exam_listening  set
+			modified = now(),
+			modified_id = #{modified_id},
+			exam_type = #{exam_type},
+			image = #{image}
+		where
+			id = #{id}
+	</update>			
+</mapper>

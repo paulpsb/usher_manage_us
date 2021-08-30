@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.GoalsGoalconcentrationDao">
+	<select id="getGoalConcentration" parameterType="com.usher.dto.GoalsGoalconcentrationDto" resultType="com.usher.dto.GoalsGoalconcentrationDto">
+		select
+			a.id,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.course_enrollment_id,
+			a.enrollment_level,
+			a.course_level,
+			a.comments,
+			a.writer_id,
+			concat(b.last_name, b.first_name) as writer_nm,
+			a.writer_comments
+		from
+			goals_goalconcentration a
+			left join auth_user b on a.writer_id = b.id
+		where
+			a.date = current_date
+			and a.course_enrollment_id = #{course_enrollment_id}
+	</select>
+	<select id="getGoalConcentrationList" parameterType="com.usher.dto.GoalsGoalconcentrationDto" resultType="com.usher.dto.GoalsGoalconcentrationDto">
+		select
+			a.id,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.course_enrollment_id,
+			a.enrollment_level,
+			a.course_level,
+			a.comments,
+			a.writer_id,
+			concat(b.last_name, b.first_name) as writer_nm,
+			a.writer_comments
+		from
+			goals_goalconcentration a
+			left join auth_user b on a.writer_id = b.id
+		where
+			a.date = current_date
+			and	a.course_enrollment_id in (select id from enrollments_courseenrollment where course_id = #{course_id})
+		order by a.id desc
+	</select>
+	<update id="updateGoalConcentration" parameterType="com.usher.dto.GoalsGoalconcentrationDto">
+		update goals_goalconcentration set
+			modified = now(),
+			is_voca = #{is_voca},
+			is_grammar = #{is_grammar},
+			is_reading = #{is_reading},
+			is_listening = #{is_listening},
+			is_speaking = #{is_speaking},
+			is_writing = #{is_writing},
+			enrollment_level = #{enrollment_level},
+			course_level = #{course_level},
+			writer_id = #{writer_id},
+			writer_comments = #{writer_comments}
+		where
+			date = current_date
+			and course_enrollment_id = #{course_enrollment_id}
+	</update>	
+</mapper>

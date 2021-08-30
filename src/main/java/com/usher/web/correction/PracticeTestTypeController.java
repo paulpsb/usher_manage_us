@@ -1,0 +1,136 @@
+package com.usher.web.correction;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.usher.dto.AuthUserDto;
+import com.usher.dto.BaseExamRuburicDto;
+import com.usher.dto.CorrectionExamsAnswerDto;
+import com.usher.dto.CorrectionExamsAppealDto;
+import com.usher.dto.CorrectionExamsCommentDto;
+import com.usher.dto.CorrectionExamsNoteDto;
+import com.usher.dto.CorrectionExamsPenDto;
+import com.usher.dto.CorrectionExamsRuburicDto;
+import com.usher.dto.CorrectionShopProductDto;
+import com.usher.dto.CorrectionTestBookDto;
+import com.usher.dto.CorrectionTestTypeDto;
+import com.usher.dto.CorrectionUserProductDto;
+import com.usher.dto.InternalExamsChainDto;
+import com.usher.dto.InternalExamsSpeakingDto;
+import com.usher.dto.PracticesPracticeproblemDto;
+import com.usher.dto.PracticesPracticesectiontypeDto;
+import com.usher.dto.InternalExamsSpeakingDto;
+import com.usher.service.AuthService;
+import com.usher.service.BaseService;
+import com.usher.service.CorrectionExamsService;
+import com.usher.service.InternalExamsService;
+import com.usher.service.PracticesService;
+import com.usher.util.SessionUtil;
+import com.usher.util.StringUtil;
+
+
+@Controller
+public class PracticeTestTypeController{
+	@Autowired
+	AuthService authService;
+
+
+	@Autowired
+	BaseService baseService;
+	
+	@Autowired
+	CorrectionExamsService correctionExamsService;
+
+	@Autowired
+	InternalExamsService internalExamsService;
+	
+	@Autowired
+	PracticesService practicesService; 
+	
+	
+	@RequestMapping(value="/correction/practice_test_type.do")
+	public String practice_test_type(HttpServletRequest request,
+						ModelMap modelMap) throws Exception {
+		if(!SessionUtil.isSessionUserInfo(request, modelMap)) {
+			return "redirect:/login.do";
+		}
+		
+		return "correction/practice_test_type";
+	}
+	
+	@RequestMapping(value="/correction/getCorrectionTestTypeList.do")
+	public @ResponseBody List<CorrectionTestTypeDto> getCorrectionTestTypeList(HttpServletRequest request,
+						CorrectionTestTypeDto dto, 
+						ModelMap modelMap) throws Exception {
+		
+		return correctionExamsService.getCorrectionTestTypeList(dto);
+	}
+	
+	@RequestMapping(value="/correction/deleteCorrectionTestType.do")
+	public @ResponseBody void deleteCorrectionTestType(HttpServletRequest request,
+						CorrectionTestTypeDto dto, 
+						ModelMap modelMap) throws Exception {
+		
+		CorrectionTestBookDto dto1 = new CorrectionTestBookDto();
+		dto1.setSection(dto.getSection());
+		dto1.setPractice_type(dto.getPractice_type());
+		dto1.setTest_type(dto.getTest_type());
+		correctionExamsService.deleteCorrectionTestBook(dto1);
+		
+		correctionExamsService.deleteCorrectionTestType(dto);
+	}
+	
+	@RequestMapping(value="/correction/saveCorrectionTestType.do")
+	public @ResponseBody void saveCorrectionTestType(HttpServletRequest request,
+						CorrectionTestTypeDto dto, 
+						ModelMap modelMap) throws Exception {
+		
+		String data_value = dto.getData_value();
+		
+		JSONParser jsonParser = new JSONParser();
+		Object obj = jsonParser.parse(data_value);
+		JSONArray jsonArray = (JSONArray)obj;
+
+		for(int i=0;i<jsonArray.size();i++){
+			JSONObject jsonObj = (JSONObject)jsonArray.get(i);
+			int correction_test_type_id = Integer.parseInt(jsonObj.get("correction_test_type_id").toString());
+			String section              = jsonObj.get("section").toString();
+			String practice_type        = jsonObj.get("practice_type").toString();
+			String test_type            = jsonObj.get("test_type").toString();
+			String test_name            = jsonObj.get("test_name").toString();
+			String test_exam_url        = jsonObj.get("test_exam_url").toString();
+			String test_result_url      = jsonObj.get("test_result_url").toString();
+			int test_order              = Integer.parseInt(jsonObj.get("test_order").toString());
+			
+			CorrectionTestTypeDto sto = new CorrectionTestTypeDto();
+			sto.setId(correction_test_type_id);
+			sto.setSection(section);
+			sto.setPractice_type(practice_type);
+			sto.setTest_type(test_type);
+			sto.setTest_name(test_name);
+			sto.setTest_exam_url(test_exam_url);
+			sto.setTest_result_url(test_result_url);
+			sto.setTest_order(test_order);
+			
+			if(correction_test_type_id > 0) {
+				correctionExamsService.updateCorrectionTestType(sto);
+			}else {
+				correctionExamsService.insertCorrectionTestType(sto);
+			}
+			
+		}
+	}
+}

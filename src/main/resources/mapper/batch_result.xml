@@ -1,0 +1,1725 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchResultDao">
+	<select id="getBatchResultUserOnlyList" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+	<![CDATA[
+		select
+			to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+			a.course_id,
+			coalesce(b.course_name,'신규') as course_name,
+			a.batch_grammar_exam_yn,
+			a.batch_grammar_score1,
+			a.batch_grammar_total_score1,
+			a.batch_grammar_score2,
+			a.batch_grammar_total_score2,
+			a.batch_reading_exam_yn,
+			a.batch_reading_score,
+			a.batch_reading_total_score,
+			a.batch_listening_exam_yn,
+			a.batch_listening_score,
+			a.batch_listening_total_score
+		from
+			batch_result a
+			left join (
+				select
+					a.id,
+					concat(b.name, ' ', a.name, '반') as course_name
+				from 
+					courses_course a
+					join courses_coursegroup b on a.course_group_id = b.id			
+			) b on a.course_id = b.id 	
+		where
+			a.user_id = #{user_id}
+		order by a.batch_exam_date desc			
+	]]>
+	</select>
+	<select id="getBatchResultCountList" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+		select
+			a.batch_finally_test_type,
+			a.batch_finally_student_type,
+			a.batch_finally_course_group,
+			a.batch_finally_courses,
+			a.batch_select_count
+		from
+			(
+				select
+					batch_finally_test_type,
+					batch_finally_student_type,
+					batch_finally_course_group,
+					batch_finally_courses,
+					count(*) as batch_select_count
+				from
+					batch_result
+				where
+					to_char(batch_exam_date,'yyyy-mm-dd') = #{batch_exam_date}
+					and course_id = #{course_id}
+				<if test="batch_schedule_id > 0 ">
+					and batch_schedule_id = #{batch_schedule_id}
+				</if>
+				<if test="test_type != null and test_type !='' ">	
+					and batch_finally_test_type = #{test_type}
+				</if>
+				<if test="student_type != null and student_type !='' ">	
+					and batch_finally_student_type = #{student_type}
+				</if>
+				<if test="course_group != null and course_group !='' ">	
+					and batch_finally_course_group = #{course_group}
+				</if>		
+				group by batch_finally_test_type, batch_finally_student_type, batch_finally_course_group, batch_finally_courses	
+			) a
+			left join (
+				select 'K2' as courses, 1 as sortseq union all
+				select 'K1' as courses, 2 as sortseq union all
+				select 'Intermediate' as courses, 3 as sortseq union all
+				select '완초2' as courses, 4 as sortseq union all
+				select '완초1' as courses, 5 as sortseq union all
+				select 'R' as courses, 6 as sortseq union all
+				select 'E' as courses, 7 as sortseq union all
+				select 'H' as courses, 8 as sortseq union all
+				select 'S' as courses, 9 as sortseq union all
+				select 'U' as courses, 10 as sortseq union all
+				select '850' as courses, 11 as sortseq union all
+				select '750' as courses, 12 as sortseq 	
+			) b on a.batch_finally_courses = b.courses
+		order by a.batch_finally_test_type, a.batch_finally_student_type, a.batch_finally_course_group, coalesce(b.sortseq,0)
+	</select>
+	
+	<select id="getBatchResultList" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+		select
+			a.id,
+			a.user_id,
+			c.test_type,
+			c.student_type,
+			c.course_group,
+			c.name,
+			c.gender,
+			c.goal_score,
+			c.attend_start_date,
+			c.attend_date,
+			a.course_id,
+			to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+			a.batch_repeat_exam_yn,
+			a.batch_concentration_yn,
+			a.batch_delay_min,
+			a.batch_grammar_exam_yn,
+			a.batch_grammar_type,
+			a.batch_grammar_num,
+			a.batch_grammar_score1,
+			a.batch_grammar_total_score1,
+			a.batch_grammar_score2,
+			a.batch_grammar_total_score2,
+			a.batch_grammar_result_id,
+			a.batch_reading_exam_yn,
+			a.batch_reading_type,
+			a.batch_reading_num,
+			a.batch_reading_score,
+			a.batch_reading_total_score,
+			a.batch_reading_result_id,
+			a.batch_listening_exam_yn,
+			a.batch_listening_type,
+			a.batch_listening_num,
+			a.batch_listening_score,
+			a.batch_listening_total_score,
+			a.batch_listening_result_id,
+			a.batch_courses,
+			a.batch_courses_level,
+			a.batch_user_courses,
+			a.batch_user_courses_level,
+			a.batch_select_courses,
+			a.batch_select_courses_level,
+			a.batch_select_type,
+			a.batch_select_level,
+			a.batch_repeat_grammar_exam_yn,
+			a.batch_repeat_grammar_type,
+			a.batch_repeat_grammar_num,
+			a.batch_repeat_grammar_score1,
+			a.batch_repeat_grammar_total_score1,
+			a.batch_repeat_grammar_score2,
+			a.batch_repeat_grammar_total_score2,
+			a.batch_repeat_grammar_result_id,
+			a.batch_repeat_reading_exam_yn,
+			a.batch_repeat_reading_type,
+			a.batch_repeat_reading_num,
+			a.batch_repeat_reading_score,
+			a.batch_repeat_reading_total_score,
+			a.batch_repeat_reading_result_id,
+			a.batch_repeat_listening_exam_yn,
+			a.batch_repeat_listening_type,
+			a.batch_repeat_listening_num,
+			a.batch_repeat_listening_score,
+			a.batch_repeat_listening_total_score,
+			a.batch_repeat_listening_result_id,
+			a.batch_repeat_courses,
+			a.batch_repeat_courses_level,
+			a.batch_repeat_user_courses,
+			a.batch_repeat_user_courses_level,
+			a.batch_repeat_select_courses,
+			a.batch_repeat_select_courses_level,
+			a.batch_repeat_select_type,
+			a.batch_repeat_select_level,
+			a.batch_user_level,
+			a.batch_user_advice,
+			a.batch_user_register_yn,
+			a.batch_user_register_date,
+			a.batch_adviser_courses,
+			a.batch_adviser_advice,
+			a.batch_adviser_register_yn,
+			a.batch_adviser_register_date,
+			a.batch_adviser_yn,
+			a.batch_adviser_id,
+			a.batch_desk_register_yn,
+			a.batch_desk_not_register_desc,
+			a.batch_desk_register_date,
+			a.batch_desk_id,
+			a.batch_schedule_id,
+			a.memoirs_yn,
+			a.batch_toeic_part5_score,
+			a.batch_toeic_part5_total_score,
+			a.batch_toeic_part6_score,
+			a.batch_toeic_part6_total_score,
+			a.batch_toeic_part7_score,
+			a.batch_toeic_part7_total_score,
+			a.batch_toeic_exam_yn,
+			a.batch_toeic_type,
+			a.batch_toeic_num,
+			a.batch_toeic_result_id,
+			a.batch_adviser_test_type,
+			a.batch_adviser_student_type,
+			a.batch_finally_test_type,
+			a.batch_finally_student_type,
+			a.batch_finally_course_group,
+			a.batch_finally_courses,						
+			b.teps_total_score,
+			b.teps_rc_score,
+			b.teps_lc_score,
+			b.teps_grammar_score,
+			b.teps_voca_score,
+			b.sat_total_score,
+			b.sat_rc_score,
+			b.sat_wr_score,
+			b.sat_math_score,
+			b.toeic_total_score,
+			b.toeic_rc_score,
+			b.toeic_lc_score,
+			b.ielts_total_score,
+			b.ielts_rc_score,
+			b.ielts_lc_score,
+			b.ielts_sp_score,
+			b.ielts_wr_score,
+			b.ibt_total_score,
+			b.ibt_rc_score,
+			b.ibt_lc_score,
+			b.ibt_sp_score,
+			b.ibt_wr_score,
+			b.ets_total_score,
+			b.ets_rc_score,
+			b.ets_lc_score,
+			b.ets_sp_score,
+			b.ets_wr_score,
+			b.pbt_total_score,
+			b.pbt_gr_score,
+			b.pbt_rc_score,
+			b.pbt_lc_score,
+			b.scholastic_grade,
+			'N' as batch_finally_register_yn,
+			a.batch_finally_not_register_desc,
+			coalesce(a.chamgang_yn,'N') as chamgang_yn,
+			coalesce(e.batch_schedule_adviser_name,'') as batch_schedule_adviser_name
+		from
+			batch_result a
+			left join users_score b on a.user_id = b.user_id
+			join users_personalinfo c on a.user_id = c.user_id
+			left join (
+				select 'K2' as courses, 1 as sortseq union all
+				select 'K1' as courses, 2 as sortseq union all
+				select 'Intermediate' as courses, 3 as sortseq union all
+				select '완초2' as courses, 4 as sortseq union all
+				select '완초1' as courses, 5 as sortseq union all
+				select 'R' as courses, 6 as sortseq union all
+				select 'E' as courses, 7 as sortseq union all
+				select 'H' as courses, 8 as sortseq union all
+				select 'S' as courses, 9 as sortseq union all
+				select 'U' as courses, 10 as sortseq union all
+				select '850' as courses, 11 as sortseq union all
+				select '750' as courses, 12 as sortseq 	
+			) d on a.batch_finally_courses = d.courses	
+			left join (
+				select
+					a.id,
+					concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as batch_schedule_adviser_name	
+				from
+					batch_schedule a
+					left join auth_user c on a.batch_adviser_id = c.id
+			) e on a.batch_schedule_id = e.id
+		where
+			to_char(a.batch_exam_date,'yyyy-mm-dd') = #{batch_exam_date}
+			and a.course_id = #{course_id}
+		<if test="batch_schedule_id > 0 ">
+			and a.batch_schedule_id = #{batch_schedule_id}
+		</if>
+		<if test="test_type != null and test_type !='' ">	
+			and a.batch_finally_test_type = #{test_type}
+		</if>
+		<if test="student_type != null and student_type !='' ">	
+			and a.batch_finally_student_type = #{student_type}
+		</if>
+		<if test="course_group != null and course_group !='' ">	
+			and a.batch_finally_course_group = #{course_group}
+		</if>	
+		order by a.batch_finally_test_type, a.batch_finally_student_type, a.batch_finally_course_group, coalesce(d.sortseq,0), ${sort_value}
+	</select>
+	<select id="getBatchResultUserList" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+		select
+			a.id,
+			a.user_id,
+			c.test_type,
+			c.student_type,
+			c.course_group,
+			c.name,
+			c.gender,
+			c.goal_score,
+			c.attend_start_date,
+			c.attend_date,
+			a.course_id,
+			to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+			a.batch_repeat_exam_yn,
+			a.batch_concentration_yn,
+			a.batch_delay_min,
+			a.batch_grammar_exam_yn,
+			a.batch_grammar_type,
+			a.batch_grammar_num,
+			a.batch_grammar_score1,
+			a.batch_grammar_total_score1,
+			a.batch_grammar_score2,
+			a.batch_grammar_total_score2,
+			a.batch_grammar_result_id,
+			a.batch_reading_exam_yn,
+			a.batch_reading_type,
+			a.batch_reading_num,
+			a.batch_reading_score,
+			a.batch_reading_total_score,
+			a.batch_reading_result_id,
+			a.batch_listening_exam_yn,
+			a.batch_listening_type,
+			a.batch_listening_num,
+			a.batch_listening_score,
+			a.batch_listening_total_score,
+			a.batch_listening_result_id,
+			a.batch_courses,
+			a.batch_courses_level,
+			a.batch_user_courses,
+			a.batch_user_courses_level,
+			a.batch_select_courses,
+			a.batch_select_courses_level,
+			a.batch_select_type,
+			a.batch_select_level,
+			a.batch_repeat_grammar_exam_yn,
+			a.batch_repeat_grammar_type,
+			a.batch_repeat_grammar_num,
+			a.batch_repeat_grammar_score1,
+			a.batch_repeat_grammar_total_score1,
+			a.batch_repeat_grammar_score2,
+			a.batch_repeat_grammar_total_score2,
+			a.batch_repeat_grammar_result_id,
+			a.batch_repeat_reading_exam_yn,
+			a.batch_repeat_reading_type,
+			a.batch_repeat_reading_num,
+			a.batch_repeat_reading_score,
+			a.batch_repeat_reading_total_score,
+			a.batch_repeat_reading_result_id,
+			a.batch_repeat_listening_exam_yn,
+			a.batch_repeat_listening_type,
+			a.batch_repeat_listening_num,
+			a.batch_repeat_listening_score,
+			a.batch_repeat_listening_total_score,
+			a.batch_repeat_listening_result_id,
+			a.batch_repeat_courses,
+			a.batch_repeat_courses_level,
+			a.batch_repeat_user_courses,
+			a.batch_repeat_user_courses_level,
+			a.batch_repeat_select_courses,
+			a.batch_repeat_select_courses_level,
+			a.batch_repeat_select_type,
+			a.batch_repeat_select_level,
+			a.batch_user_level,
+			a.batch_user_advice,
+			a.batch_user_register_yn,
+			a.batch_user_register_date,
+			a.batch_adviser_courses,
+			a.batch_adviser_advice,
+			a.batch_adviser_register_yn,
+			a.batch_adviser_register_date,
+			a.batch_adviser_yn,
+			a.batch_adviser_id,
+			a.batch_desk_register_yn,
+			a.batch_desk_not_register_desc,
+			a.batch_desk_register_date,
+			a.batch_desk_id,
+			a.batch_schedule_id,
+			a.memoirs_yn,
+			a.batch_toeic_part5_score,
+			a.batch_toeic_part5_total_score,
+			a.batch_toeic_part6_score,
+			a.batch_toeic_part6_total_score,
+			a.batch_toeic_part7_score,
+			a.batch_toeic_part7_total_score,
+			a.batch_toeic_exam_yn,
+			a.batch_toeic_type,
+			a.batch_toeic_num,
+			a.batch_toeic_result_id,
+			a.batch_adviser_test_type,
+			a.batch_adviser_student_type,
+			a.batch_finally_test_type,
+			a.batch_finally_student_type,
+			a.batch_finally_course_group,
+			a.batch_finally_courses,						
+			b.teps_total_score,
+			b.teps_rc_score,
+			b.teps_lc_score,
+			b.teps_grammar_score,
+			b.teps_voca_score,
+			b.sat_total_score,
+			b.sat_rc_score,
+			b.sat_wr_score,
+			b.sat_math_score,
+			b.toeic_total_score,
+			b.toeic_rc_score,
+			b.toeic_lc_score,
+			b.ielts_total_score,
+			b.ielts_rc_score,
+			b.ielts_lc_score,
+			b.ielts_sp_score,
+			b.ielts_wr_score,
+			b.ibt_total_score,
+			b.ibt_rc_score,
+			b.ibt_lc_score,
+			b.ibt_sp_score,
+			b.ibt_wr_score,
+			b.ets_total_score,
+			b.ets_rc_score,
+			b.ets_lc_score,
+			b.ets_sp_score,
+			b.ets_wr_score,
+			b.pbt_total_score,
+			b.pbt_gr_score,
+			b.pbt_rc_score,
+			b.pbt_lc_score,
+			b.scholastic_grade,
+			coalesce(a.chamgang_yn,'N') as chamgang_yn,
+			coalesce(e.batch_schedule_adviser_name,'') as batch_schedule_adviser_name
+		from
+			batch_result a
+			left join users_score b on a.user_id = b.user_id
+			join users_personalinfo c on a.user_id = c.user_id
+			left join (
+				select 'K2' as courses, 1 as sortseq union all
+				select 'K1' as courses, 2 as sortseq union all
+				select 'Intermediate' as courses, 3 as sortseq union all
+				select '완초2' as courses, 4 as sortseq union all
+				select '완초1' as courses, 5 as sortseq union all
+				select 'R' as courses, 6 as sortseq union all
+				select 'E' as courses, 7 as sortseq union all
+				select 'H' as courses, 8 as sortseq union all
+				select 'S' as courses, 9 as sortseq union all
+				select 'U' as courses, 10 as sortseq union all
+				select '850' as courses, 11 as sortseq union all
+				select '750' as courses, 12 as sortseq 	
+			) d on a.batch_finally_courses = d.courses		
+			left join (
+				select
+					a.id,
+					concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as batch_schedule_adviser_name	
+				from
+					batch_schedule a
+					left join auth_user c on a.batch_adviser_id = c.id
+			) e on a.batch_schedule_id = e.id	
+		where
+			a.user_id = #{user_id}
+			and a.course_id = #{course_id}
+		order by a.user_id, a.batch_exam_date
+	</select>	
+	
+	<select id="getBatchResultUserMultiList" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+		select
+			a.id,
+			a.user_id,
+			c.test_type,
+			c.student_type,
+			c.course_group,
+			c.name,
+			c.gender,
+			c.goal_score,
+			c.attend_start_date,
+			c.attend_date,
+			a.course_id,
+			to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+			a.batch_repeat_exam_yn,
+			a.batch_concentration_yn,
+			a.batch_delay_min,
+			a.batch_grammar_exam_yn,
+			a.batch_grammar_type,
+			a.batch_grammar_num,
+			a.batch_grammar_score1,
+			a.batch_grammar_total_score1,
+			a.batch_grammar_score2,
+			a.batch_grammar_total_score2,
+			a.batch_grammar_result_id,
+			a.batch_reading_exam_yn,
+			a.batch_reading_type,
+			a.batch_reading_num,
+			a.batch_reading_score,
+			a.batch_reading_total_score,
+			a.batch_reading_result_id,
+			a.batch_listening_exam_yn,
+			a.batch_listening_type,
+			a.batch_listening_num,
+			a.batch_listening_score,
+			a.batch_listening_total_score,
+			a.batch_listening_result_id,
+			a.batch_courses,
+			a.batch_courses_level,
+			a.batch_user_courses,
+			a.batch_user_courses_level,
+			a.batch_select_courses,
+			a.batch_select_courses_level,
+			a.batch_select_type,
+			a.batch_select_level,
+			a.batch_repeat_grammar_exam_yn,
+			a.batch_repeat_grammar_type,
+			a.batch_repeat_grammar_num,
+			a.batch_repeat_grammar_score1,
+			a.batch_repeat_grammar_total_score1,
+			a.batch_repeat_grammar_score2,
+			a.batch_repeat_grammar_total_score2,
+			a.batch_repeat_grammar_result_id,
+			a.batch_repeat_reading_exam_yn,
+			a.batch_repeat_reading_type,
+			a.batch_repeat_reading_num,
+			a.batch_repeat_reading_score,
+			a.batch_repeat_reading_total_score,
+			a.batch_repeat_reading_result_id,
+			a.batch_repeat_listening_exam_yn,
+			a.batch_repeat_listening_type,
+			a.batch_repeat_listening_num,
+			a.batch_repeat_listening_score,
+			a.batch_repeat_listening_total_score,
+			a.batch_repeat_listening_result_id,
+			a.batch_repeat_courses,
+			a.batch_repeat_courses_level,
+			a.batch_repeat_user_courses,
+			a.batch_repeat_user_courses_level,
+			a.batch_repeat_select_courses,
+			a.batch_repeat_select_courses_level,
+			a.batch_repeat_select_type,
+			a.batch_repeat_select_level,
+			a.batch_user_level,
+			a.batch_user_advice,
+			a.batch_user_register_yn,
+			a.batch_user_register_date,
+			a.batch_adviser_courses,
+			a.batch_adviser_advice,
+			a.batch_adviser_register_yn,
+			a.batch_adviser_register_date,
+			a.batch_adviser_yn,
+			a.batch_adviser_id,
+			a.batch_desk_register_yn,
+			a.batch_desk_not_register_desc,
+			a.batch_desk_register_date,
+			a.batch_desk_id,
+			a.batch_schedule_id,
+			a.memoirs_yn,
+			a.batch_toeic_part5_score,
+			a.batch_toeic_part5_total_score,
+			a.batch_toeic_part6_score,
+			a.batch_toeic_part6_total_score,
+			a.batch_toeic_part7_score,
+			a.batch_toeic_part7_total_score,
+			a.batch_toeic_exam_yn,
+			a.batch_toeic_type,
+			a.batch_toeic_num,
+			a.batch_toeic_result_id,
+			a.batch_adviser_test_type,
+			a.batch_adviser_student_type,
+			a.batch_finally_test_type,
+			a.batch_finally_student_type,
+			a.batch_finally_course_group,
+			a.batch_finally_courses,						
+			b.teps_total_score,
+			b.teps_rc_score,
+			b.teps_lc_score,
+			b.teps_grammar_score,
+			b.teps_voca_score,
+			b.sat_total_score,
+			b.sat_rc_score,
+			b.sat_wr_score,
+			b.sat_math_score,
+			b.toeic_total_score,
+			b.toeic_rc_score,
+			b.toeic_lc_score,
+			b.ielts_total_score,
+			b.ielts_rc_score,
+			b.ielts_lc_score,
+			b.ielts_sp_score,
+			b.ielts_wr_score,
+			b.ibt_total_score,
+			b.ibt_rc_score,
+			b.ibt_lc_score,
+			b.ibt_sp_score,
+			b.ibt_wr_score,
+			b.ets_total_score,
+			b.ets_rc_score,
+			b.ets_lc_score,
+			b.ets_sp_score,
+			b.ets_wr_score,
+			b.pbt_total_score,
+			b.pbt_gr_score,
+			b.pbt_rc_score,
+			b.pbt_lc_score,
+			b.scholastic_grade,
+			coalesce(a.chamgang_yn,'N') as chamgang_yn
+		from
+			batch_result a
+			left join users_score b on a.user_id = b.user_id
+			join users_personalinfo c on a.user_id = c.user_id
+			left join (
+				select 'K2' as courses, 1 as sortseq union all
+				select 'K1' as courses, 2 as sortseq union all
+				select 'Intermediate' as courses, 3 as sortseq union all
+				select '완초2' as courses, 4 as sortseq union all
+				select '완초1' as courses, 5 as sortseq union all
+				select 'R' as courses, 6 as sortseq union all
+				select 'E' as courses, 7 as sortseq union all
+				select 'H' as courses, 8 as sortseq union all
+				select 'S' as courses, 9 as sortseq union all
+				select 'U' as courses, 10 as sortseq union all
+				select '850' as courses, 11 as sortseq union all
+				select '750' as courses, 12 as sortseq 	
+			) d on a.batch_finally_courses = d.courses			
+		where
+			a.user_id in (${user_multi_id}) 
+			and a.course_id = #{course_id}
+		order by a.user_id, a.batch_exam_date
+	</select>	
+		
+	<select id="getBatchResultCourseGroupList" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+		select
+			a.id,
+			a.user_id,
+			concat(c.last_name, c.first_name) as user_name,
+			a.batch_courses,
+			a.batch_courses_level,
+			coalesce(b.course_name,'신규') as course_name,
+			coalesce(b.course_level,1) as course_level,
+			a.batch_grammar_exam_yn,
+			a.batch_grammar_score1,
+			a.batch_grammar_total_score1,
+			a.batch_grammar_score2,
+			a.batch_grammar_total_score2,
+			a.batch_reading_exam_yn,
+			a.batch_reading_score,
+			a.batch_reading_total_score,
+			a.batch_listening_exam_yn,
+			a.batch_listening_score,
+			a.batch_listening_total_score
+		from
+			batch_result a
+			left join (
+				select
+					a.id,
+					a.name as course_name,
+					a.difficulty as course_level
+				from 
+					courses_course a
+					join courses_coursegroup b on a.course_group_id = b.id			
+			) b on a.course_id = b.id 	
+			join auth_user c on a.user_id = c.id
+		where
+			a.course_group_id = #{course_group_id}
+		order by 4, 3		
+	</select>
+	<select id="getBatchResultCourseList" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+		with enrollment as (
+				select
+					e.id as user_id
+				from
+					courses_allocation a
+					join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+					join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+					join students_student d on c.student_id = d.id
+					join auth_user e on d.user_id = e.id
+				where
+					( a.first_course_id = #{course_id} or a.current_course_id = #{course_id})
+					and COALESCE(b.status,'') != 'REGISTERED'
+					and COALESCE(b.status,'') != 'CANCEL_COMPLETED'
+					and e.username != 'test6' and e.username != 'test5'	
+				group by e.id
+		)
+		select
+			a.user_id,
+			a.batch_grammar_exam_yn,
+			a.batch_grammar_type,
+			a.batch_grammar_num,
+			coalesce(a.batch_grammar_score1,0) as batch_grammar_score1,
+			coalesce(c.batch_grammar_score1,0) as batch_grammar_score1_prev,
+			coalesce(a.batch_grammar_score2,0) as batch_grammar_score2,
+			coalesce(c.batch_grammar_score2,0) as batch_grammar_score2_prev,
+			a.batch_grammar_total_score1,
+			a.batch_grammar_total_score2,
+			a.batch_grammar_result_id,
+			a.batch_reading_exam_yn,
+			a.batch_reading_type,
+			a.batch_reading_num,
+			coalesce(a.batch_reading_score,0) as batch_reading_score,
+			coalesce(c.batch_reading_score,0) as batch_reading_score_prev,
+			a.batch_reading_total_score,
+			a.batch_reading_result_id,
+			a.batch_listening_exam_yn,
+			a.batch_listening_type,
+			a.batch_listening_num,
+			coalesce(a.batch_listening_score,0) as batch_listening_score,
+			coalesce(c.batch_listening_score,0) as batch_listening_score_prev,
+			a.batch_listening_total_score,
+			a.batch_listening_result_id
+		from
+			batch_result a
+			join enrollment b on a.user_id = b.user_id
+			left join (
+				select
+					a.user_id,
+					max(coalesce(a.batch_grammar_score1,0)) as batch_grammar_score1,
+					max(coalesce(a.batch_grammar_score2,0)) as batch_grammar_score2,
+					max(coalesce(a.batch_reading_score,0)) as batch_reading_score,
+					max(coalesce(a.batch_listening_score,0)) as batch_listening_score
+				from
+					batch_result a
+					join enrollment b on a.user_id = b.user_id
+				where
+					#{batch_exam_date} > to_char(batch_exam_date,'yyyy-mm') 
+					and course_id > 0
+				group by a.user_id
+			) c on a.user_id = c.user_id
+			
+		where
+			to_char(batch_exam_date,'yyyy-mm') = #{batch_exam_date}
+			and course_id > 0
+		order by user_id
+	</select>
+	<select id="getBatchResult" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+		select
+			a.id,
+			a.user_id,
+	    	c.gender,
+		    c.mobile_no,
+		    to_char(c.birthday,'yyyy-mm-dd') as birthday,
+		    c.user_id,
+		    c.test_type,
+		    c.student_type,
+		    c.course_group,
+		    c.name,
+		    c.email,
+		    c.goal_score,
+		    c.week_point,
+		    c.student_will,
+		    c.parent_will,
+		    h.school_gubun,
+		    h.school_foreign_gubun,
+		    h.school_area1,
+		    h.school_area2,
+		    h.school_name,
+		    h.school_major,
+		    h.school_grade,
+		    h.school_state,
+		    h.school_check,
+		    c.army,
+		    c.purpose_gubun,
+		    c.purpose_detail,
+		    c.need_date,
+		    c.attend_start_date,
+		    c.attend_date,
+		    c.out_name,
+		    c.out_course,
+		    c.foreign_country,
+		    c.tel_home_gubun,
+		    c.tel_home_number,
+		    c.tel_phone_gugun,
+		    c.tel_phone_number,
+		    c.tel_emergency_gubun,
+		    c.tel_emergency_number,
+		    c.commute_area1,
+		    c.commute_area2,
+		    c.commute_area3,
+		    c.commute_min,
+		    c.commute_gubun,
+		    c.health_gubun,
+		    c.health_desc,
+		    c.personal_gubun,
+		    c.personal_desc,
+		    c.location,
+		    c.keyword,
+		    c.foreign_month,
+		    c.out_month,
+			a.course_id,
+			to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+			a.batch_repeat_exam_yn,
+			a.batch_concentration_yn,
+			a.batch_delay_min,
+			a.batch_grammar_exam_yn,
+			a.batch_grammar_type,
+			a.batch_grammar_num,
+			a.batch_grammar_score1,
+			a.batch_grammar_total_score1,
+			a.batch_grammar_score2,
+			a.batch_grammar_total_score2,
+			a.batch_grammar_result_id,
+			a.batch_reading_exam_yn,
+			a.batch_reading_type,
+			a.batch_reading_num,
+			a.batch_reading_score,
+			a.batch_reading_total_score,
+			a.batch_reading_result_id,
+			a.batch_listening_exam_yn,
+			a.batch_listening_type,
+			a.batch_listening_num,
+			a.batch_listening_score,
+			a.batch_listening_total_score,
+			a.batch_listening_result_id,
+			a.batch_courses,
+			a.batch_courses_level,
+			a.batch_user_courses,
+			a.batch_user_courses_level,
+			a.batch_select_courses,
+			a.batch_select_courses_level,
+			a.batch_select_type,
+			a.batch_select_level,
+			a.batch_repeat_grammar_exam_yn,
+			a.batch_repeat_grammar_type,
+			a.batch_repeat_grammar_num,
+			a.batch_repeat_grammar_score1,
+			a.batch_repeat_grammar_total_score1,
+			a.batch_repeat_grammar_score2,
+			a.batch_repeat_grammar_total_score2,
+			a.batch_repeat_grammar_result_id,
+			a.batch_repeat_reading_exam_yn,
+			a.batch_repeat_reading_type,
+			a.batch_repeat_reading_num,
+			a.batch_repeat_reading_score,
+			a.batch_repeat_reading_total_score,
+			a.batch_repeat_reading_result_id,
+			a.batch_repeat_listening_exam_yn,
+			a.batch_repeat_listening_type,
+			a.batch_repeat_listening_num,
+			a.batch_repeat_listening_score,
+			a.batch_repeat_listening_total_score,
+			a.batch_repeat_listening_result_id,
+			a.batch_repeat_courses,
+			a.batch_repeat_courses_level,
+			a.batch_repeat_user_courses,
+			a.batch_repeat_user_courses_level,
+			a.batch_repeat_select_courses,
+			a.batch_repeat_select_courses_level,
+			a.batch_repeat_select_type,
+			a.batch_repeat_select_level,
+			a.batch_user_level,
+			a.batch_user_advice,
+			a.batch_user_register_yn,
+			to_char(a.batch_user_register_date,'yyyy-mm-dd') as batch_user_register_date,
+			a.batch_adviser_courses,
+			a.batch_adviser_courses_id,
+			concat(coalesce(f.last_name,''),coalesce(f.first_name,'')) as batch_adviser_courses_name,
+			to_char(a.batch_adviser_courses_date,'yyyy-mm-dd hh24:mi:ss') as batch_adviser_courses_date,
+			a.batch_adviser_advice,
+			a.batch_adviser_advice_id,
+			concat(coalesce(g.last_name,''),coalesce(g.first_name,'')) as batch_adviser_advice_name,
+			to_char(a.batch_adviser_advice_date,'yyyy-mm-dd hh24:mi:ss') as batch_adviser_advice_date,
+			a.batch_adviser_register_yn,
+			a.batch_adviser_not_register_desc,
+			to_char(a.batch_adviser_register_date,'yyyy-mm-dd') as batch_adviser_register_date,
+			a.batch_adviser_yn,
+			a.batch_adviser_id,
+			concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as batch_adviser_name,
+			to_char(a.batch_adviser_date,'yyyy-mm-dd hh24:mi:ss') as batch_adviser_date,
+			a.batch_desk_register_yn,
+			a.batch_desk_not_register_desc,
+			to_char(a.batch_desk_register_date,'yyyy-mm-dd') as batch_desk_register_date,
+			a.batch_desk_id,			
+			concat(coalesce(e.last_name,''),coalesce(e.first_name,'')) as batch_desk_name,
+			to_char(a.batch_desk_date,'yyyy-mm-dd hh24:mi:ss') as batch_desk_date,
+			a.batch_schedule_id,
+			a.memoirs_yn,
+			a.batch_toeic_part5_score,
+			a.batch_toeic_part5_total_score,
+			a.batch_toeic_part6_score,
+			a.batch_toeic_part6_total_score,
+			a.batch_toeic_part7_score,
+			a.batch_toeic_part7_total_score,
+			a.batch_toeic_exam_yn,
+			a.batch_toeic_type,
+			a.batch_toeic_num,
+			a.batch_toeic_result_id,
+			a.batch_adviser_test_type,
+			a.batch_adviser_student_type,
+			a.batch_adviser_course_group,		
+			a.batch_finally_test_type,
+			a.batch_finally_student_type,
+			a.batch_finally_course_group,
+			a.batch_finally_courses,
+			a.batch_finally_not_register_desc,					
+			b.teps_total_score,
+			b.teps_rc_score,
+			b.teps_lc_score,
+			b.teps_grammar_score,
+			b.teps_voca_score,
+			b.sat_total_score,
+			b.sat_rc_score,
+			b.sat_wr_score,
+			b.sat_math_score,
+			b.toeic_total_score,
+			b.toeic_rc_score,
+			b.toeic_lc_score,
+			b.ielts_total_score,
+			b.ielts_rc_score,
+			b.ielts_lc_score,
+			b.ielts_sp_score,
+			b.ielts_wr_score,
+			b.ibt_total_score,
+			b.ibt_rc_score,
+			b.ibt_lc_score,
+			b.ibt_sp_score,
+			b.ibt_wr_score,
+			b.ets_total_score,
+			b.ets_rc_score,
+			b.ets_lc_score,
+			b.ets_sp_score,
+			b.ets_wr_score,
+			b.pbt_total_score,
+			b.pbt_gr_score,
+			b.pbt_rc_score,
+			b.pbt_lc_score,
+			b.scholastic_grade,
+			coalesce(a.chamgang_yn,'N') as chamgang_yn
+		from
+			batch_result a
+			left join users_score b on a.user_id = b.user_id
+			join users_personalinfo c on a.user_id = c.user_id
+			left join auth_user d on a.batch_adviser_id = d.id
+			left join auth_user e on a.batch_desk_id = e.id
+			left join auth_user f on a.batch_adviser_courses_id = f.id
+			left join auth_user g on a.batch_adviser_advice_id = g.id
+			left join users_school h on a.user_id = h.user_id
+		where
+			to_char(a.batch_exam_date,'yyyy-mm-dd') = #{batch_exam_date}
+			and a.user_id = #{user_id}
+			and a.course_id = #{course_id}
+			
+	</select>	
+	<select id="getBatchResultAsID" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+		select
+			a.id,
+			a.user_id,
+	    	c.gender,
+		    c.mobile_no,
+		    to_char(c.birthday,'yyyy-mm-dd') as birthday,
+		    c.user_id,
+		    c.test_type,
+		    c.student_type,
+		    c.course_group,
+		    c.name,
+		    c.email,
+		    c.goal_score,
+		    c.week_point,
+		    c.student_will,
+		    c.parent_will,
+		    h.school_gubun,
+		    h.school_foreign_gubun,
+		    h.school_area1,
+		    h.school_area2,
+		    h.school_name,
+		    h.school_major,
+		    h.school_grade,
+		    h.school_state,
+		    h.school_check,
+		    c.army,
+		    c.purpose_gubun,
+		    c.purpose_detail,
+		    c.need_date,
+		    c.attend_start_date,
+		    c.attend_date,
+		    c.out_name,
+		    c.out_course,
+		    c.foreign_country,
+		    c.tel_home_gubun,
+		    c.tel_home_number,
+		    c.tel_phone_gugun,
+		    c.tel_phone_number,
+		    c.tel_emergency_gubun,
+		    c.tel_emergency_number,
+		    c.commute_area1,
+		    c.commute_area2,
+		    c.commute_area3,
+		    c.commute_min,
+		    c.commute_gubun,
+		    c.health_gubun,
+		    c.health_desc,
+		    c.personal_gubun,
+		    c.personal_desc,
+		    c.location,
+		    c.keyword,
+		    c.foreign_month,
+		    c.out_month,
+			a.course_id,
+			to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+			a.batch_repeat_exam_yn,
+			a.batch_concentration_yn,
+			a.batch_delay_min,
+			a.batch_grammar_exam_yn,
+			a.batch_grammar_type,
+			a.batch_grammar_num,
+			a.batch_grammar_score1,
+			a.batch_grammar_total_score1,
+			a.batch_grammar_score2,
+			a.batch_grammar_total_score2,
+			a.batch_grammar_result_id,
+			a.batch_reading_exam_yn,
+			a.batch_reading_type,
+			a.batch_reading_num,
+			a.batch_reading_score,
+			a.batch_reading_total_score,
+			a.batch_reading_result_id,
+			a.batch_listening_exam_yn,
+			a.batch_listening_type,
+			a.batch_listening_num,
+			a.batch_listening_score,
+			a.batch_listening_total_score,
+			a.batch_listening_result_id,
+			a.batch_courses,
+			a.batch_courses_level,
+			a.batch_user_courses,
+			a.batch_user_courses_level,
+			a.batch_select_courses,
+			a.batch_select_courses_level,
+			a.batch_select_type,
+			a.batch_select_level,
+			a.batch_repeat_grammar_exam_yn,
+			a.batch_repeat_grammar_type,
+			a.batch_repeat_grammar_num,
+			a.batch_repeat_grammar_score1,
+			a.batch_repeat_grammar_total_score1,
+			a.batch_repeat_grammar_score2,
+			a.batch_repeat_grammar_total_score2,
+			a.batch_repeat_grammar_result_id,
+			a.batch_repeat_reading_exam_yn,
+			a.batch_repeat_reading_type,
+			a.batch_repeat_reading_num,
+			a.batch_repeat_reading_score,
+			a.batch_repeat_reading_total_score,
+			a.batch_repeat_reading_result_id,
+			a.batch_repeat_listening_exam_yn,
+			a.batch_repeat_listening_type,
+			a.batch_repeat_listening_num,
+			a.batch_repeat_listening_score,
+			a.batch_repeat_listening_total_score,
+			a.batch_repeat_listening_result_id,
+			a.batch_repeat_courses,
+			a.batch_repeat_courses_level,
+			a.batch_repeat_user_courses,
+			a.batch_repeat_user_courses_level,
+			a.batch_repeat_select_courses,
+			a.batch_repeat_select_courses_level,
+			a.batch_repeat_select_type,
+			a.batch_repeat_select_level,
+			a.batch_user_level,
+			a.batch_user_advice,
+			a.batch_user_register_yn,
+			to_char(a.batch_user_register_date,'yyyy-mm-dd') as batch_user_register_date,
+			a.batch_adviser_courses,
+			a.batch_adviser_courses_id,
+			concat(coalesce(f.last_name,''),coalesce(f.first_name,'')) as batch_adviser_courses_name,
+			to_char(a.batch_adviser_courses_date,'yyyy-mm-dd hh24:mi:ss') as batch_adviser_courses_date,
+			a.batch_adviser_advice,
+			a.batch_adviser_advice_id,
+			concat(coalesce(g.last_name,''),coalesce(g.first_name,'')) as batch_adviser_advice_name,
+			to_char(a.batch_adviser_advice_date,'yyyy-mm-dd hh24:mi:ss') as batch_adviser_advice_date,
+			a.batch_adviser_register_yn,
+			a.batch_adviser_not_register_desc,
+			to_char(a.batch_adviser_register_date,'yyyy-mm-dd') as batch_adviser_register_date,
+			a.batch_adviser_yn,
+			a.batch_adviser_id,
+			concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as batch_adviser_name,
+			to_char(a.batch_adviser_date,'yyyy-mm-dd hh24:mi:ss') as batch_adviser_date,
+			a.batch_desk_register_yn,
+			a.batch_desk_not_register_desc,
+			to_char(a.batch_desk_register_date,'yyyy-mm-dd') as batch_desk_register_date,
+			a.batch_desk_id,			
+			concat(coalesce(e.last_name,''),coalesce(e.first_name,'')) as batch_desk_name,
+			to_char(a.batch_desk_date,'yyyy-mm-dd hh24:mi:ss') as batch_desk_date,
+			a.batch_schedule_id,
+			a.memoirs_yn,
+			a.batch_toeic_part5_score,
+			a.batch_toeic_part5_total_score,
+			a.batch_toeic_part6_score,
+			a.batch_toeic_part6_total_score,
+			a.batch_toeic_part7_score,
+			a.batch_toeic_part7_total_score,
+			a.batch_toeic_exam_yn,
+			a.batch_toeic_type,
+			a.batch_toeic_num,
+			a.batch_toeic_result_id,
+			a.batch_adviser_test_type,
+			a.batch_adviser_student_type,
+			a.batch_adviser_course_group,		
+			a.batch_finally_test_type,
+			a.batch_finally_student_type,
+			a.batch_finally_course_group,
+			a.batch_finally_courses,
+			a.batch_finally_not_register_desc,					
+			b.teps_total_score,
+			b.teps_rc_score,
+			b.teps_lc_score,
+			b.teps_grammar_score,
+			b.teps_voca_score,
+			b.sat_total_score,
+			b.sat_rc_score,
+			b.sat_wr_score,
+			b.sat_math_score,
+			b.toeic_total_score,
+			b.toeic_rc_score,
+			b.toeic_lc_score,
+			b.ielts_total_score,
+			b.ielts_rc_score,
+			b.ielts_lc_score,
+			b.ielts_sp_score,
+			b.ielts_wr_score,
+			b.ibt_total_score,
+			b.ibt_rc_score,
+			b.ibt_lc_score,
+			b.ibt_sp_score,
+			b.ibt_wr_score,
+			b.ets_total_score,
+			b.ets_rc_score,
+			b.ets_lc_score,
+			b.ets_sp_score,
+			b.ets_wr_score,
+			b.pbt_total_score,
+			b.pbt_gr_score,
+			b.pbt_rc_score,
+			b.pbt_lc_score,
+			b.scholastic_grade,
+			coalesce(a.chamgang_yn,'N') as chamgang_yn
+		from
+			batch_result a
+			left join users_score b on a.user_id = b.user_id
+			join users_personalinfo c on a.user_id = c.user_id
+			left join auth_user d on a.batch_adviser_id = d.id
+			left join auth_user e on a.batch_desk_id = e.id
+			left join auth_user f on a.batch_adviser_courses_id = f.id
+			left join auth_user g on a.batch_adviser_advice_id = g.id
+			left join users_school h on a.user_id = h.user_id
+		where
+			a.id = #{id}
+	</select>		
+	<select id="getBatchResultUserAsAdvice" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+		select
+			a.id,
+			a.user_id,
+	    	c.gender,
+		    c.mobile_no,
+		    to_char(c.birthday,'yyyy-mm-dd') as birthday,
+		    c.user_id,
+		    c.test_type,
+		    c.student_type,
+		    c.course_group,
+		    c.name,
+		    c.email,
+		    c.goal_score,
+		    c.week_point,
+		    c.student_will,
+		    c.parent_will,
+		    h.school_gubun,
+		    h.school_foreign_gubun,
+		    h.school_area1,
+		    h.school_area2,
+		    h.school_name,
+		    h.school_major,
+		    h.school_grade,
+		    h.school_state,
+		    h.school_check,
+		    c.army,
+		    c.purpose_gubun,
+		    c.purpose_detail,
+		    c.need_date,
+		    c.attend_start_date,
+		    c.attend_date,
+		    c.out_name,
+		    c.out_course,
+		    c.foreign_country,
+		    c.tel_home_gubun,
+		    c.tel_home_number,
+		    c.tel_phone_gugun,
+		    c.tel_phone_number,
+		    c.tel_emergency_gubun,
+		    c.tel_emergency_number,
+		    c.commute_area1,
+		    c.commute_area2,
+		    c.commute_area3,
+		    c.commute_min,
+		    c.commute_gubun,
+		    c.health_gubun,
+		    c.health_desc,
+		    c.personal_gubun,
+		    c.personal_desc,
+		    c.location,
+		    c.keyword,
+		    c.foreign_month,
+		    c.out_month,
+			a.course_id,
+			to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+			a.batch_repeat_exam_yn,
+			a.batch_concentration_yn,
+			a.batch_delay_min,
+			a.batch_grammar_exam_yn,
+			a.batch_grammar_type,
+			a.batch_grammar_num,
+			a.batch_grammar_score1,
+			a.batch_grammar_total_score1,
+			a.batch_grammar_score2,
+			a.batch_grammar_total_score2,
+			a.batch_grammar_result_id,
+			a.batch_reading_exam_yn,
+			a.batch_reading_type,
+			a.batch_reading_num,
+			a.batch_reading_score,
+			a.batch_reading_total_score,
+			a.batch_reading_result_id,
+			a.batch_listening_exam_yn,
+			a.batch_listening_type,
+			a.batch_listening_num,
+			a.batch_listening_score,
+			a.batch_listening_total_score,
+			a.batch_listening_result_id,
+			a.batch_courses,
+			a.batch_courses_level,
+			a.batch_user_courses,
+			a.batch_user_courses_level,
+			a.batch_select_courses,
+			a.batch_select_courses_level,
+			a.batch_select_type,
+			a.batch_select_level,
+			a.batch_repeat_grammar_exam_yn,
+			a.batch_repeat_grammar_type,
+			a.batch_repeat_grammar_num,
+			a.batch_repeat_grammar_score1,
+			a.batch_repeat_grammar_total_score1,
+			a.batch_repeat_grammar_score2,
+			a.batch_repeat_grammar_total_score2,
+			a.batch_repeat_grammar_result_id,
+			a.batch_repeat_reading_exam_yn,
+			a.batch_repeat_reading_type,
+			a.batch_repeat_reading_num,
+			a.batch_repeat_reading_score,
+			a.batch_repeat_reading_total_score,
+			a.batch_repeat_reading_result_id,
+			a.batch_repeat_listening_exam_yn,
+			a.batch_repeat_listening_type,
+			a.batch_repeat_listening_num,
+			a.batch_repeat_listening_score,
+			a.batch_repeat_listening_total_score,
+			a.batch_repeat_listening_result_id,
+			a.batch_repeat_courses,
+			a.batch_repeat_courses_level,
+			a.batch_repeat_user_courses,
+			a.batch_repeat_user_courses_level,
+			a.batch_repeat_select_courses,
+			a.batch_repeat_select_courses_level,
+			a.batch_repeat_select_type,
+			a.batch_repeat_select_level,
+			a.batch_user_level,
+			a.batch_user_advice,
+			a.batch_user_register_yn,
+			to_char(a.batch_user_register_date,'yyyy-mm-dd') as batch_user_register_date,
+			a.batch_adviser_courses,
+			a.batch_adviser_courses_id,
+			to_char(a.batch_adviser_courses_date,'yyyy-mm-dd hh24:mi:ss') as batch_adviser_courses_date,
+			a.batch_adviser_advice,
+			a.batch_adviser_advice_id,
+			to_char(a.batch_adviser_advice_date,'yyyy-mm-dd hh24:mi:ss') as batch_adviser_advice_date,
+			a.batch_adviser_register_yn,
+			a.batch_adviser_not_register_desc,
+			to_char(a.batch_adviser_register_date,'yyyy-mm-dd') as batch_adviser_register_date,
+			a.batch_adviser_yn,
+			a.batch_adviser_id,
+			to_char(a.batch_adviser_date,'yyyy-mm-dd hh24:mi:ss') as batch_adviser_date,
+			a.batch_desk_register_yn,
+			a.batch_desk_not_register_desc,
+			to_char(a.batch_desk_register_date,'yyyy-mm-dd') as batch_desk_register_date,
+			a.batch_desk_id,			
+			to_char(a.batch_desk_date,'yyyy-mm-dd hh24:mi:ss') as batch_desk_date,
+			a.batch_schedule_id,
+			a.memoirs_yn,
+			a.batch_toeic_part5_score,
+			a.batch_toeic_part5_total_score,
+			a.batch_toeic_part6_score,
+			a.batch_toeic_part6_total_score,
+			a.batch_toeic_part7_score,
+			a.batch_toeic_part7_total_score,
+			a.batch_toeic_exam_yn,
+			a.batch_toeic_type,
+			a.batch_toeic_num,
+			a.batch_toeic_result_id,
+			a.batch_adviser_test_type,
+			a.batch_adviser_student_type,
+			a.batch_adviser_course_group,		
+			a.batch_finally_test_type,
+			a.batch_finally_student_type,
+			a.batch_finally_course_group,
+			a.batch_finally_courses,
+			a.batch_finally_not_register_desc,					
+			b.teps_total_score,
+			b.teps_rc_score,
+			b.teps_lc_score,
+			b.teps_grammar_score,
+			b.teps_voca_score,
+			b.sat_total_score,
+			b.sat_rc_score,
+			b.sat_wr_score,
+			b.sat_math_score,
+			b.toeic_total_score,
+			b.toeic_rc_score,
+			b.toeic_lc_score,
+			b.ielts_total_score,
+			b.ielts_rc_score,
+			b.ielts_lc_score,
+			b.ielts_sp_score,
+			b.ielts_wr_score,
+			b.ibt_total_score,
+			b.ibt_rc_score,
+			b.ibt_lc_score,
+			b.ibt_sp_score,
+			b.ibt_wr_score,
+			b.ets_total_score,
+			b.ets_rc_score,
+			b.ets_lc_score,
+			b.ets_sp_score,
+			b.ets_wr_score,
+			b.pbt_total_score,
+			b.pbt_gr_score,
+			b.pbt_rc_score,
+			b.pbt_lc_score,
+			b.scholastic_grade,
+			c.photo,
+			coalesce(a.chamgang_yn,'N') as chamgang_yn
+		from
+			batch_result a
+			left join users_score b on a.user_id = b.user_id
+			join users_personalinfo c on a.user_id = c.user_id
+			left join users_school h on a.user_id = h.user_id
+		where
+			a.user_id = #{user_id}
+			and a.course_id = 0
+		order by a.batch_exam_date desc
+		limit 1	
+	</select>
+	<select id="getBatchResultUserAsNotAdvice" resultType="com.usher.dto.BatchResultDto" parameterType="com.usher.dto.BatchResultDto">
+		select
+			a.id,
+			a.id as user_id,
+	    	c.gender,
+		    c.mobile_no,
+		    to_char(c.birthday,'yyyy-mm-dd') as birthday,
+		    c.user_id,
+		    c.test_type,
+		    c.student_type,
+		    c.course_group,
+		    c.name,
+		    c.email,
+		    c.goal_score,
+		    c.week_point,
+		    c.student_will,
+		    c.parent_will,
+		    h.school_gubun,
+		    h.school_foreign_gubun,
+		    h.school_area1,
+		    h.school_area2,
+		    h.school_name,
+		    h.school_major,
+		    h.school_grade,
+		    h.school_state,
+		    h.school_check,
+		    c.army,
+		    c.purpose_gubun,
+		    c.purpose_detail,
+		    c.need_date,
+		    c.attend_start_date,
+		    c.attend_date,
+		    c.out_name,
+		    c.out_course,
+		    c.foreign_country,
+		    c.tel_home_gubun,
+		    c.tel_home_number,
+		    c.tel_phone_gugun,
+		    c.tel_phone_number,
+		    c.tel_emergency_gubun,
+		    c.tel_emergency_number,
+		    c.commute_area1,
+		    c.commute_area2,
+		    c.commute_area3,
+		    c.commute_min,
+		    c.commute_gubun,
+		    c.health_gubun,
+		    c.health_desc,
+		    c.personal_gubun,
+		    c.personal_desc,
+		    c.location,
+		    c.keyword,
+		    c.foreign_month,
+		    c.out_month,
+			b.teps_total_score,
+			b.teps_rc_score,
+			b.teps_lc_score,
+			b.teps_grammar_score,
+			b.teps_voca_score,
+			b.sat_total_score,
+			b.sat_rc_score,
+			b.sat_wr_score,
+			b.sat_math_score,
+			b.toeic_total_score,
+			b.toeic_rc_score,
+			b.toeic_lc_score,
+			b.ielts_total_score,
+			b.ielts_rc_score,
+			b.ielts_lc_score,
+			b.ielts_sp_score,
+			b.ielts_wr_score,
+			b.ibt_total_score,
+			b.ibt_rc_score,
+			b.ibt_lc_score,
+			b.ibt_sp_score,
+			b.ibt_wr_score,
+			b.ets_total_score,
+			b.ets_rc_score,
+			b.ets_lc_score,
+			b.ets_sp_score,
+			b.ets_wr_score,
+			b.pbt_total_score,
+			b.pbt_gr_score,
+			b.pbt_rc_score,
+			b.pbt_lc_score,
+			b.scholastic_grade,
+			c.photo
+		from
+			auth_user a
+			left join users_score b on a.id = b.user_id
+			join users_personalinfo c on a.id = c.user_id
+			left join users_school h on a.id = h.user_id
+		where
+			a.id = #{user_id}
+	</select>
+	<update id="updateBatchResultAdviserAdvice" parameterType="com.usher.dto.BatchResultDto">
+		update batch_result set
+			batch_adviser_advice = #{batch_adviser_advice},
+			batch_adviser_advice_id = #{batch_adviser_advice_id},
+			batch_adviser_advice_date = now(),
+			batch_adviser_id = #{batch_adviser_id},
+			batch_adviser_yn = 'Y'
+		where
+			to_char(batch_exam_date,'yyyy-mm-dd') = #{batch_exam_date}
+			and user_id = #{user_id}
+			and course_id = #{course_id}
+	</update>
+	<update id="updateBatchResultAdviserCourse" parameterType="com.usher.dto.BatchResultDto">
+		update batch_result set
+			batch_finally_test_type = #{batch_adviser_test_type},
+			batch_finally_student_type = #{batch_adviser_student_type},
+			batch_finally_course_group = #{batch_adviser_course_group},
+			batch_finally_courses = #{batch_adviser_courses},
+			batch_adviser_test_type = #{batch_adviser_test_type},
+			batch_adviser_student_type = #{batch_adviser_student_type},
+			batch_adviser_course_group = #{batch_adviser_course_group},
+			batch_adviser_courses = #{batch_adviser_courses},
+			batch_adviser_courses_id = #{batch_adviser_courses_id},
+			batch_adviser_courses_date = now(),
+			batch_adviser_id = #{batch_adviser_id},
+			batch_adviser_yn = 'Y'
+		where
+			to_char(batch_exam_date,'yyyy-mm-dd') = #{batch_exam_date}
+			and user_id = #{user_id}
+			and course_id = #{course_id}
+	</update>
+	<update id="updateBatchResultAdviserRegister" parameterType="com.usher.dto.BatchResultDto">
+		update batch_result set
+			batch_adviser_register_yn = #{batch_adviser_register_yn},
+			batch_adviser_not_register_desc = #{batch_adviser_not_register_desc},
+			batch_adviser_register_date = to_date(#{batch_adviser_register_date},'yyyy-mm-dd'),
+			batch_adviser_id = #{batch_adviser_id},
+			batch_adviser_date = now(),
+			batch_adviser_yn = 'Y',
+			chamgang_yn = #{chamgang_yn}
+		where
+			to_char(batch_exam_date,'yyyy-mm-dd') = #{batch_exam_date}
+			and user_id = #{user_id}
+			and course_id = #{course_id}
+	</update>
+	<update id="updateBatchResultDeskRegister" parameterType="com.usher.dto.BatchResultDto">
+		update batch_result set
+			batch_desk_register_yn = #{batch_desk_register_yn},
+			batch_desk_not_register_desc = #{batch_desk_not_register_desc},
+			batch_desk_register_date = to_date(#{batch_desk_register_date},'yyyy-mm-dd'),
+			batch_desk_date = now(),
+			batch_desk_id = #{batch_desk_id},
+			chamgang_yn = #{chamgang_yn}
+		where
+			to_char(batch_exam_date,'yyyy-mm-dd') = #{batch_exam_date}
+			and user_id = #{user_id}
+			and course_id = #{course_id}
+	</update>	
+	<update id="updateBatchResultFinallyNotRegister" parameterType="com.usher.dto.BatchResultDto">
+		update batch_result set
+			batch_finally_not_register_desc = #{batch_finally_not_register_desc}
+		where
+			to_char(batch_exam_date,'yyyy-mm-dd') = #{batch_exam_date}
+			and user_id = #{user_id}
+			and course_id = #{course_id}
+	</update>		
+	<update id="updateBatchResultAttendDate" parameterType="com.usher.dto.BatchResultDto">
+		update users_personalinfo set
+			attend_start_date = #{attend_start_date}
+		where
+			user_id = #{user_id}
+	</update>	
+	<update id="updateBatchResultFinallyNotRegisterAsId" parameterType="com.usher.dto.BatchResultDto">
+		update batch_result set
+			batch_finally_not_register_desc = #{batch_finally_not_register_desc}
+		where
+			id = #{id}
+	</update>		
+	<update id="updateBatchResultSendKaKaoBefore" parameterType="com.usher.dto.BatchResultDto">
+		update batch_result set
+			batch_send_kakao_before_yn = 'Y'
+		where
+			id = #{id}
+	</update>		
+	<update id="updateBatchResultSendKaKaoCurrent" parameterType="com.usher.dto.BatchResultDto">
+		update batch_result set
+			batch_send_kakao_current_yn = 'Y'
+		where
+			id = #{id}
+	</update>		
+	<update id="updateBatchResultSendPhone" parameterType="com.usher.dto.BatchResultDto">
+		update batch_result set
+			batch_send_phone_yn = 'Y'
+		where
+			id = #{id}
+	</update>		
+	<insert id="insertBatchResultLog" parameterType="com.usher.dto.BatchResultDto">
+		insert into batch_result_log (
+		    created,
+		    user_id,
+		    course_id,
+		    batch_exam_date,
+		    batch_repeat_exam_yn,
+		    batch_concentration_yn,
+		    batch_delay_min,
+		    batch_grammar_exam_yn,
+		    batch_grammar_type,
+		    batch_grammar_num,
+		    batch_grammar_score1,
+		    batch_grammar_total_score1,
+		    batch_grammar_score2,
+		    batch_grammar_total_score2,
+		    batch_grammar_result_id,
+		    batch_reading_exam_yn,
+		    batch_reading_type,
+		    batch_reading_num,
+		    batch_reading_score,
+		    batch_reading_total_score,
+		    batch_reading_result_id,
+		    batch_listening_exam_yn,
+		    batch_listening_type,
+		    batch_listening_num,
+		    batch_listening_score,
+		    batch_listening_total_score,
+		    batch_listening_result_id,
+		    batch_courses,
+		    batch_courses_level,
+		    batch_user_courses,
+		    batch_user_courses_level,
+		    batch_select_courses,
+		    batch_select_courses_level,
+		    batch_select_type,
+		    batch_select_level,
+		    batch_repeat_grammar_exam_yn,
+		    batch_repeat_grammar_type,
+		    batch_repeat_grammar_num,
+		    batch_repeat_grammar_score1,
+		    batch_repeat_grammar_total_score1,
+		    batch_repeat_grammar_score2,
+		    batch_repeat_grammar_total_score2,
+		    batch_repeat_grammar_result_id,
+		    batch_repeat_reading_exam_yn,
+		    batch_repeat_reading_type,
+		    batch_repeat_reading_num,
+		    batch_repeat_reading_score,
+		    batch_repeat_reading_total_score,
+		    batch_repeat_reading_result_id,
+		    batch_repeat_listening_exam_yn,
+		    batch_repeat_listening_type,
+		    batch_repeat_listening_num,
+		    batch_repeat_listening_score,
+		    batch_repeat_listening_total_score,
+		    batch_repeat_listening_result_id,
+		    batch_repeat_courses,
+		    batch_repeat_courses_level,
+		    batch_repeat_user_courses,
+		    batch_repeat_user_courses_level,
+		    batch_repeat_select_courses,
+		    batch_repeat_select_courses_level,
+		    batch_repeat_select_type,
+		    batch_repeat_select_level,
+		    batch_user_level,
+		    batch_user_advice,
+		    batch_user_register_yn,
+		    batch_user_not_register_desc,
+		    batch_user_register_date,
+		    batch_adviser_courses,
+		    batch_adviser_courses_id,
+		    batch_adviser_courses_date,
+		    batch_adviser_advice,
+		    batch_adviser_advice_id,
+		    batch_adviser_advice_date,
+		    batch_adviser_register_yn,
+		    batch_adviser_not_register_desc,
+		    batch_adviser_register_date,
+		    batch_adviser_yn,
+		    batch_adviser_id,
+		    batch_adviser_date,
+		    batch_desk_register_yn,
+		    batch_desk_not_register_desc,
+		    batch_desk_register_date,
+		    batch_desk_id,
+		    batch_desk_date,
+			batch_schedule_id,
+			memoirs_yn,
+			batch_toeic_part5_score,
+			batch_toeic_part5_total_score,
+			batch_toeic_part6_score,
+			batch_toeic_part6_total_score,
+			batch_toeic_part7_score,
+			batch_toeic_part7_total_score,
+			batch_toeic_exam_yn,
+			batch_adviser_test_type,
+			batch_adviser_student_type,
+			batch_adviser_course_group,
+			batch_finally_test_type,
+			batch_finally_student_type,
+			batch_finally_course_group,
+			batch_finally_courses
+		)
+		select
+		    now() as created,
+		    user_id,
+		    course_id,
+		    batch_exam_date,
+		    batch_repeat_exam_yn,
+		    batch_concentration_yn,
+		    batch_delay_min,
+		    batch_grammar_exam_yn,
+		    batch_grammar_type,
+		    batch_grammar_num,
+		    batch_grammar_score1,
+		    batch_grammar_total_score1,
+		    batch_grammar_score2,
+		    batch_grammar_total_score2,
+		    batch_grammar_result_id,
+		    batch_reading_exam_yn,
+		    batch_reading_type,
+		    batch_reading_num,
+		    batch_reading_score,
+		    batch_reading_total_score,
+		    batch_reading_result_id,
+		    batch_listening_exam_yn,
+		    batch_listening_type,
+		    batch_listening_num,
+		    batch_listening_score,
+		    batch_listening_total_score,
+		    batch_listening_result_id,
+		    batch_courses,
+		    batch_courses_level,
+		    batch_user_courses,
+		    batch_user_courses_level,
+		    batch_select_courses,
+		    batch_select_courses_level,
+		    batch_select_type,
+		    batch_select_level,
+		    batch_repeat_grammar_exam_yn,
+		    batch_repeat_grammar_type,
+		    batch_repeat_grammar_num,
+		    batch_repeat_grammar_score1,
+		    batch_repeat_grammar_total_score1,
+		    batch_repeat_grammar_score2,
+		    batch_repeat_grammar_total_score2,
+		    batch_repeat_grammar_result_id,
+		    batch_repeat_reading_exam_yn,
+		    batch_repeat_reading_type,
+		    batch_repeat_reading_num,
+		    batch_repeat_reading_score,
+		    batch_repeat_reading_total_score,
+		    batch_repeat_reading_result_id,
+		    batch_repeat_listening_exam_yn,
+		    batch_repeat_listening_type,
+		    batch_repeat_listening_num,
+		    batch_repeat_listening_score,
+		    batch_repeat_listening_total_score,
+		    batch_repeat_listening_result_id,
+		    batch_repeat_courses,
+		    batch_repeat_courses_level,
+		    batch_repeat_user_courses,
+		    batch_repeat_user_courses_level,
+		    batch_repeat_select_courses,
+		    batch_repeat_select_courses_level,
+		    batch_repeat_select_type,
+		    batch_repeat_select_level,
+		    batch_user_level,
+		    batch_user_advice,
+		    batch_user_register_yn,
+		    batch_user_not_register_desc,
+		    batch_user_register_date,
+		    batch_adviser_courses,
+		    batch_adviser_courses_id,
+		    batch_adviser_courses_date,
+		    batch_adviser_advice,
+		    batch_adviser_advice_id,
+		    batch_adviser_advice_date,
+		    batch_adviser_register_yn,
+		    batch_adviser_not_register_desc,
+		    batch_adviser_register_date,
+		    batch_adviser_yn,
+		    batch_adviser_id,
+		    batch_adviser_date,
+		    batch_desk_register_yn,
+		    batch_desk_not_register_desc,
+		    batch_desk_register_date,
+		    batch_desk_id,
+		    batch_desk_date,
+			batch_schedule_id,
+			memoirs_yn,
+			batch_toeic_part5_score,
+			batch_toeic_part5_total_score,
+			batch_toeic_part6_score,
+			batch_toeic_part6_total_score,
+			batch_toeic_part7_score,
+			batch_toeic_part7_total_score,
+			batch_toeic_exam_yn,
+			batch_adviser_test_type,
+			batch_adviser_student_type,
+			batch_adviser_course_group,
+			batch_finally_test_type,
+			batch_finally_student_type,
+			batch_finally_course_group,
+			batch_finally_courses			    
+		from
+			batch_result
+		where
+			to_char(batch_exam_date,'yyyy-mm-dd') = #{batch_exam_date}
+			and user_id = #{user_id}
+			and course_id = #{course_id}
+	</insert>		
+</mapper>

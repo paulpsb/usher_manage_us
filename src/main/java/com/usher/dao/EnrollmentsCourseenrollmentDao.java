@@ -1,0 +1,49 @@
+package com.usher.dao;
+
+
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import com.usher.dto.EnrollmentsCourseenrollmentDto;
+
+@Repository
+public interface EnrollmentsCourseenrollmentDao{
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public EnrollmentsCourseenrollmentDto getCourseenrollment(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentPaidList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentMoveList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentRefundList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentHandphoneBagList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentAchieveList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentAchieveCourseGroupList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentRepetitionList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentRepetitionCourseGroupList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentRepetitionSemesterList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentDaillyCountList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentDaillyCourseGroupCountList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentMonthlyCountList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentMonthlyCourseGroupCountList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	
+	public EnrollmentsCourseenrollmentDto getCourseenrollmentAttend(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentExamList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentExamCourseGroupList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	
+	public List<EnrollmentsCourseenrollmentDto> getCourseenrollmentSemesterList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	
+	public void updateCourseenrollmentList(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	
+	public void updateCourseenrollmentCourse(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public void updateCourseenrollmentProgramUse(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	
+	public EnrollmentsCourseenrollmentDto getCourseenrollmentAllocation(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public void updateCourseenrollmentAllocation(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public void insertCourseenrollmentAllocationLog(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	
+	public void updateUserPersonGoalScore(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public void updateUserPersonAttendStartDate(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public void updateUserPersonNeedDate(EnrollmentsCourseenrollmentDto dto) throws Exception;
+	public void updateUserPersonAttendDate(EnrollmentsCourseenrollmentDto dto) throws Exception;
+}

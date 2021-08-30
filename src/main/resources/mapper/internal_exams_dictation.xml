@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsDictationDao">
+	<select id="getDictationCount" resultType="com.usher.dto.InternalExamsDictationDto" parameterType="com.usher.dto.InternalExamsDictationDto">
+		select count(*) as total_count
+		from 
+			internal_exams_dictation 
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and volume = #{volume}
+		</if>						
+	</select>
+	
+	<select id="getDictationList" resultType="com.usher.dto.InternalExamsDictationDto" parameterType="com.usher.dto.InternalExamsDictationDto">
+		select 
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article
+		from
+			internal_exams_dictation a
+			left join (
+				select
+					a.section,
+					a.section_order,
+					b.book,
+					b.book_order,
+					c.volume,
+					c.volume_order,
+					coalesce(d.group,'') as group,
+					coalesce(d.group_order,0) as group_order
+				from
+					practices_practicesection a
+					join practices_practicebook b on a.id = b.practice_section_id
+					join practices_practicevolume c on b.practice_section_id = c.practice_section_id and b.id = c.practice_book_id
+					left join practices_practicegroup d on c.practice_section_id = d.practice_section_id and c.practice_book_id = d.practice_book_id and c.id = d.practice_volume_id			
+			) b on a.section = b.section and a.book = b.book and a.volume = b.volume and a.group = b.group				
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and a.book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and a.volume = #{volume}
+		</if>	
+		order by coalesce(b.section_order,0), a.section, coalesce(b.book_order,0), a.book, coalesce(b.volume_order,0), a.volume, coalesce(b.group_order,0), a.group, a.article
+		limit #{row_num} offset #{first_num}
+	</select>
+
+	<select id="getDictation" resultType="com.usher.dto.InternalExamsDictationDto" parameterType="com.usher.dto.InternalExamsDictationDto">
+		select 
+			id,
+			section,
+			book,
+			"group",
+			volume,
+			article,
+			contents,
+			paragraph1,
+			paragraph2,
+			paragraph3,
+			paragraph4,
+			paragraph5,
+			paragraph6,
+			paragraph7,
+			paragraph8,
+			paragraph9,
+			paragraph10
+		from
+			internal_exams_dictation
+		where
+			id = #{id}
+	</select>
+	
+	<select id="getDictationOne" resultType="com.usher.dto.InternalExamsDictationDto" parameterType="com.usher.dto.InternalExamsDictationDto">
+		select 
+			id,
+			section,
+			book,
+			"group",
+			volume,
+			article,
+			contents,
+			paragraph1,
+			paragraph2,
+			paragraph3,
+			paragraph4,
+			paragraph5,
+			paragraph6,
+			paragraph7,
+			paragraph8,
+			paragraph9,
+			paragraph10
+		from
+			internal_exams_dictation
+		where
+			section = #{section}
+			and book = #{book}
+			and "group" = #{group}
+			and volume = #{volume}
+			and article = #{article}
+		limit 1
+	</select>
+		
+	<insert id="insertDictation" parameterType="com.usher.dto.InternalExamsDictationDto"  useGeneratedKeys="true" keyProperty="id">
+		insert into internal_exams_dictation (
+			created,
+			modified,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+			contents,
+			paragraph1,
+			paragraph2,
+			paragraph3,
+			paragraph4,
+			paragraph5,
+			paragraph6,
+			paragraph7,
+			paragraph8,
+			paragraph9,
+			paragraph10
+		) values (
+			now(),
+			now(),
+			#{section},
+			#{book},
+			#{volume},
+			#{group},
+			#{article},
+			#{contents},
+			#{paragraph1},
+			#{paragraph2},
+			#{paragraph3},
+			#{paragraph4},
+			#{paragraph5},
+			#{paragraph6},
+			#{paragraph7},
+			#{paragraph8},
+			#{paragraph9},
+			#{paragraph10}
+		)
+	</insert>
+	
+	<update id="updateDictation" parameterType="com.usher.dto.InternalExamsDictationDto">
+		update internal_exams_dictation set
+			modified = now(),
+			section = #{section},
+			book = #{book},
+			volume = #{volume},
+			"group" = #{group},
+			article = #{article},
+			paragraph1 = #{paragraph1},
+			paragraph2 = #{paragraph2},
+			paragraph3 = #{paragraph3},
+			paragraph4 = #{paragraph4},
+			paragraph5 = #{paragraph5},
+			paragraph6 = #{paragraph6},
+			paragraph7 = #{paragraph7},
+			paragraph8 = #{paragraph8},
+			paragraph9 = #{paragraph9},
+			paragraph10 = #{paragraph10}
+		where
+			id = #{id}	
+	</update>
+	<update id="updateDictationContent" parameterType="com.usher.dto.InternalExamsDictationDto">
+		update internal_exams_dictation set
+			modified = now(),
+			contents = #{contents}
+		where
+			id = #{id}	
+	</update>	
+
+	<delete id="deleteDictation" parameterType="com.usher.dto.InternalExamsDictationDto">
+		delete from internal_exams_dictation
+		where
+			id = #{id}	
+	</delete>
+		
+</mapper>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesTaskCategoryDetailDao">
+	<select id="getNoticesTaskCategoryDetailList" resultType="com.usher.dto.NoticesTaskCategoryDetailDto" parameterType="com.usher.dto.NoticesTaskCategoryDetailDto">
+		select
+			a.id,
+			b.title as task_category_title,
+			a.reference_title,
+			a.reference_time,
+			a.reference_contents,
+			a.reference_image,
+			a.reference_image_name,
+			a.reference_url,
+			a.reference_file,
+			a.reference_file_name,
+			a.report_image,
+			a.report_url,
+			a.report_file,
+			a.task_category_id,
+			a.is_used
+		from
+			notices_task_category_detail a
+			join notices_task_category b on a.task_category_id = b.id
+		where
+			a.task_category_id = #{task_category_id}
+		order by b.id desc, a.id desc			
+	</select>
+	<select id="getNoticesTaskCategoryDetailUseList" resultType="com.usher.dto.NoticesTaskCategoryDetailDto" parameterType="com.usher.dto.NoticesTaskCategoryDetailDto">
+		select
+			a.id,
+			b.title as task_category_title,
+			a.reference_title,
+			a.reference_time,
+			a.reference_contents,
+			a.reference_image,
+			a.reference_image_name,
+			a.reference_url,
+			a.reference_file,
+			a.reference_file_name,
+			a.report_image,
+			a.report_url,
+			a.report_file,
+			a.task_category_id,
+			a.is_used
+		from
+			notices_task_category_detail a
+			join notices_task_category b on a.task_category_id = b.id
+		where
+			b.status = 'ACTIVE'
+			and #{schedule_date} between b.start_date and b.end_date
+		order by b.id desc, a.id desc			
+	</select>	
+	<select id="getNoticesTaskCategoryDetail" resultType="com.usher.dto.NoticesTaskCategoryDetailDto" parameterType="com.usher.dto.NoticesTaskCategoryDetailDto">
+		select
+			a.id,
+			b.title as task_category_title,
+			a.reference_title,
+			a.reference_time,
+			a.reference_contents,
+			a.reference_image,
+			a.reference_image_name,
+			a.reference_url,
+			a.reference_file,
+			a.reference_file_name,
+			a.report_image,
+			a.report_url,
+			a.report_file,
+			a.task_category_id,
+			a.is_used
+		from
+			notices_task_category_detail a
+			join notices_task_category b on a.task_category_id = b.id
+		where
+			a.id = #{id}
+	</select>	
+	<insert id="insertNoticesTaskCategoryDetail" parameterType="com.usher.dto.NoticesTaskCategoryDetailDto">
+		insert into notices_task_category_detail(
+			created,
+			modified,
+			reference_title,
+			reference_time,
+			reference_contents,
+			reference_image,
+			reference_image_name,
+			reference_url,
+			reference_file,
+			reference_file_name,
+			report_image,
+			report_url,
+			report_file,
+			task_category_id,
+			is_used
+		) values ( 
+			now(),
+			now(),
+			#{reference_title},
+			#{reference_time},
+			#{reference_contents},
+			#{reference_image},
+			#{reference_image_name},
+			#{reference_url},
+			#{reference_file},
+			#{reference_file_name},
+			#{report_image},
+			#{report_url},
+			#{report_file},
+			#{task_category_id},
+			false
+		)
+	</insert>	
+	<update id="updateNoticesTaskCategoryDetail" parameterType="com.usher.dto.NoticesTaskCategoryDetailDto">
+		update notices_task_category_detail set 
+			modified = now(),
+			reference_title = #{reference_title},
+			reference_time = #{reference_time},
+			reference_contents = #{reference_contents},
+			reference_image = #{reference_image},			
+			reference_image_name = #{reference_image_name},
+			reference_url = #{reference_url},
+			reference_file = #{reference_file},
+			reference_file_name = #{reference_file_name},
+			report_image = #{report_image},
+			report_url = #{report_url},
+			report_file = #{report_file}
+		where
+			id = #{id}
+	</update>
+	<update id="updateNoticesTaskCategoryDetailUsed" parameterType="com.usher.dto.NoticesTaskCategoryDetailDto">
+		update notices_task_category_detail set 
+			is_used = #{is_used}
+		where
+			id = #{id}
+	</update>	
+	<delete id="deleteNoticesTaskCategoryDetail" parameterType="com.usher.dto.NoticesTaskCategoryDetailDto">
+		delete from notices_task_category_detail
+		where
+			id = #{id}
+	</delete>
+</mapper>

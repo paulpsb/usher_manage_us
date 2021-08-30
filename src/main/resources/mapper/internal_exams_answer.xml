@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsAnswerDao">
+	<select id="getExamAnswer" parameterType="com.usher.dto.InternalExamsAnswerDto" resultType="com.usher.dto.InternalExamsAnswerDto">
+		select 
+			id,
+			to_char(created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			answer,
+			hash_value,
+			practice_type
+		from 
+			internal_exams_answer
+		where
+			id = #{id}
+
+	</select>
+</mapper>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchExamToeicQuestionDao">
+	<select id="getBatchExamToeicQuestionList" resultType="com.usher.dto.BatchExamToeicQuestionDto" parameterType="com.usher.dto.BatchExamToeicQuestionDto">
+		select
+			id,
+			type,
+			num,
+			question_num,
+			question_type,
+			question_category,
+			answer
+		from
+			batch_exam_toeic_question
+		where
+			type = #{type}
+			and num = #{num}
+		order by question_num
+	</select>	
+	
+	<insert id="insertBatchExamToeicQuestion" parameterType="com.usher.dto.BatchExamToeicQuestionDto">
+		insert into batch_exam_toeic_question (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			type,
+			num,
+			question_num,
+			question_type,
+			question_category,
+			answer
+		)values(
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{type},
+			#{num},
+			#{question_num},
+			#{question_type},
+			#{question_category},
+			#{answer}
+		)
+	</insert>
+		
+</mapper>

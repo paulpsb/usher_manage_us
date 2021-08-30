@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesPracticeDetailDao">
+	<select id="getNoticesPracticeDetailAsCoursePracticeList" resultType="com.usher.dto.NoticesPracticeDetailDto" parameterType="com.usher.dto.NoticesPracticeDetailDto">
+		select
+			id,
+			course_enrollment_id,
+			student_name,
+			first_score,
+			first_score1,
+			first_score2,
+			first_total_score,
+			first_total_score1,
+			first_total_score2,
+			first_fail_type,
+			last_score,
+			last_score1,
+			last_score2,
+			last_total_score,
+			last_total_score1,
+			last_total_score2,
+			last_fail_type,
+			comments,
+			is_comments,
+			notices_practice_id
+		from
+			notices_practice_detail
+		where
+			notices_practice_id in (
+				select id
+				from
+					notices_practice
+				where
+					to_char(date,'yyyy-mm-dd') = #{date}
+					and section = #{section}
+					and practice_type = #{practice_type}
+					and course_id = #{course_id}
+			)	
+		order by notices_practice_id, student_name
+	</select>
+	<select id="getNoticesPracticeDetailList" resultType="com.usher.dto.NoticesPracticeDetailDto" parameterType="com.usher.dto.NoticesPracticeDetailDto">
+		select
+			id,
+			course_enrollment_id,
+			student_name,
+			first_score,
+			first_score1,
+			first_score2,
+			first_total_score,
+			first_total_score1,
+			first_total_score2,
+			first_fail_type,
+			last_score,
+			last_score1,
+			last_score2,
+			last_total_score,
+			last_total_score1,
+			last_total_score2,
+			last_fail_type,
+			comments,
+			is_comments,
+			notices_practice_id
+		from
+			notices_practice_detail
+		where
+			notices_practice_id = #{notices_practice_id}
+		order by notices_practice_id, student_name
+	</select>	
+	<update id="updatNoticesPracticeDetailComment" parameterType="com.usher.dto.NoticesPracticeDetailDto">
+		update notices_practice_detail set 
+			modified = now(),
+			comments = #{comments},
+			is_comments = #{is_comments}
+		where
+			notices_practice_id = #{notices_practice_id}
+			and course_enrollment_id = #{course_enrollment_id}
+	</update>
+</mapper>

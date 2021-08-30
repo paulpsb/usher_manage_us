@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesTaskCategoryDao">
+	<select id="getNoticesTaskCategoryCount" resultType="com.usher.dto.NoticesTaskCategoryDto" parameterType="com.usher.dto.NoticesTaskCategoryDto">
+		select count(*) as total_count
+		from 
+			notices_task_category 
+		where 1=1
+		<if test="status != null and status !='' ">			
+			and status = #{status}
+		</if>
+			
+	</select>
+	
+	<select id="getNoticesTaskCategoryList" resultType="com.usher.dto.NoticesTaskCategoryDto" parameterType="com.usher.dto.NoticesTaskCategoryDto">
+		select
+			id,
+			status,
+			title,
+			start_date,
+			end_date
+		from
+			notices_task_category
+		where 1=1
+		<if test="status != null and status !='' ">			
+			and status = #{status}
+		</if>
+		order by id desc	
+		limit #{row_num} offset #{first_num}	
+	</select>
+	<select id="getNoticesTaskCategoryUseList" resultType="com.usher.dto.NoticesTaskCategoryDto">
+		select
+			id,
+			status,
+			title,
+			start_date,
+			end_date
+		from
+			notices_task_category
+		where 
+			status = 'ACTIVE'
+			and to_char(current_date,'yyyy-mm-dd') between start_date and end_date
+		order by id desc		
+	</select>	
+	<select id="getNoticesTaskCategory" resultType="com.usher.dto.NoticesTaskCategoryDto" parameterType="com.usher.dto.NoticesTaskCategoryDto">
+		select
+			id,
+			status,
+			title,
+			start_date,
+			end_date
+		from
+			notices_task_category
+		where
+			id = #{id}
+	</select>	
+	<insert id="insertNoticesTaskCategory" parameterType="com.usher.dto.NoticesTaskCategoryDto">
+		insert into notices_task_category(
+			created,
+			modified,
+			status,
+			title,
+			start_date,
+			end_date
+		) values ( 
+			now(),
+			now(),
+			#{status},
+			#{title},
+			#{start_date},
+			#{end_date}
+		)
+	</insert>	
+	<update id="updateNoticesTaskCategory" parameterType="com.usher.dto.NoticesTaskCategoryDto">
+		update notices_task_category set 
+			modified = now(),
+			status = #{status},
+			title = #{title},
+			start_date = #{start_date},
+			end_date = #{end_date}			
+		where
+			id = #{id}
+	</update>
+	<delete id="deleteNoticesTaskCategory" parameterType="com.usher.dto.NoticesTaskCategoryDto">
+		delete from notices_task_category
+		where
+			id = #{id}
+	</delete>
+	<delete id="deleteNoticesTaskCategoryDetailAll" parameterType="com.usher.dto.NoticesTaskCategoryDto">
+		delete from notices_task_category_detail
+		where
+			task_category_id = #{id}
+	</delete>	
+</mapper>

@@ -1,0 +1,583 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.StatsSchoolDao">
+	<select id="getStatsBatchSchoolArea1List" resultType="com.usher.dto.StatsSchoolDto" parameterType="com.usher.dto.StatsSchoolDto">
+		select
+			b.school_area1 as area1,
+			b.cnt as stat_count1,
+			b.cnt * 100 / a.cnt as stat_rate1
+		from
+			(
+				select
+					b.school_foreign_gubun,
+					count(*) as cnt
+				from
+					batch_result a
+					join users_school b on a.user_id = b.user_id
+				where
+					a.course_id = 0
+					and to_char(a.batch_exam_date,'yyyy-mm') between #{start_ym} and #{end_ym}
+					and coalesce(b.school_area1,'') != ''
+					and b.school_foreign_gubun = #{foreign_gubun}
+				<if test="test_type != null and test_type !='' ">	
+					and a.batch_finally_test_type = #{test_type}
+				</if>
+				<if test="student_type != null and student_type !='' ">	
+					and a.batch_finally_student_type = #{student_type}
+				</if>
+				<if test="course_group != null and course_group !='' ">	
+					and a.batch_finally_course_group = #{course_group}
+				</if>						
+				group by b.school_foreign_gubun
+			) a
+			join (
+				select
+					b.school_foreign_gubun,
+					b.school_area1,
+					count(*) as cnt
+				from
+					batch_result a
+					join users_school b on a.user_id = b.user_id
+				where
+					a.course_id = 0
+					and to_char(a.batch_exam_date,'yyyy-mm') between #{start_ym} and #{end_ym}
+					and coalesce(b.school_area1,'') != ''
+					and b.school_foreign_gubun = #{foreign_gubun}
+				<if test="test_type != null and test_type !='' ">	
+					and a.batch_finally_test_type = #{test_type}
+				</if>
+				<if test="student_type != null and student_type !='' ">	
+					and a.batch_finally_student_type = #{student_type}
+				</if>
+				<if test="course_group != null and course_group !='' ">	
+					and a.batch_finally_course_group = #{course_group}
+				</if>						
+				group by b.school_foreign_gubun, b.school_area1	
+			) b on a.school_foreign_gubun = b.school_foreign_gubun
+		order by 2 desc
+	</select>
+	<select id="getStatsBatchSchoolArea2List" resultType="com.usher.dto.StatsSchoolDto" parameterType="com.usher.dto.StatsSchoolDto">
+		select
+			b.school_area1 as area1,
+			b.school_area2 as area2,
+			b.cnt as stat_count1,
+			b.cnt * 100 / a.cnt as stat_rate1
+		from
+			(
+				select
+					b.school_foreign_gubun,
+					b.school_area1, 
+					count(*) as cnt
+				from
+					batch_result a
+					join users_school b on a.user_id = b.user_id
+				where
+					a.course_id = 0
+					and to_char(a.batch_exam_date,'yyyy-mm') between #{start_ym} and #{end_ym}
+					and coalesce(b.school_area1,'') != ''
+					and b.school_foreign_gubun = #{foreign_gubun}
+					and b.school_area1 = #{area1}
+				<if test="test_type != null and test_type !='' ">	
+					and a.batch_finally_test_type = #{test_type}
+				</if>
+				<if test="student_type != null and student_type !='' ">	
+					and a.batch_finally_student_type = #{student_type}
+				</if>
+				<if test="course_group != null and course_group !='' ">	
+					and a.batch_finally_course_group = #{course_group}
+				</if>						
+				group by b.school_foreign_gubun, b.school_area1
+			) a
+			join (
+				select
+					b.school_foreign_gubun, 
+					b.school_area1,
+					b.school_area2,
+					count(*) as cnt
+				from
+					batch_result a
+					join users_school b on a.user_id = b.user_id
+				where
+					a.course_id = 0
+					and to_char(a.batch_exam_date,'yyyy-mm') between #{start_ym} and #{end_ym}
+					and coalesce(b.school_area1,'') != ''
+					and b.school_foreign_gubun = #{foreign_gubun}
+					and b.school_area1 = #{area1}
+				<if test="test_type != null and test_type !='' ">	
+					and a.batch_finally_test_type = #{test_type}
+				</if>
+				<if test="student_type != null and student_type !='' ">	
+					and a.batch_finally_student_type = #{student_type}
+				</if>
+				<if test="course_group != null and course_group !='' ">	
+					and a.batch_finally_course_group = #{course_group}
+				</if>						
+				group by b.school_foreign_gubun, b.school_area1, b.school_area2	
+			) b on a.school_foreign_gubun = b.school_foreign_gubun and a.school_area1 = b.school_area1
+		order by 3 desc
+	</select>
+	<select id="getStatsBatchSchoolSchoolsList" resultType="com.usher.dto.StatsSchoolDto" parameterType="com.usher.dto.StatsSchoolDto">
+		select
+			b.school_foreign_gubun as foreign_gubun,
+			b.school_gubun as school_gubun,
+			b.school_area1 as area1,
+			b.school_area2 as area2,
+			b.school_name as school_name,
+			b.cnt as stat_count1,
+			b.cnt * 100 / a.cnt as stat_rate1
+		from
+			(
+				select
+					b.school_foreign_gubun, 
+					b.school_gubun,
+					b.school_area1,
+					b.school_area2,
+					count(*) as cnt
+				from
+					batch_result a
+					join users_school b on a.user_id = b.user_id
+				where
+					a.course_id = 0
+					and to_char(a.batch_exam_date,'yyyy-mm') between #{start_ym} and #{end_ym}
+					and coalesce(b.school_area1,'') != ''
+					and b.school_foreign_gubun = #{foreign_gubun}
+					and b.school_area1 = #{area1}
+					and b.school_area2 = #{area2}
+				<if test="test_type != null and test_type !='' ">	
+					and a.batch_finally_test_type = #{test_type}
+				</if>
+				<if test="student_type != null and student_type !='' ">	
+					and a.batch_finally_student_type = #{student_type}
+				</if>
+				<if test="course_group != null and course_group !='' ">	
+					and a.batch_finally_course_group = #{course_group}
+				</if>						
+				group by b.school_foreign_gubun
+						, b.school_gubun
+						, b.school_area1
+						, b.school_area2
+			) a
+			join (
+				select
+					b.school_foreign_gubun, 
+					b.school_gubun,
+					b.school_area1,
+					b.school_area2,
+					b.school_name,
+					count(*) as cnt
+				from
+					batch_result a
+					join users_school b on a.user_id = b.user_id
+				where
+					a.course_id = 0
+					and to_char(a.batch_exam_date,'yyyy-mm') between #{start_ym} and #{end_ym}
+					and coalesce(b.school_area1,'') != ''
+					and b.school_foreign_gubun = #{foreign_gubun}
+					and b.school_area1 = #{area1}
+					and b.school_area2 = #{area2}
+				<if test="test_type != null and test_type !='' ">	
+					and a.batch_finally_test_type = #{test_type}
+				</if>
+				<if test="student_type != null and student_type !='' ">	
+					and a.batch_finally_student_type = #{student_type}
+				</if>
+				<if test="course_group != null and course_group !='' ">	
+					and a.batch_finally_course_group = #{course_group}
+				</if>						
+				group by b.school_foreign_gubun
+						, b.school_gubun
+						, b.school_area1
+						, b.school_area2
+						, b.school_name
+			) b on a.school_foreign_gubun = b.school_foreign_gubun
+				and a.school_gubun = b.school_gubun
+				and a.school_area1 = b.school_area1
+				and a.school_area2 = b.school_area2
+		order by b.cnt desc
+	</select>		
+	<select id="getStatsSchoolArea1List" resultType="com.usher.dto.StatsSchoolDto" parameterType="com.usher.dto.StatsSchoolDto">
+		with student_table as (
+			select
+				a.username,
+				h.school_foreign_gubun,
+				h.school_gubun,
+				h.school_area1,
+				h.school_area2,
+				h.school_name 
+			from
+				auth_user a
+				join students_student b on a.id = b.user_id
+				join enrollments_semesterenrollment c on b.id = c.student_id
+				join enrollments_courseenrollment d on c.id = d.semester_enrollment_id
+				join courses_semester e on c.semester_id = e.id
+				join courses_course f on d.course_id = f.id
+				join courses_coursegroup g on f.course_group_id = g.id
+				join users_school h on a.id = h.user_id
+			where
+				to_char(e.date,'yyyy-mm') between #{start_ym} and #{end_ym}
+				and (d.status = 'PAID' or d.refund_status = 'PARTIAL_REFUND')
+			<if test="test_type != null and test_type !='' ">	
+				and g.test_type = #{test_type}
+			</if>
+			<if test="student_type != null and student_type !='' ">	
+				and g.student_type = #{student_type}
+			</if>
+			<if test="course_group != null and course_group !='' ">	
+				and g.lecture_type = #{course_group}
+			</if>		
+			<if test="course_days != null and course_days !='' ">	
+				and g.days = #{course_days}
+			</if>		
+				and coalesce(h.school_area1,'') != ''
+			group by a.username, h.school_foreign_gubun, h.school_gubun, h.school_area1, h.school_area2, h.school_name
+		)
+		select
+			b.school_area1 as area1,
+			b.cnt as stat_count1,
+			b.cnt * 100 / a.cnt as stat_rate1
+		from
+			(
+				select
+					school_foreign_gubun,
+					count(*) as cnt
+				from
+					student_table
+				where
+					school_foreign_gubun = #{foreign_gubun}
+				group by school_foreign_gubun
+			) a
+			join (
+				select
+					school_foreign_gubun,
+					school_area1,
+					count(*) as cnt
+				from
+					student_table
+				where
+					school_foreign_gubun = #{foreign_gubun}
+				group by school_foreign_gubun, school_area1
+			) b on a.school_foreign_gubun = b.school_foreign_gubun
+		order by b.cnt desc
+	</select>
+	<select id="getStatsSchoolArea2List" resultType="com.usher.dto.StatsSchoolDto" parameterType="com.usher.dto.StatsSchoolDto">
+		with student_table as (
+			select
+				a.username,
+				h.school_foreign_gubun,
+				h.school_gubun,
+				h.school_area1,
+				h.school_area2,
+				h.school_name 
+			from
+				auth_user a
+				join students_student b on a.id = b.user_id
+				join enrollments_semesterenrollment c on b.id = c.student_id
+				join enrollments_courseenrollment d on c.id = d.semester_enrollment_id
+				join courses_semester e on c.semester_id = e.id
+				join courses_course f on d.course_id = f.id
+				join courses_coursegroup g on f.course_group_id = g.id
+				join users_school h on a.id = h.user_id
+			where
+				to_char(e.date,'yyyy-mm') between #{start_ym} and #{end_ym}
+			<if test="test_type != null and test_type !='' ">	
+				and g.test_type = #{test_type}
+			</if>
+			<if test="student_type != null and student_type !='' ">	
+				and g.student_type = #{student_type}
+			</if>
+			<if test="course_group != null and course_group !='' ">	
+				and g.lecture_type = #{course_group}
+			</if>		
+			<if test="course_days != null and course_days !='' ">	
+				and g.days = #{course_days}
+			</if>		
+				and coalesce(h.school_area1,'') != ''
+				and (d.status = 'PAID' or d.refund_status = 'PARTIAL_REFUND')
+			group by a.username, h.school_foreign_gubun, h.school_gubun, h.school_area1, h.school_area2, h.school_name
+		)
+		select
+			b.school_area1 as area1,
+			b.school_area2 as area2,
+			b.cnt as stat_count1,
+			b.cnt * 100 / a.cnt as stat_rate1
+		from
+			(
+				select
+					school_foreign_gubun,
+					school_area1,
+					count(*) as cnt
+				from
+					student_table
+				where
+					school_foreign_gubun = #{foreign_gubun}
+					and school_area1 = #{area1}
+				group by school_foreign_gubun, school_area1
+			) a
+			join (
+				select
+					school_foreign_gubun,
+					school_area1,
+					school_area2,
+					count(*) as cnt
+				from
+					student_table
+				where
+					school_foreign_gubun = #{foreign_gubun}
+					and school_area1 = #{area1}
+				group by school_foreign_gubun, school_area1, school_area2
+			) b on a.school_foreign_gubun = b.school_foreign_gubun and a.school_area1 = b.school_area1
+		order by b.cnt desc		
+	</select>
+	<select id="getStatsSchoolSchoolsList" resultType="com.usher.dto.StatsSchoolDto" parameterType="com.usher.dto.StatsSchoolDto">
+		with student_table as (
+			select
+				a.username,
+				h.school_foreign_gubun,
+				h.school_gubun,
+				h.school_area1,
+				h.school_area2,
+				h.school_name 
+			from
+				auth_user a
+				join students_student b on a.id = b.user_id
+				join enrollments_semesterenrollment c on b.id = c.student_id
+				join enrollments_courseenrollment d on c.id = d.semester_enrollment_id
+				join courses_semester e on c.semester_id = e.id
+				join courses_course f on d.course_id = f.id
+				join courses_coursegroup g on f.course_group_id = g.id
+				join users_school h on a.id = h.user_id
+			where
+				to_char(e.date,'yyyy-mm') between #{start_ym} and #{end_ym}
+			<if test="test_type != null and test_type !='' ">	
+				and g.test_type = #{test_type}
+			</if>
+			<if test="student_type != null and student_type !='' ">	
+				and g.student_type = #{student_type}
+			</if>
+			<if test="course_group != null and course_group !='' ">	
+				and g.lecture_type = #{course_group}
+			</if>		
+			<if test="course_days != null and course_days !='' ">	
+				and g.days = #{course_days}
+			</if>		
+				and coalesce(h.school_area1,'') != ''
+				and (d.status = 'PAID' or d.refund_status = 'PARTIAL_REFUND')
+			group by a.username, h.school_foreign_gubun, h.school_gubun, h.school_area1, h.school_area2, h.school_name
+		)
+		select
+			b.school_foreign_gubun as foreign_gubun,
+			b.school_gubun as school_gubun,
+			b.school_area1 as area1,
+			b.school_area2 as area2,
+			b.school_name as school_name,
+			b.cnt as stat_count1,
+			b.cnt * 100 / a.cnt as stat_rate1
+		from
+			(
+				select
+					school_foreign_gubun,
+					school_gubun,
+					school_area1,
+					school_area2,
+					count(*) as cnt
+				from
+					student_table
+				where
+					school_foreign_gubun = #{foreign_gubun}
+					and school_area1 = #{area1}
+					and school_area2 = #{area2}
+				group by school_foreign_gubun, school_gubun, school_area1, school_area2
+			) a
+			join (
+				select
+					school_foreign_gubun,
+					school_gubun,
+					school_area1,
+					school_area2,
+					school_name,
+					count(*) as cnt
+				from
+					student_table
+				where
+					school_foreign_gubun = #{foreign_gubun}
+					and school_area1 = #{area1}
+					and school_area2 = #{area2}
+				group by school_foreign_gubun, school_gubun, school_area1, school_area2, school_name
+			) b on a.school_foreign_gubun = b.school_foreign_gubun
+				and a.school_gubun = b.school_gubun
+				and a.school_area1 = b.school_area1
+				and a.school_area2 = b.school_area2
+		order by b.cnt desc		
+	</select>		
+	<select id="getStatsSchoolDetailList" resultType="com.usher.dto.StatsSchoolDto" parameterType="com.usher.dto.StatsSchoolDto">
+		select
+			a.start_ym,
+			count(*) as stat_count1,
+			sum(case when registration = 0 then 1 else 0 end ) as stat_count2,
+			sum(case when registration = 1 then 1 else 0 end ) as stat_count3,
+			sum(case when registration = 1 then 1 else 0 end ) * 100 / count(*) as stat_rate3,
+			sum(case when status = 0 then 1 else 0 end ) as stat_count4,
+			sum(case when status = 0 then 1 else 0 end ) * 100 / count(*) as stat_rate4,
+			sum(case when status = 1 then 1 else 0 end ) as stat_count5
+		from
+			(
+				select
+					a.id as user_id,
+					to_char(e.date,'yyyy-mm') as start_ym,
+					max(case when d.status = 'PAID' then 1 else 0 end) as status,
+					max(case when i.registration_type = 'NEW' then 0 else 1 end) as registration
+				from
+					auth_user a
+					join students_student b on a.id = b.user_id
+					join enrollments_semesterenrollment c on b.id = c.student_id
+					join enrollments_courseenrollment d on c.id = d.semester_enrollment_id
+					join courses_semester e on c.semester_id = e.id
+					join courses_course f on d.course_id = f.id
+					join courses_coursegroup g on f.course_group_id = g.id
+					join users_school h on a.id = h.user_id
+					join courses_allocation i on d.id = i.course_enrollment_id
+				where 
+					to_char(e.date,'yyyy') between to_char(now() - interval '3 year','yyyy') and to_char(now(),'yyyy')
+					and h.school_foreign_gubun = #{foreign_gubun}
+					and h.school_gubun = #{school_gubun}
+					and h.school_area1 = #{area1}
+					and h.school_area2 = #{area2}
+					and h.school_name = #{school_name}
+					and (d.status = 'PAID' or d.refund_status = 'PARTIAL_REFUND')
+				group by a.id, to_char(e.date,'yyyy-mm')
+				order by to_char(e.date,'yyyy-mm')
+			) a
+		group by a.start_ym	
+	</select>
+	<select id="getStatsSchoolStudentList" resultType="com.usher.dto.StatsSchoolDto" parameterType="com.usher.dto.StatsSchoolDto">
+		with course_info as (
+			select
+				a.id as course_id,
+				to_char(c.date,'yyyy-mm-dd') as semester_ym,
+				concat(b.name,' ',a.name,'반') as course_name
+			from
+				courses_course a
+				join courses_coursegroup b on a.course_group_id = b.id
+				join courses_semester c on b.semester_id = c.id	
+		), student_info as (
+			select
+				a.user_id,
+				a.username,
+				count(*) as stat_count1,
+				min(f_course_id) as f_course_id,
+				max(l_course_id) as l_course_id
+			from
+				(
+					select
+						a.id as user_id,
+						a.username,
+						to_char(e.date,'yyyy-mm') as start_ym,
+						min(d.course_id) as f_course_id,
+						max(d.course_id) as l_course_id
+					from
+						auth_user a
+						join students_student b on a.id = b.user_id
+						join enrollments_semesterenrollment c on b.id = c.student_id
+						join enrollments_courseenrollment d on c.id = d.semester_enrollment_id
+						join courses_semester e on c.semester_id = e.id
+						join courses_course f on d.course_id = f.id
+						join courses_coursegroup g on f.course_group_id = g.id
+						join courses_allocation i on d.id = i.course_enrollment_id
+					where 1=1
+						 and (d.status = 'PAID' or d.refund_status = 'PARTIAL_REFUND') 
+					group by a.id, to_char(e.date,'yyyy-mm')
+				) a
+			group by a.user_id, a.username		
+		), student_period_info as (
+			select
+				a.id as user_id
+			from
+				auth_user a
+				join students_student b on a.id = b.user_id
+				join enrollments_semesterenrollment c on b.id = c.student_id
+				join enrollments_courseenrollment d on c.id = d.semester_enrollment_id
+				join courses_semester e on c.semester_id = e.id
+				join courses_course f on d.course_id = f.id
+				join courses_coursegroup g on f.course_group_id = g.id
+				join courses_allocation i on d.id = i.course_enrollment_id
+				join users_school h on a.id = h.user_id
+			where
+				to_char(e.date,'yyyy-mm') between #{start_ym} and #{end_ym}
+				and h.school_foreign_gubun = #{foreign_gubun}
+				and h.school_gubun = #{school_gubun}
+				and h.school_area1 = #{area1}
+				and h.school_area2 = #{area2}
+				and h.school_name = #{school_name}
+				and (d.status = 'PAID' or d.refund_status = 'PARTIAL_REFUND') 
+			group by a.id
+		)
+		select
+			a.user_id,
+			concat(g.last_name,g.first_name) as user_name,
+			case when coalesce(e.foreign_country,'') = '' or coalesce(e.foreign_country,'') = '없음' then '' else concat(coalesce(e.foreign_country,''),'(',e.foreign_month,')') end as foreign_yn,
+			c.semester_ym as first_semester_ym,
+			c.course_name as first_course_name,
+			d.semester_ym as last_semester_ym,
+			d.course_name as last_course_name,
+			concat(b.stat_count1,'개월') as course_month,
+			coalesce(f.scholastic_grade,0) as scholastic_grade,
+			coalesce(f.toeic_total_score,0) as toeic_total_score,
+			coalesce(f.teps_total_score,0) as teps_total_score,
+		    coalesce(f.ibt_total_score,coalesce(h.start_toefl_score,0)) as start_toefl_score,
+		    coalesce(f.ibt_rc_score,coalesce(h.start_toefl_rc_score,0)) as start_toefl_rc_score,
+		    coalesce(f.ibt_lc_score,coalesce(h.start_toefl_lc_score,0)) as start_toefl_lc_score,
+		    coalesce(f.ibt_sp_score,coalesce(h.start_toefl_sp_score,0)) as start_toefl_sp_score,
+		    coalesce(f.ibt_wr_score,coalesce(h.start_toefl_wr_score,0)) as start_toefl_wr_score,
+			coalesce(h.end_toefl_score,0) as end_toefl_score,
+			coalesce(h.end_toefl_rc_score,0) as end_toefl_rc_score,
+			coalesce(h.end_toefl_lc_score,0) as end_toefl_lc_score,
+			coalesce(h.end_toefl_sp_score,0) as end_toefl_sp_score,
+			coalesce(h.end_toefl_wr_score,0) as end_toefl_wr_score,
+			h.exam_year,
+			h.exam_month,
+			h.exam_day
+		from
+			student_period_info a
+			join student_info b on a.user_id = b.user_id
+			join course_info c on b.f_course_id = c.course_id
+			join course_info d on b.l_course_id = d.course_id
+			left join users_personalinfo e on a.user_id = e.user_id
+			left join users_score f on a.user_id = f.user_id
+			join auth_user g on a.user_id = g.id
+			left join board_memoirs h on b.username = h.write_id
+		where 1=1
+		<if test="user_name != null and user_name !='' ">			
+			and ( concat(g.last_name,g.first_name) like concat('%',#{user_name},'%') or b.username like concat('%',#{user_name},'%') )
+		</if>			
+		order by 6 desc, 2
+	</select>	
+	<select id="getStatsSchoolStudentInfo" resultType="com.usher.dto.StatsSchoolDto" parameterType="com.usher.dto.StatsSchoolDto">
+	<![CDATA[
+		select
+			a.username,
+			a.course_enrollment_id,
+			a.date
+		from
+			(
+				select
+					a.username,
+					d.id as course_enrollment_id,
+					unnest(string_to_array(d.schedule,',')) as date
+				from
+					auth_user a
+					join students_student b on a.id = b.user_id
+					join enrollments_semesterenrollment c on b.id = c.student_id
+					join enrollments_courseenrollment d on c.id = d.semester_enrollment_id
+					join courses_semester e on c.semester_id = e.id
+					join courses_course f on d.course_id = f.id
+					join courses_coursegroup g on f.course_group_id = g.id
+				where
+					a.id = #{user_id}
+			) a
+		where
+			a.date <= to_char(current_date,'yyyy-mm-dd')
+		order by a.date desc
+		limit 1	
+	]]>
+	</select>						
+</mapper>

@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsGrammarDao">
+	<select id="getExamsGrammarList" resultType="com.usher.dto.InternalExamsGrammarDto" parameterType="com.usher.dto.InternalExamsGrammarDto">
+		select
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.question_num,
+			a.question,
+			a.answer
+		from
+			internal_exams_grammar a
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume = #{volume}
+			and a."group" = #{group}
+			and a.article = #{article}
+		order by a.question_num	
+	</select>
+	<select id="getExamsGrammar" resultType="com.usher.dto.InternalExamsGrammarDto" parameterType="com.usher.dto.InternalExamsGrammarDto">
+		select
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.question_num,
+			a.question,
+		    a.choice_a,
+		    a.choice_b,
+		    a.choice_c,
+		    a.choice_d,
+		    a.choice_e,
+		    a.choice_f,
+		    a.choice_g,
+		    a.choice_h,
+		    a.choice_i,
+		    a.score,
+		    a.answer
+		from
+			internal_exams_grammar a
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume = #{volume}
+			and a."group" = #{group}
+			and a.article = #{article}
+			and a.question_num = #{question_num}
+	</select>
+	
+	<select id="getExamsGrammarNum" resultType="com.usher.dto.InternalExamsGrammarDto" parameterType="com.usher.dto.InternalExamsGrammarDto">
+		select
+			coalesce(max(question_num) + 1,1) as question_num
+		from
+			internal_exams_grammar a
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume = #{volume}
+			and a."group" = #{group}
+			and a.article = #{article}
+	</select>
+		
+	<select id="getExamsGrammarCourseList" resultType="com.usher.dto.InternalExamsGrammarDto" parameterType="com.usher.dto.InternalExamsGrammarDto">
+		select
+			a.question_num,
+			case when a.question_num > 15 then 'SW2' else 'SW1' end as question_type,
+			coalesce(b.total_count,0) as total_count,
+			coalesce(b.accept_count,0) as accept_count,
+			coalesce(b.fail_count,0) as fail_count,
+			case when coalesce(b.total_count,0) > 0 then b.accept_count * 100 / b.total_count else 0 end as accept_rate,
+			case when coalesce(b.total_count,0) > 0 then b.fail_count * 100 / b.total_count else 0 end as fail_rate,
+			coalesce(c.fail_users,'') as fail_users
+		from
+			(
+				select
+					b.question_num
+				from
+					practices_practiceproblem a
+					join internal_exams_grammar b 
+						on a.section = b.section 
+						and a.book = b.book 
+						and a.volume = b.volume 
+						and a."group" = b."group" 
+						and a.article = b.article
+				where
+					a.id = #{practice_problem_id}
+			) a
+			left join (
+				select
+					question_num,
+					count(*) as total_count,
+					sum(case when result = true then 1 else 0 end) as accept_count,
+					sum(case when result = false then 1 else 0 end) as fail_count
+		
+				from
+					practices_practiceresult_question
+				where
+					practice_problem_id = #{practice_problem_id}
+					and course_enrollment_id in (
+						select id
+						from enrollments_courseenrollment
+						where course_id = #{course_id}
+					)
+				group by question_num	
+			) b on a.question_num = b.question_num
+			left join (
+				select
+					a.question_num,
+					array_to_string(array_agg(concat(e.last_name, e.first_name) order by concat(e.last_name, e.first_name)),', ') as fail_users
+				from
+					practices_practiceresult_question a
+					join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+					join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+					join students_student d on c.student_id = d.id
+					join auth_user e on d.user_id = e.id
+				where
+					a.practice_problem_id = #{practice_problem_id}
+					and a.course_enrollment_id in (
+						select id
+						from enrollments_courseenrollment
+						where course_id = #{course_id}
+					)
+					and a.result = false
+				group by a.question_num	
+			) c on a.question_num = c.question_num
+		order by ${sort_id} ${sort_asc}	
+	</select>	
+	
+	<select id="getInternalExamsGrammarReview" resultType="com.usher.dto.InternalExamsGrammarDto" parameterType="com.usher.dto.InternalExamsGrammarDto">
+		select
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.question_num,
+			a.question,
+			a.choice_a,
+			a.choice_b,
+			a.choice_c,
+			a.choice_d,
+			a.choice_e,
+			a.choice_f,
+			a.choice_g,
+			a.choice_h,
+			a.choice_i,
+			a.score,
+			a.answer,
+			coalesce(b.total_count) as total_count,
+			coalesce(b.accept_count) as accept_count,
+			coalesce(c.answer_count_a) as answer_count_a,
+			coalesce(c.answer_count_b) as answer_count_b,
+			coalesce(c.answer_count_c) as answer_count_c,
+			coalesce(c.answer_count_d) as answer_count_d,
+			coalesce(c.answer_count_e) as answer_count_e,
+			coalesce(c.answer_count_f) as answer_count_f,
+			coalesce(c.answer_count_g) as answer_count_g,
+			coalesce(c.answer_count_h) as answer_count_h,
+			coalesce(c.answer_count_i) as answer_count_i
+		from
+			internal_exams_grammar a
+			left join (
+				select
+					question_num,
+					count(*) as total_count,
+					sum(case when result = true then 1 else 0 end) as accept_count
+				from
+					practices_practiceresult_question
+				where
+					practice_problem_id = #{practice_problem_id}
+					and question_num = #{question_num}
+					and course_enrollment_id in (
+						select id
+						from enrollments_courseenrollment
+						where course_id  = #{course_id}
+					)
+				group by question_num			
+			) b on a.question_num = b.question_num
+			left join (
+				select
+					a.question_num, 
+					sum(case when a.answer = 'A' then 1 else 0 end) as answer_count_a,
+					sum(case when a.answer = 'B' then 1 else 0 end) as answer_count_b,
+					sum(case when a.answer = 'C' then 1 else 0 end) as answer_count_c,
+					sum(case when a.answer = 'D' then 1 else 0 end) as answer_count_d,
+					sum(case when a.answer = 'E' then 1 else 0 end) as answer_count_e,
+					sum(case when a.answer = 'F' then 1 else 0 end) as answer_count_f,
+					sum(case when a.answer = 'G' then 1 else 0 end) as answer_count_g,
+					sum(case when a.answer = 'H' then 1 else 0 end) as answer_count_h,
+					sum(case when a.answer = 'I' then 1 else 0 end) as answer_count_i
+				from
+					(
+						select
+							question_num,
+							unnest(string_to_array(useranswer,'|')) as answer
+						from
+							practices_practiceresult_question
+						where
+							practice_problem_id = #{practice_problem_id}
+							and question_num = #{question_num}
+							and useranswer != ''
+							and course_enrollment_id in (
+								select id
+								from enrollments_courseenrollment
+								where course_id  = #{course_id}
+							)
+						union all
+						select
+							question_num,
+							unnest(string_to_array(useranswer1,'|')) as answer
+						from
+							practices_practiceresult_question
+						where
+							practice_problem_id = #{practice_problem_id}
+							and question_num = #{question_num}
+							and useranswer1 != ''
+							and course_enrollment_id in (
+								select id
+								from enrollments_courseenrollment
+								where course_id  = #{course_id}
+							)
+						union all
+						select
+							question_num,
+							unnest(string_to_array(useranswer2,'|')) as answer
+						from
+							practices_practiceresult_question
+						where
+							practice_problem_id = #{practice_problem_id}
+							and question_num = #{question_num}
+							and useranswer2 != ''	
+							and course_enrollment_id in (
+								select id
+								from enrollments_courseenrollment
+								where course_id  = #{course_id}
+							)
+					) a
+				group by a.question_num
+			) c on a.question_num = c.question_num
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume = #{volume}
+			and a."group" = #{group}
+			and a.article = #{article}
+			and a.question_num = #{question_num}
+	</select>	
+				
+	<insert id="insertExamsGrammar" parameterType="com.usher.dto.InternalExamsGrammarDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into internal_exams_grammar (
+			created,
+			modified,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+		    question_num,
+		    score
+		) values (
+			now(),
+			now(),
+			#{section},
+			#{book},
+			#{volume},
+			#{group},
+			#{article},
+		    #{question_num},
+		    1
+		)
+	</insert>	
+	
+	<update id="updateExamsGrammar" parameterType="com.usher.dto.InternalExamsGrammarDto">
+		update internal_exams_grammar  set
+			modified = now(),
+			question = #{question},
+			choice_a = #{choice_a},
+			choice_b = #{choice_b},
+			choice_c = #{choice_c},
+			choice_d = #{choice_d},
+			choice_e = #{choice_e},
+			choice_f = #{choice_f},
+			choice_g = #{choice_g},
+			choice_h = #{choice_h},
+			choice_i = #{choice_i},
+			score = #{score},
+			answer = #{answer}
+		where
+			section = #{section}
+			and book = #{book}
+			and volume = #{volume}
+			and "group" = #{group}
+			and article = #{article}
+			and question_num = #{question_num}
+	</update>
+		
+	<delete id="deleteExamsGrammar" parameterType="com.usher.dto.InternalExamsGrammarDto">
+		delete from internal_exams_grammar
+		where
+			section = #{section}
+			and book = #{book}
+			and volume = #{volume}
+			and "group" = #{group}
+			and article = #{article}
+			and question_num = #{question_num}
+	</delete>			
+</mapper>

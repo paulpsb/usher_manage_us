@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.MockTestScheduleDao">
+	<select id="getMockTestSchedule" resultType="com.usher.dto.MockTestScheduleDto" parameterType="com.usher.dto.MockTestScheduleDto">
+		select
+			id,
+			to_char(date,'yyyy-mm-dd') as date,		
+			to_char(start_time,'hh24:mi') as start_time,		
+			to_char(end_time,'hh24:mi') as end_time,		
+			mock_test_min,
+			mock_test,
+			mock_test_reading_min,
+			mock_test_listening_min,
+			mock_test_writing_min,
+			mock_test_speaking_min,
+			course_id
+		from
+			mock_test_schedule
+		where
+			id = #{id}
+	</select>
+	
+	<insert id="insertMockTestSchedule" parameterType="com.usher.dto.MockTestScheduleDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into mock_test_schedule (
+			created,
+			modified,
+			date,
+			start_time,
+			end_time,
+			mock_test_min,
+			mock_test,
+			mock_test_reading_min,
+			mock_test_listening_min,
+			mock_test_writing_min,
+			mock_test_speaking_min,
+			course_id
+		) values (
+			now(),
+			now(),
+			current_date,
+			now(),
+			now() + interval'${mock_test_min} minute',
+			#{mock_test_min},
+			#{mock_test},
+			#{mock_test_reading_min},
+			#{mock_test_listening_min},
+			#{mock_test_writing_min},
+			#{mock_test_speaking_min},
+			#{course_id}
+		)
+	</insert>
+
+</mapper>

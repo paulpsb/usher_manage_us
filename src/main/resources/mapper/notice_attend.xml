@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesAttendDao">
+	<select id="getNoticesAttendUserList" resultType="com.usher.dto.NoticesAttendDto" parameterType="com.usher.dto.NoticesAttendDto">
+		select
+			id,
+			course_group_id,
+			course_id,
+			course_group_name,
+			course_name,
+			attend_date,
+			attend_time,
+			target_id,
+			reference_id,
+			student_count,
+			attend_count
+		from
+			notices_attend
+		where
+			to_char(attend_date,'yyyy-mm-dd') = #{attend_date}
+			and ( target_id = #{user_id} or reference_id = #{user_id} )
+		order by course_group_id, course_id	
+	</select>
+	<select id="getNoticesAttend" resultType="com.usher.dto.NoticesAttendDto" parameterType="com.usher.dto.NoticesAttendDto">
+		select
+			id,
+			course_group_id,
+			course_id,
+			course_group_name,
+			course_name,
+			attend_date,
+			attend_time,
+			target_id,
+			reference_id,
+			student_count,
+			attend_count
+		from
+			notices_attend
+		where
+			id = #{id}
+	</select>	
+</mapper>

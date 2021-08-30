@@ -1,0 +1,1026 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchStatsDao">
+	<select id="getBatchStatsExamMonthList" resultType="com.usher.dto.BatchStatsDto">
+		select
+			to_char(batch_exam_date,'yyyy-mm') semester_date
+		from
+			batch_result
+		where
+			course_id = 0
+		group by to_char(batch_exam_date,'yyyy-mm')
+		order by 1 desc
+	</select>
+	
+	<select id="getBatchStatsMonthlyList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		with batch as (
+			select 
+				substr(b.attend_start_date,1,7) as semester_date,
+				a.id as batch_id,
+				a.user_id,
+				to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+				b.attend_start_date,
+				c.id as student_id,
+				b.name as student_name,
+				a.batch_finally_student_type,
+				concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as adviser_name,
+				concat(
+						case when a.batch_finally_student_type = 'SENIOR' then '성인' else '주니어' end,' ',
+						case a.batch_finally_course_group when 'REGULAR_MON_FRI' then '월수금' when 'REGULAR_TUE_THU' then '화목' when 'SPECIAL' then '특강' else '정규' end ) as course_group_name,
+				a.batch_finally_courses as course_name,
+				a.batch_adviser_register_yn,
+				coalesce(a.batch_adviser_advice,'') as batch_adviser_advice,
+				a.batch_adviser_not_register_desc,
+				to_char(a.batch_adviser_register_date,'yyyy-mm-dd') as batch_adviser_register_date
+			from
+				batch_result a
+				join users_personalinfo b on a.user_id = b.user_id
+				join students_student c on a.user_id = c.user_id
+				left join auth_user d on a.batch_adviser_advice_id = d.id
+			where
+				a.course_id = 0
+				and a.batch_finally_course_group != 'SINGLE'
+				and a.batch_finally_course_group != 'LIGHT'
+				and a.batch_finally_test_type = 'TOEFL'
+				and to_char(a.batch_exam_date,'yyyy-mm') = #{semester_date}
+				and coalesce(b.attend_start_date,'') != ''
+		)
+		select
+			a.semester_date
+		from
+			batch a
+		where
+			a.batch_finally_student_type = #{batch_finally_student_type}
+		group by a.semester_date
+		order by 1	
+	</select>
+	<select id="getBatchStatsDailyList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		with enrollment as (
+				select
+					j.user_id,
+					f.test_type as batch_finally_test_type,
+					f.student_type as batch_finally_student_type,
+					case when f.student_type = 'JUNIOR' then
+						case f.days when '2,4,6' then 'REGULAR_MON_FRI' when '3,5' then 'REGULAR_TUE_THU' else f.lecture_type end
+					else f.lecture_type end as batch_finally_course_group,
+					e.name as batch_finally_courses
+				from 
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+					join courses_semester d on a.semester_id = d.id
+					join courses_course e on b.course_id = e.id
+					join courses_coursegroup f on e.course_group_id = f.id
+					join students_student j on a.student_id = j.id
+					join courses_allocation i on b.id = i.course_enrollment_id
+				where
+					( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+					and i.registration_type = 'NEW'
+		),
+		batch as (
+			select
+				a.id,
+				a.user_id,
+				b.name as student_name,
+				'' as batch_resv_date,
+				'' as batch_change_date,
+				to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+				concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as adviser_name,
+				a.batch_finally_test_type,
+				a.batch_finally_student_type,
+				a.batch_finally_course_group,
+				a.batch_finally_courses,
+				a.batch_adviser_advice,
+				b.attend_start_date,
+				a.batch_desk_register_yn as batch_adviser_register_yn,
+				a.batch_desk_not_register_desc as batch_adviser_not_register_desc,
+				a.batch_desk_register_date as  batch_adviser_register_date,
+				a.batch_send_kakao_before_yn,
+				a.batch_send_kakao_current_yn,
+				a.batch_send_phone_yn,
+				a.batch_finally_not_register_desc
+			from
+				batch_result a
+				join users_personalinfo b on a.user_id = b.user_id
+				join batch_schedule c on a.batch_schedule_id = c.id
+				left join auth_user d on c.batch_adviser_id = d.id
+			where
+				a.course_id = 0
+			<if test="batch_exam_date != null and batch_exam_date !='' ">	
+				and to_char(a.batch_exam_date,'yyyy-mm') = #{batch_exam_date}	
+			</if>
+			<if test="batch_schedule_id > 0 ">
+				and a.batch_schedule_id = #{batch_schedule_id}	
+			</if>
+		)
+		select
+			a.id as batch_result_id,
+			a.user_id,
+			a.student_name,
+			a.batch_resv_date,
+			a.batch_change_date,
+			a.batch_exam_date,
+			a.adviser_name,
+			coalesce(b.batch_finally_test_type, a.batch_finally_test_type) as batch_finally_test_type,
+			coalesce(b.batch_finally_student_type, a.batch_finally_student_type) as batch_finally_student_type,
+			coalesce(b.batch_finally_course_group, a.batch_finally_course_group) as batch_finally_course_group,
+			coalesce(b.batch_finally_courses, a.batch_finally_courses) as batch_finally_courses,
+			a.batch_adviser_advice,
+			a.attend_start_date,
+			a.batch_adviser_register_yn,
+			a.batch_adviser_not_register_desc,
+			case when a.batch_adviser_register_yn = 'Q' or a.batch_adviser_register_yn = 'S' then to_char(a.batch_adviser_register_date,'mm.dd') else '' end as batch_adviser_register_date,
+			a.batch_send_kakao_before_yn,
+			a.batch_send_kakao_current_yn,
+			a.batch_send_phone_yn,
+			case when b.user_id is null then
+				case when (a.batch_adviser_register_yn = 'Q' or a.batch_adviser_register_yn = 'S') and to_char(a.batch_adviser_register_date,'yyyy-mm-dd') >= to_char(current_date,'yyyy-mm-dd') then 'S' else 'N' end   
+			else 'Y' end as batch_finally_register_yn,
+			a.batch_finally_not_register_desc
+		from
+			batch a
+			left join enrollment b on a.user_id = b.user_id
+		where 1=1
+		<if test="batch_finally_test_type != null and batch_finally_test_type !='' ">	
+			and a.batch_finally_test_type = #{batch_finally_test_type}
+		</if>
+		<if test="batch_finally_student_type != null and batch_finally_student_type !='' ">	
+			and a.batch_finally_student_type = #{batch_finally_student_type}
+		</if>
+		<if test="batch_finally_course_group != null and batch_finally_course_group !='' ">	
+			and a.batch_finally_course_group = #{batch_finally_course_group}
+		</if>		
+		<if test="student_name != null and student_name !='' ">	
+			and a.name like concat('%',#{student_name},'%')
+		</if>
+		<if test="batch_adviser_register_yn != null and batch_adviser_register_yn !='' ">	
+			and a.batch_adviser_register_yn = #{batch_adviser_register_yn}
+			and to_char(a.batch_adviser_register_date,'yyyy-mm-dd') = #{batch_adviser_register_date}
+			and (case when b.user_id is not null then 'Y' else 'N' end) = 'N'
+		</if>			
+		order by a.id		
+	</select>
+	<select id="getBatchStatsList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		with batch as (
+			select 
+				substr(b.attend_start_date,1,7) as semester_date,
+				a.id as batch_id,
+				a.user_id,
+				to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+				b.attend_start_date,
+				c.id as student_id,
+				b.name as student_name,
+				a.batch_finally_student_type,
+				concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as adviser_name,
+				concat(
+						case when a.batch_finally_student_type = 'SENIOR' then '성인' else '주니어' end,' ',
+						case a.batch_finally_course_group when 'REGULAR_MON_FRI' then '월수금' when 'REGULAR_TUE_THU' then '화목' when 'SPECIAL' then '특강' else '정규' end ) as course_group_name,
+				a.batch_finally_courses as course_name,
+				a.batch_desk_register_yn as batch_adviser_register_yn,
+				coalesce(a.batch_adviser_advice,'') as batch_adviser_advice,
+				a.batch_desk_not_register_desc as batch_adviser_not_register_desc,
+				to_char(a.batch_desk_register_date,'yyyy-mm-dd') as batch_adviser_register_date
+			from
+				batch_result a
+				join users_personalinfo b on a.user_id = b.user_id
+				join students_student c on a.user_id = c.user_id
+				left join auth_user d on a.batch_adviser_advice_id = d.id
+			where
+				a.course_id = 0
+				and a.batch_finally_course_group != 'SINGLE'
+				and a.batch_finally_course_group != 'LIGHT'
+				and a.batch_finally_test_type = 'TOEFL'
+				and to_char(a.batch_exam_date,'yyyy-mm') = #{semester_date}
+				and coalesce(b.attend_start_date,'') != ''
+		),
+		enrollment as (
+				select
+					to_char(d.date,'yyyy-mm') as semester_date,
+					a.student_id,
+					case when f.lecture_type = 'SPECIAL' then '주니어 특강' else f.name end as course_group_name,
+					e.name as course_name
+				from 
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+					join courses_semester d on a.semester_id = d.id
+					join courses_course e on b.course_id = e.id
+					join courses_coursegroup f on e.course_group_id = f.id
+					join courses_allocation i on b.id = i.course_enrollment_id
+				where
+					( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+					and i.registration_type = 'NEW'
+		)
+		select
+			a.semester_date,
+			a.user_id,
+			a.batch_finally_student_type,
+			a.student_name,
+			a.batch_resv_date,
+			a.batch_change_date,
+			a.batch_exam_date,
+			a.adviser_name,
+			a.course_group_name,
+			a.course_name,
+			a.batch_adviser_advice,
+			a.attend_start_date,
+			a.batch_adviser_register,
+			a.batch_adviser_not_register_desc,
+			a.batch_adviser_register_date,
+			a.student_send,
+			a.real_register,
+			a.finally_register,
+			a.finally_register_detail
+		from
+			(
+				select
+					a.user_id,
+					a.semester_date,
+					a.batch_finally_student_type,
+					a.student_name,
+					a.batch_exam_date as batch_resv_date,
+					'' as batch_change_date,
+					a.batch_exam_date,
+					a.adviser_name,
+					case when b.semester_date is not null then b.course_group_name else a.course_group_name end as course_group_name,
+					case when b.semester_date is not null then b.course_name else a.course_name end as course_name,
+					a.batch_adviser_advice,
+					a.attend_start_date,
+					case a.batch_adviser_register_yn when 'Y' then '당일등록' when 'N' then '거절' when 'S' then '등록예정' when 'Q' then '고민' else '거절' end as batch_adviser_register,
+					a.batch_adviser_not_register_desc,
+					case a.batch_adviser_register_yn when 'Y' then a.attend_start_date when 'N' then '' when 'S' then a.batch_adviser_register_date when 'Q' then a.batch_adviser_register_date else '' end as batch_adviser_register_date,
+					'' as student_send,
+					case when b.semester_date is not null then '등록' else
+						case a.batch_adviser_register_yn 
+							when 'Y' then '미등록' 
+							when 'N' then '미등록' 
+							when 'S' then case when a.batch_adviser_register_date >= to_char(current_date,'yyyy-mm-dd') then '예정 대기'  else '미등록' end
+							when 'Q' then case when a.batch_adviser_register_date >= to_char(current_date,'yyyy-mm-dd') then '고민 대기'  else '미등록' end
+							else '미등록' 
+						end 
+					end as real_register,
+					case when b.semester_date is not null then '등록' else '미등록' end as finally_register,
+					case when b.semester_date is not null then '등록' else
+						case a.batch_adviser_register_yn when 'Y' then '거절' when 'N' then '거절' when 'S' then '예정' when 'Q' then '고민' else '거절' end end as finally_register_detail
+				from
+					batch a
+					left join enrollment b on a.semester_date = b.semester_date and a.student_id = b.student_id
+			) a
+		where
+			a.batch_finally_student_type = #{batch_finally_student_type}
+		<if test="finally_register != null and finally_register !='' ">	
+			and finally_register = #{finally_register}
+		</if>			
+		<if test="finally_register_detail != null and finally_register_detail !='' ">	
+			and finally_register_detail = #{finally_register_detail}
+		</if>	
+		<if test="semester_registration_date != null and semester_registration_date !='' ">	
+			and semester_date = #{semester_registration_date}
+		</if>			
+		order by a.semester_date
+	</select>	
+	<select id="getBatchStatsCourseNewList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		with batch as (
+			select 
+					a.id as batch_id,
+					a.user_id,
+					to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+					b.attend_start_date,
+					c.id as student_id,
+					b.name as student_name,
+					a.batch_finally_student_type,
+					concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as adviser_name,
+					concat(
+							case when a.batch_finally_student_type = 'SENIOR' then '성인' else '주니어' end,' ',
+							case a.batch_finally_course_group when 'REGULAR_MON_FRI' then '월수금' when 'REGULAR_TUE_THU' then '화목' when 'SPECIAL' then '특강' else '정규' end ) as course_group_name,
+					a.batch_finally_courses as course_name,
+					a.batch_desk_register_yn as batch_adviser_register_yn,
+					coalesce(a.batch_adviser_advice,'') as batch_adviser_advice,
+					a.batch_desk_not_register_desc as batch_adviser_not_register_desc,
+					to_char(a.batch_desk_register_date,'yyyy-mm-dd') as batch_adviser_register_date,
+					coalesce(a.chamgang_yn,'N') as chamgang_yn
+				from
+					batch_result a
+					join users_personalinfo b on a.user_id = b.user_id
+					join students_student c on a.user_id = c.user_id
+					left join auth_user d on a.batch_adviser_advice_id = d.id
+				where
+					a.course_id = 0
+					and a.batch_finally_course_group != 'SINGLE'
+					and a.batch_finally_course_group != 'LIGHT'
+					and a.batch_finally_test_type = 'TOEFL'
+					and substr(b.attend_start_date,1,7) = #{semester_date}
+			),
+			enrollment as (
+				select
+					a.student_id,
+					f.name as course_group_name,
+					e.name as course_name,
+					coalesce(b.chamgang_yn,'N') as chamgang_yn
+				from 
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+					join courses_semester d on a.semester_id = d.id
+					join courses_course e on b.course_id = e.id
+					join courses_coursegroup f on e.course_group_id = f.id
+					join courses_allocation i on b.id = i.course_enrollment_id
+				where
+					( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+					and i.registration_type = 'NEW'
+					and to_char(d.date,'yyyy-mm') = #{semester_date}
+			)
+		select
+			a.user_id,
+			a.batch_finally_student_type,
+			a.student_name,
+			a.course_group_name,
+			a.course_name,
+			a.real_register,
+			a.chamgang_yn	
+		from
+			(
+				select 
+					a.user_id,
+					a.batch_finally_student_type,
+					a.student_name,
+					case when b.student_id is not null then b.course_group_name else a.course_group_name end as course_group_name,
+					case when b.student_id is not null then b.course_name else a.course_name end as course_name,
+					case when b.student_id is not null then '등록' else
+						case a.batch_adviser_register_yn 
+							when 'Y' then '미결'
+							when 'N' then '미결' 
+							when 'S' then '예정'
+							when 'Q' then '고민' 
+							else '미결' 
+						end 
+					end as real_register,
+					coalesce(b.chamgang_yn,coalesce(a.chamgang_yn,'N')) as chamgang_yn	
+				from
+					batch a
+					left join enrollment b on a.student_id = b.student_id
+			) a
+		where
+			course_group_name = #{course_group_name}
+		order by a.course_name, a.real_register	
+	</select>	
+	
+	<select id="getBatchStatsCourseNewSpecialList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		with batch as (
+			select 
+					a.id as batch_id,
+					a.user_id,
+					to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+					b.attend_start_date,
+					c.id as student_id,
+					b.name as student_name,
+					a.batch_finally_student_type,
+					concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as adviser_name,
+					concat(
+							case when a.batch_finally_student_type = 'SENIOR' then '성인' else '주니어' end,' ',
+							case a.batch_finally_course_group when 'REGULAR_MON_FRI' then '월수금' when 'REGULAR_TUE_THU' then '화목' when 'SPECIAL' then '특강' else '정규' end ) as course_group_name,
+					a.batch_finally_courses as course_name,
+					a.batch_desk_register_yn as batch_adviser_register_yn,
+					coalesce(a.batch_adviser_advice,'') as batch_adviser_advice,
+					a.batch_desk_not_register_desc as batch_adviser_not_register_desc,
+					to_char(a.batch_desk_register_date,'yyyy-mm-dd') as batch_adviser_register_date,
+					coalesce(a.chamgang_yn,'N') as chamgang_yn
+				from
+					batch_result a
+					join users_personalinfo b on a.user_id = b.user_id
+					join students_student c on a.user_id = c.user_id
+					left join auth_user d on a.batch_adviser_advice_id = d.id
+				where
+					a.course_id = 0
+					and a.batch_finally_course_group != 'SINGLE'
+					and a.batch_finally_course_group != 'LIGHT'
+					and a.batch_finally_test_type = 'TOEFL'
+					and substr(b.attend_start_date,1,7) = #{semester_date}
+			),
+			enrollment as (
+				select
+					a.student_id,
+					f.name as course_group_name,
+					e.name as course_name,
+					coalesce(b.chamgang_yn,'N') as chamgang_yn
+				from 
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+					join courses_semester d on a.semester_id = d.id
+					join courses_course e on b.course_id = e.id
+					join courses_coursegroup f on e.course_group_id = f.id
+					join courses_allocation i on b.id = i.course_enrollment_id
+				where
+					( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+					and i.registration_type = 'NEW'
+					and to_char(d.date,'yyyy-mm') = #{semester_date}
+			)
+		select
+			a.user_id,
+			a.batch_finally_student_type,
+			a.student_name,
+			a.course_group_name,
+			a.course_name,
+			a.real_register,
+			a.chamgang_yn
+		from
+			(
+				select 
+					a.user_id,
+					a.batch_finally_student_type,
+					a.student_name,
+					case when b.student_id is not null then b.course_group_name else a.course_group_name end as course_group_name,
+					case when b.student_id is not null then b.course_name else a.course_name end as course_name,
+					case when b.student_id is not null then '등록' else
+						case a.batch_adviser_register_yn 
+							when 'Y' then '미결'
+							when 'N' then '미결' 
+							when 'S' then '예정'
+							when 'Q' then '고민' 
+							else '미결' 
+						end 
+					end as real_register,
+					coalesce(b.chamgang_yn,coalesce(a.chamgang_yn,'N')) as chamgang_yn		
+				from
+					batch a
+					left join enrollment b on a.student_id = b.student_id
+			) a
+		where
+			course_group_name = '주니어 특강'
+		order by a.course_name, a.real_register	
+	</select>
+	<select id="getBatchStatsEnrollmentNewList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		select
+			a.user_id,
+			a.student_id,
+			a.course_group_name,
+			a.course_name,
+			'등록' as real_register,
+			a.chamgang_yn
+		from
+			(
+				select
+					k.id as user_id,
+					a.student_id,
+					f.name as course_group_name,
+					e.name as course_name,
+					coalesce(b.chamgang_yn,'N') as chamgang_yn
+				from 
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+					join courses_semester d on a.semester_id = d.id
+					join courses_course e on b.course_id = e.id
+					join courses_coursegroup f on e.course_group_id = f.id
+					join students_student j on a.student_id = j.id
+					join auth_user k on j.user_id = k.id
+					join courses_allocation i on b.id = i.course_enrollment_id
+				where
+					( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+					and i.registration_type = 'NEW'
+					and k.username != 'test6' and k.username != 'test5'
+					and to_char(d.date,'yyyy-mm') = #{semester_date}
+			) a
+		where
+			course_group_name = #{course_group_name}
+		order by a.course_name
+	</select>	
+	<select id="getBatchStatsCourseExistsList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		with batch as (
+			select
+				k.id as user_id,
+				k.username,
+				concat(k.last_name,k.first_name) as student_name,
+				a.student_id,
+				case when f.lecture_type = 'SPECIAL' then '주니어 특강' else f.name end as course_group_name,
+				e.name as course_name,
+				b.status,
+				b.refund_status,
+				m.mobile_no,
+				coalesce(m.tel_emergency_number,'') as mobile_parent_no,
+				coalesce(n.school_gubun,'') as school_gubun,
+				coalesce(n.school_foreign_gubun,'') as school_foreign_gubun,
+				coalesce(n.school_area1,'') as school_area1,
+				coalesce(n.school_area2,'') as school_area2,
+				coalesce(n.school_name,'') as school_name,
+				coalesce(l.third_repetition_result,'N') as third_repetition_result,
+				coalesce(b.chamgang_yn,'N') as chamgang_yn
+			from 
+				enrollments_semesterenrollment a
+				join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+				join courses_semester d on a.semester_id = d.id
+				join courses_course e on b.course_id = e.id
+				join courses_coursegroup f on e.course_group_id = f.id
+				join students_student j on a.student_id = j.id
+				join auth_user k on j.user_id = k.id
+				join enrollments_repetitionenrollment l on b.id = l.course_enrollment_id
+				join users_personalinfo m on k.id = m.user_id
+				left join users_school n on k.id = n.user_id
+				join courses_allocation i on b.id = i.course_enrollment_id
+			where
+				( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+				and k.username != 'test6' and k.username != 'test5'
+				and to_char(d.date,'yyyy-mm') = #{prev_semester_date}
+				and coalesce(l.third_repetition_result,'N') = 'Y'
+		) ,
+		enrollment as(
+			select
+				k.id as user_id
+			from 
+				enrollments_semesterenrollment a
+				join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+				join courses_semester d on a.semester_id = d.id
+				join courses_course e on b.course_id = e.id
+				join courses_coursegroup f on e.course_group_id = f.id
+				join students_student j on a.student_id = j.id
+				join auth_user k on j.user_id = k.id
+				join courses_allocation i on b.id = i.course_enrollment_id
+			where
+				( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+				and k.username != 'test6' and k.username != 'test5'
+				and to_char(d.date,'yyyy-mm') = #{semester_date}
+			group by k.id
+		)
+		select
+			a.user_id,
+			a.username,
+			a.student_name,
+			a.student_id,
+			a.course_group_name,
+			a.course_name,
+			a.mobile_no,
+			a.mobile_parent_no,
+			a.school_gubun,
+			a.school_foreign_gubun,
+			a.school_area1,
+			a.school_area2,
+			a.school_name,				
+			'등록' as real_register,
+			a.chamgang_yn
+		from
+			(
+				select
+					k.id as user_id,
+					k.username,
+					concat(k.last_name,k.first_name) as student_name,
+					a.student_id,
+					f.name as course_group_name,
+					m.mobile_no,
+					coalesce(m.tel_emergency_number,'') as mobile_parent_no,
+					coalesce(n.school_gubun,'') as school_gubun,
+					coalesce(n.school_foreign_gubun,'') as school_foreign_gubun,
+					coalesce(n.school_area1,'') as school_area1,
+					coalesce(n.school_area2,'') as school_area2,
+					coalesce(n.school_name,'') as school_name,			
+					e.name as course_name,
+					coalesce(b.chamgang_yn,'N') as chamgang_yn
+				from 
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+					join courses_semester d on a.semester_id = d.id
+					join courses_course e on b.course_id = e.id
+					join courses_coursegroup f on e.course_group_id = f.id
+					join students_student j on a.student_id = j.id
+					join auth_user k on j.user_id = k.id
+					join users_personalinfo m on k.id = m.user_id
+					left join users_school n on k.id = n.user_id
+					join courses_allocation i on b.id = i.course_enrollment_id
+				where
+					( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+					and i.registration_type != 'NEW'
+					and k.username != 'test6' and k.username != 'test5'
+					and to_char(d.date,'yyyy-mm') = #{semester_date}
+			) a
+		where
+			course_group_name = #{course_group_name}
+		union all
+		select
+			a.user_id,
+			a.username,
+			a.student_name,
+			a.student_id,
+			a.course_group_name,
+			a.course_name,
+			a.mobile_no,
+			a.mobile_parent_no,
+			a.school_gubun,
+			a.school_foreign_gubun,
+			a.school_area1,
+			a.school_area2,
+			a.school_name,			
+			'예정' as real_register,
+			coalesce(a.chamgang_yn,'N') as chamgang_yn
+		from
+			batch a
+		where
+			not exists(
+				select *
+				from
+					enrollment b
+				where
+					a.user_id = b.user_id
+			)
+			and a.course_group_name = #{course_group_name}
+		order by course_name	
+	</select>
+	<select id="getBatchStatsCourseExistsSpecialList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+	<![CDATA[
+		with course_group as (
+			select
+				b.id as course_group_id
+			from
+				courses_semester a
+				join courses_coursegroup b on a.id = b.semester_id
+			where
+				to_char(a.date,'yyyy-mm') = #{semester_date}
+				and b.name = #{course_group_name}
+		), 
+		course_before_group as (
+			select max(id) as course_before_group_id
+			from
+				courses_coursegroup
+			where
+				lecture_type = 'SPECIAL'
+				and id < ( select course_group_id from course_group)
+		),
+		batch as (
+			select
+				k.id as user_id,
+				k.username,
+				concat(k.last_name,k.first_name) as student_name,
+				a.student_id,
+				f.name as course_group_name,
+				e.name as course_name,
+				b.status,
+				b.refund_status,
+				m.mobile_no,
+				coalesce(m.tel_emergency_number,'') as mobile_parent_no,
+				coalesce(n.school_gubun,'') as school_gubun,
+				coalesce(n.school_foreign_gubun,'') as school_foreign_gubun,
+				coalesce(n.school_area1,'') as school_area1,
+				coalesce(n.school_area2,'') as school_area2,
+				coalesce(n.school_name,'') as school_name,
+				coalesce(l.third_repetition_result,'N') as third_repetition_result,
+				coalesce(b.chamgang_yn,'N') as chamgang_yn
+			from 
+				enrollments_semesterenrollment a
+				join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+				join courses_semester d on a.semester_id = d.id
+				join courses_course e on b.course_id = e.id
+				join courses_coursegroup f on e.course_group_id = f.id
+				join students_student j on a.student_id = j.id
+				join auth_user k on j.user_id = k.id
+				join enrollments_repetitionenrollment l on b.id = l.course_enrollment_id
+				join users_personalinfo m on k.id = m.user_id
+				left join users_school n on k.id = n.user_id
+				join courses_allocation i on b.id = i.course_enrollment_id
+			where
+				( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+				and k.username != 'test6' and k.username != 'test5'
+				and coalesce(l.third_repetition_result,'N') = 'Y'
+				and f.id = (select course_before_group_id from course_before_group)
+		),
+		enrollment as(
+			select
+				k.id as user_id
+			from 
+				enrollments_semesterenrollment a
+				join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+				join courses_semester d on a.semester_id = d.id
+				join courses_course e on b.course_id = e.id
+				join courses_coursegroup f on e.course_group_id = f.id
+				join students_student j on a.student_id = j.id
+				join auth_user k on j.user_id = k.id
+				join courses_allocation i on b.id = i.course_enrollment_id
+			where
+				( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+				and k.username != 'test6' and k.username != 'test5'
+				and f.id = (select course_group_id from course_group)
+			group by k.id
+		)	
+		select
+			a.user_id,
+			a.username,
+			a.student_name,
+			a.student_id,
+			a.course_group_name,
+			a.course_name,
+			a.mobile_no,
+			a.mobile_parent_no,
+			a.school_gubun,
+			a.school_foreign_gubun,
+			a.school_area1,
+			a.school_area2,
+			a.school_name,				
+			'등록' as real_register,
+			a.chamgang_yn
+		from
+			(
+				select
+					k.id as user_id,
+					k.username,
+					concat(k.last_name,k.first_name) as student_name,
+					a.student_id,
+					f.name as course_group_name,
+					m.mobile_no,
+					coalesce(m.tel_emergency_number,'') as mobile_parent_no,
+					coalesce(n.school_gubun,'') as school_gubun,
+					coalesce(n.school_foreign_gubun,'') as school_foreign_gubun,
+					coalesce(n.school_area1,'') as school_area1,
+					coalesce(n.school_area2,'') as school_area2,
+					coalesce(n.school_name,'') as school_name,			
+					e.name as course_name,
+					coalesce(b.chamgang_yn,'N') as chamgang_yn
+				from 
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+					join courses_semester d on a.semester_id = d.id
+					join courses_course e on b.course_id = e.id
+					join courses_coursegroup f on e.course_group_id = f.id
+					join students_student j on a.student_id = j.id
+					join auth_user k on j.user_id = k.id
+					join users_personalinfo m on k.id = m.user_id
+					left join users_school n on k.id = n.user_id
+					join courses_allocation i on b.id = i.course_enrollment_id
+				where
+					( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+					and i.registration_type != 'NEW'
+					and k.username != 'test6' and k.username != 'test5'
+					and to_char(d.date,'yyyy-mm') = #{semester_date}
+			) a
+		where
+			course_group_name = #{course_group_name}	
+		union all
+		select
+			a.user_id,
+			a.username,
+			a.student_name,
+			a.student_id,
+			a.course_group_name,
+			a.course_name,
+			a.mobile_no,
+			a.mobile_parent_no,
+			a.school_gubun,
+			a.school_foreign_gubun,
+			a.school_area1,
+			a.school_area2,
+			a.school_name,			
+			'예정' as real_register,
+			coalesce(a.chamgang_yn,'N') as chamgang_yn
+		from
+			batch a
+		where
+			not exists(
+				select *
+				from
+					enrollment b
+				where
+					a.user_id = b.user_id
+			)
+		order by course_name
+	]]>	
+	</select>
+	<select id="getBatchStatsNewList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		with batch as (
+			select 
+					substr(b.attend_start_date,1,7) as semester_date,
+					a.id as batch_id,
+					a.user_id,
+					to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+					b.attend_start_date,
+					c.id as student_id,
+					b.name as student_name,
+					a.batch_finally_student_type,
+					concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as adviser_name,
+					concat(
+							case when a.batch_finally_student_type = 'SENIOR' then '성인' else '주니어' end,' ',
+							case a.batch_finally_course_group when 'REGULAR_MON_FRI' then '월수금' when 'REGULAR_TUE_THU' then '화목' when 'SPECIAL' then '특강' else '정규' end ) as course_group_name,
+					a.batch_finally_courses as course_name,
+					a.batch_desk_register_yn as batch_adviser_register_yn,
+					coalesce(a.batch_adviser_advice,'') as batch_adviser_advice,
+					a.batch_desk_not_register_desc as batch_adviser_not_register_desc,
+					to_char(a.batch_desk_register_date,'yyyy-mm-dd') as batch_adviser_register_date,
+					coalesce(a.chamgang_yn,'N') as chamgang_yn
+				from
+					batch_result a
+					join users_personalinfo b on a.user_id = b.user_id
+					join students_student c on a.user_id = c.user_id
+					left join auth_user d on a.batch_adviser_advice_id = d.id
+				where
+					a.course_id = 0
+					and a.batch_finally_course_group != 'SINGLE'
+					and a.batch_finally_course_group != 'LIGHT'
+					and a.batch_finally_test_type = 'TOEFL'
+					and substr(b.attend_start_date,1,7) = #{semester_date}
+			),
+			enrollment as (
+				select
+					a.student_id,
+					case when f.lecture_type = 'SPECIAL' then '주니어 특강' else f.name end as course_group_name,
+					e.name as course_name,
+					coalesce(b.chamgang_yn,'N') as chamgang_yn	
+				from 
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+					join courses_semester d on a.semester_id = d.id
+					join courses_course e on b.course_id = e.id
+					join courses_coursegroup f on e.course_group_id = f.id
+					join courses_allocation i on b.id = i.course_enrollment_id
+				where
+					( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+					and i.registration_type = 'NEW'
+					and to_char(d.date,'yyyy-mm') = #{semester_date}
+			)
+		select
+			a.semester_date,
+			a.user_id,
+			a.batch_finally_student_type,
+			a.student_name,
+			a.batch_resv_date,
+			a.batch_change_date,
+			a.batch_exam_date,
+			a.adviser_name,
+			a.course_group_name,
+			a.course_name,
+			a.batch_adviser_advice,
+			a.attend_start_date,
+			a.batch_adviser_register,
+			a.batch_adviser_not_register_desc,
+			a.batch_adviser_register_date,
+			a.student_send,
+			a.real_register,
+			a.finally_register,
+			a.finally_register_detail,
+			a.chamgang_yn	
+		from
+			(
+				select 
+					a.user_id,
+					a.semester_date,
+					a.batch_finally_student_type,
+					a.student_name,
+					a.batch_exam_date as batch_resv_date,
+					'' as batch_change_date,
+					a.batch_exam_date,
+					a.adviser_name,
+					case when b.student_id is not null then b.course_group_name else a.course_group_name end as course_group_name,
+					case when b.student_id is not null then b.course_name else a.course_name end as course_name,
+					a.batch_adviser_advice,
+					a.attend_start_date,
+					case a.batch_adviser_register_yn when 'Y' then '당일등록' when 'N' then '거절' when 'S' then '등록예정' when 'Q' then '고민' else '거절' end as batch_adviser_register,
+					a.batch_adviser_not_register_desc,
+					case a.batch_adviser_register_yn when 'Y' then a.attend_start_date when 'N' then '' when 'S' then a.batch_adviser_register_date when 'Q' then a.batch_adviser_register_date else '' end as batch_adviser_register_date,
+					'' as student_send,
+					case when b.student_id is not null then '등록' else
+						case a.batch_adviser_register_yn 
+							when 'Y' then '미등록' 
+							when 'N' then '미등록' 
+							when 'S' then case when a.batch_adviser_register_date >= to_char(current_date,'yyyy-mm-dd') then '예정 대기'  else '미등록' end
+							when 'Q' then case when a.batch_adviser_register_date >= to_char(current_date,'yyyy-mm-dd') then '고민 대기'  else '미등록' end
+							else '미등록' 
+						end 
+					end as real_register,
+					case when b.student_id is not null then '등록' else '미등록' end as finally_register,
+					case when b.student_id is not null then '등록' else
+						case a.batch_adviser_register_yn when 'Y' then '거절' when 'N' then '거절' when 'S' then '예정' when 'Q' then '고민' else '거절' end end as finally_register_detail,
+					case when b.student_id is not null then '등록' else
+						case a.batch_adviser_register_yn 
+							when 'Y' then '미결'
+							when 'N' then '미결' 
+							when 'S' then '예정'
+							when 'Q' then '고민' 
+							else '미결' 
+						end 
+					end as real_search_register,
+					coalesce(b.chamgang_yn,coalesce(a.chamgang_yn,'N')) as chamgang_yn	
+				from
+					batch a
+					left join enrollment b on a.student_id = b.student_id
+			) a
+		where
+			course_group_name = #{course_group_name}
+			and course_name = #{course_name}
+			and real_search_register = #{real_search_register}
+		order by a.course_name, a.real_register		
+	</select>
+	<select id="getBatchStatsResultList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		select
+			a.batch_schedule_id,
+			a.batch_exam_date,
+			a.start_time,
+			a.end_time,	
+			a.batch_adviser_name,
+			sum(case when a.enrollment_yn = 'Y' then 1 else 0 end) as success_count,
+			sum(case when a.enrollment_yn = 'N' then 1 else 0 end) as fail_count
+		from
+			(
+				select
+					to_char(a.batch_exam_date,'yyyy-mm-dd') as batch_exam_date,
+					to_char(b.start_time,'HH24:MI') as start_time,
+					to_char(b.end_time,'HH24:MI') as end_time,	
+					a.user_id,
+					a.batch_schedule_id,
+					concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as batch_adviser_name,
+					case when d.user_id is not null then 'Y' else 'N' end as enrollment_yn
+				from
+					batch_result a
+					join batch_schedule b on a.batch_schedule_id = b.id
+					left join auth_user c on b.batch_adviser_id = c.id
+					left join (
+						select
+							j.user_id
+						from 
+							enrollments_semesterenrollment a
+							join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+							join courses_semester d on a.semester_id = d.id
+							join courses_course e on b.course_id = e.id
+							join courses_coursegroup f on e.course_group_id = f.id
+							join students_student j on a.student_id = j.id
+							join courses_allocation i on b.id = i.course_enrollment_id
+						where
+							( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+							and i.registration_type = 'NEW'
+						group by j.user_id	
+					) d on a.user_id = d.user_id
+				where
+					to_char(batch_exam_date,'yyyy-mm') = #{semester_date}
+			) a
+		group by a.batch_exam_date,	a.start_time, a.end_time, a.batch_adviser_name, a.batch_schedule_id
+		order by 2, 3, 4	
+	</select>
+	<select id="getBatchStatsPrepareList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		select
+			a.batch_exam_date,
+			sum(case when a.batch_adviser_register_yn = 'Q' and a.batch_send_phone_yn = 'Y' then 1 else 0 end) as register_q_y_count,
+			sum(case when a.batch_adviser_register_yn = 'Q' and a.batch_send_phone_yn != 'Y' then 1 else 0 end) as register_q_n_count,
+			sum(case when a.batch_adviser_register_yn = 'S' and a.batch_send_phone_yn = 'Y' then 1 else 0 end) as register_s_y_count,
+			sum(case when a.batch_adviser_register_yn = 'S' and a.batch_send_phone_yn != 'Y' then 1 else 0 end) as register_s_n_count
+		from
+			(
+				select
+					to_char(a.batch_desk_register_date,'yyyy-mm-dd') as batch_exam_date,
+					a.user_id,
+					a.batch_desk_register_yn as batch_adviser_register_yn,
+					coalesce(a.batch_send_phone_yn,'N') as batch_send_phone_yn,
+					case when d.user_id is not null then 'Y' else 'N' end as enrollment_yn
+				from
+					batch_result a
+					left join (
+						select
+							j.user_id
+						from 
+							enrollments_semesterenrollment a
+							join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+							join courses_semester d on a.semester_id = d.id
+							join courses_course e on b.course_id = e.id
+							join courses_coursegroup f on e.course_group_id = f.id
+							join students_student j on a.student_id = j.id
+							join courses_allocation i on b.id = i.course_enrollment_id
+						where
+							( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+							and i.registration_type = 'NEW'
+						group by j.user_id	
+					) d on a.user_id = d.user_id
+				where
+					to_char(a.batch_adviser_register_date,'yyyy-mm') = #{semester_date}
+					and a.batch_adviser_register_yn in ('Q','S')
+			) a
+		where
+			a.enrollment_yn = 'N'
+		group by a.batch_exam_date
+		order by 1, 2, 3	
+	</select>
+	<select id="getBatchStatsAdviserCountList" resultType="com.usher.dto.BatchStatsDto" parameterType="com.usher.dto.BatchStatsDto">
+		select
+			a.adviser_name,
+			count(*) as total_count,
+			sum(case when enrollment_yn = 'Y' then 1 else 0 end) as success_count
+		from
+			(
+				select
+					a.user_id,
+					concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as adviser_name,
+					case when d.user_id is not null then 'Y' else 'N' end as enrollment_yn
+				from
+					batch_result a
+					join batch_schedule b on a.batch_schedule_id = b.id
+					join auth_user c on b.batch_adviser_id = c.id
+					left join (
+						select
+							j.user_id
+						from 
+							enrollments_semesterenrollment a
+							join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+							join courses_semester d on a.semester_id = d.id
+							join courses_course e on b.course_id = e.id
+							join courses_coursegroup f on e.course_group_id = f.id
+							join students_student j on a.student_id = j.id
+							join courses_allocation i on b.id = i.course_enrollment_id
+						where
+							( b.status = 'PAID' or b.status = 'REFUND_REQUESTED' or b.refund_status = 'PARTIAL_REFUND' )
+							and i.registration_type = 'NEW'
+						group by j.user_id	
+					) d on a.user_id = d.user_id
+				where
+					to_char(a.batch_exam_date,'yyyy-mm-dd') between #{start_exam_date} and #{end_exam_date}
+			) a
+		group by a.adviser_name
+		order by 3 desc
+	</select>	
+</mapper>

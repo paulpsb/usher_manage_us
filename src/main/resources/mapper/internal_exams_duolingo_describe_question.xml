@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsDuolingoDescribeQuestionDao">
+	<select id="getExamsDuolingoDescribeQuestionList" resultType="com.usher.dto.InternalExamsDuolingoDescribeQuestionDto" parameterType="com.usher.dto.InternalExamsDuolingoDescribeQuestionDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			a.created_id,
+			concat(coalesce(b.last_name,''),coalesce(b.first_name,'')) as created_name,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.modified_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as modified_name,
+			a.describe_id,
+			a.describe_question,
+			a.describe_question_keyword,
+			a.describe_question_score_keyword,
+			a.describe_question_score_word,
+			a.describe_question_sort
+		from
+			internal_exams_duolingo_describe_question a
+			left join auth_user b on a.created_id = b.id
+			left join auth_user c on a.modified_id = c.id
+		where
+			a.describe_id = #{describe_id}
+		order by a.describe_question_sort
+	</select>
+	
+	<insert id="insertDuolingoDescribeQuestion" parameterType="com.usher.dto.InternalExamsDuolingoDescribeQuestionDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into internal_exams_duolingo_describe_question (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			describe_id,
+			describe_question,
+			describe_question_keyword,
+			describe_question_score_keyword,
+			describe_question_score_word,
+			describe_question_sort
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{describe_id},
+			#{describe_question},
+			#{describe_question_keyword},
+			#{describe_question_score_keyword},
+			#{describe_question_score_word},
+			#{describe_question_sort}
+		)
+	</insert>	
+	
+	<update id="updateDuolingoDescribeQuestion" parameterType="com.usher.dto.InternalExamsDuolingoDescribeQuestionDto">
+		update internal_exams_duolingo_describe_question set
+			modified = now(),
+			modified_id = #{modified_id},
+			describe_question = #{describe_question},
+			describe_question_keyword = #{describe_question_keyword},
+			describe_question_score_keyword = #{describe_question_score_keyword},
+			describe_question_score_word = #{describe_question_score_word},
+			describe_question_sort = #{describe_question_sort}
+		where
+			id = #{id}
+	</update>
+	<delete id="deleteDuolingoDescribeQuestion" parameterType="com.usher.dto.InternalExamsDuolingoDescribeQuestionDto">
+		delete from internal_exams_duolingo_describe_question
+		where
+			id = #{id}
+	</delete>
+</mapper>

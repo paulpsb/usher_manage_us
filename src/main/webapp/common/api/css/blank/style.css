@@ -1,0 +1,109 @@
+@charset "utf-8";
+/* CSS Document */
+html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address,cite,code,del,dfn,
+em,img,ins,kbd,q,samp,strong,sub,var,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,
+tfoot,thead,tr,th,td,summary,article,aside,canvas,details,figcaption,figure,header,hgroup,b,i,small,menu,nav,section,
+time,mark,audio,video,button{margin:0;padding:0}
+footer{font-size:12px}
+article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section,video{display:block}
+li img, dd img{vertical-align:top}
+img{max-width:100%}/* width값이 %로 된 이미지들이 브라우저 폭이 줄 경우 비례를 맞추어 주도록 하기위해 사용(ipad사이즈에서)*/
+
+/* reset.css */
+html,body{width:100%;-webkit-text-size-adjust:none;-webkit-tap-highlight-color:rgba(0, 0, 0, 0)}
+body{color:#333;font-family:"돋움","Dotum","Trebuchet MS",Verdana,Helvetica,Sans-Serif;background-color:#fff;*word-break:break-all;-ms-word-break:break-all;overflow-x:none}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{margin:0;padding:0}
+input,select{font-family:"돋움","Dotum","Trebuchet MS",Verdana,Helvetica,Sans-Serif;vertical-align:middle}
+table{width:100%;border-collapse:collapse}
+fieldset,img,abbr,acronym{border:none}
+address,caption,cite,code,em,strong,th{font-style:normal;font-weight:normal}
+ol,ul{list-style:none}
+caption,th{text-align:left}
+h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal}
+q:before,q:after{content:""}
+img,li{vertical-align:middle}
+a{text-decoration:none;color:#666;cursor:pointer}
+button{border:none;background:none}
+hr{display:none}
+#u_skip,.blind{position:absolute;left:0;top:0;width:0;height:0;font-size:0;line-height:0;text-indent:-9999px;overflow:hidden;visibility:hidden}
+
+/* layout */
+body{width:100%;min-width:1366px;height:768px;background-color:#ececec;}
+#wrap{width:1295px;height:700px;margin:30px;padding-top:6px;padding-left:11px;background-color:#fff;}
+	#header{height:50px;}
+		.top{height:15px;line-height:15px;}
+		.gnb{height:33px;line-height:33px;margin-top:1px;}
+	#container{}
+		.side{float:left;width:115px;height:643px;}
+		#content{float:left;width:1168px;height:641px;}
+
+/*header*/
+.top div{width:38px;height:15px;margin-left:310px;background-color:#e6ffe7;}
+.top div input{float:left;width:20px;height:9px;margin-top:3px;margin-left:9px;font-size:9px;text-align:center;border:none;background-color:inherit;}
+
+.gnb div{float:left;height:33px;line-height:33px;}
+.gnb div input{height:11px;font-size:11px;text-align:center;border:none;background-color:inherit;}
+
+.gnb div.v1{width:256px;margin-left:115px;background-color:#e6ffe7;}
+.gnb div.v1 input{float:left;margin-top:12px;}
+.gnb div.v1 input.v1{width:27px;margin-left:45px;}
+.gnb div.v1 input.v2{width:17px;margin-left:55px;}
+.gnb div.v1 input.v3{width:15px;margin-left:70px;}
+
+.gnb div.v2{width:193px;margin-left:16px;background-color:#feecc8;}
+.gnb div.v2 input{float:left;margin-top:12px;width:15px;margin-left:84px;}
+
+.gnb div.v3{width:480px;margin-left:16px;background-image:url("/common/fs/image/exam/blank/head_bg1.png");background-size:auto;}
+.gnb div.v3 .v3_1{float:left;width:63px;margin-left:87px;}
+.gnb div.v3 .v3_1 span{float:left;display:block;width:7px;margin-top:1px;text-align:center;font-size:11px;}
+.gnb div.v3 .v3_1 span.plus{width:15px;}
+.gnb div.v3 .v3_1 input{float:left;width:15px;margin-top:12px;}
+.gnb div.v3 .v3_2{float:left;width:45px;margin-left:12px;}
+.gnb div.v3 .v3_2 input{float:left;height:13px;text-align:left;color:#00065c;}
+.gnb div.v3 .v3_2 input.v3{width:36px;margin-top:1px;}
+.gnb div.v3 .v3_2 input.v4{width:42px;margin-top:5px;}
+.gnb div.v3 input.v5{float:left;width:15px;margin-top:12px;margin-left:77px;}
+
+.gnb div.v4{width:176px;margin-left:16px;background-image:url("/common/fs/image/exam/blank/head_bg2.png");background-size:176px 33px;}
+.gnb div.v4 input{float:left;width:15px;margin-top:10px;margin-left:79px;}
+
+/*container - side*/
+.side input{border:none;background-color:inherit;}
+.side .section{width:115px;}
+.side .section.v1{height:187px;background-image:url("/common/fs/image/exam/blank/side_bg.png");background-size:115px 187px;}
+.side .section.v1 .line{height:21px;}
+.side .section.v1 .line div{float:left;width:37px;margin-top:3px;}
+.side .section.v1 .line div.val1{margin-left:15px;}
+.side .section.v1 .line div.val2{margin-left:3px;}
+.side .section.v1 .line span{display:block;float:left;width:5px;margin-top:1px;font-size:11px;}
+.side .section.v1 .line span.unit{width:15px;}
+.side .section.v1 .line input{float:left;}
+.side .section.v1 .line input.v1{width:37px;text-align:right;}
+.side .section.v1 .line input.v2{width:10px;text-align:left;}
+
+.side .section.v1 .line.v1{padding-top:18px;}
+.side .section.v1 .line.v2{margin-top:12px;}
+.side .section.v1 .line.v3{margin-top:12px;}
+
+.side .section.v1 .box{width:45px;height:48px;margin-left:34px;margin-top:30px;border:1px solid red;}
+.side .section.v1 .box input{float:left;margin-top:7px;text-align:center;font-size:11px;}
+.side .section.v1 .box span{display:block;float:left;width:4px;margin-top:7px;color:red;font-size:11px;}
+.side .section.v1 .box span.first{margin-left:8px;}
+.side .section.v1 .box input.v1{width:45px;}
+.side .section.v1 .box input.v2{width:20px;color:red;}
+
+.side .section.v2{height:445px;margin-top:11px;background-color:#ffe6e6;}
+.side .section.v2 .box{width:45px;height:48px;margin-left:34px;}
+.side .section.v2 .box.v1{padding-top:64px;}
+.side .section.v2 .box.v2{padding-top:84px;}
+
+.side .section.v2 .box input{float:left;margin-top:5px;text-align:center;font-size:11px;}
+.side .section.v2 .box span{display:block;float:left;width:4px;margin-top:5px;font-size:11px;}
+.side .section.v2 .box span.first{margin-left:1px;}
+.side .section.v2 .box input.v1{width:45px;}
+.side .section.v2 .box input.v2{width:35px;}
+
+.side .section.v2 .box.v1 span.first{margin-left:8px;}
+.side .section.v2 .box.v1 input.v2{width:20px;}
+
+.footer_wrap{position:absolute;top:670px;left:630px;width:288px;}

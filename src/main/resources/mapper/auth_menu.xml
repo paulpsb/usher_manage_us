@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.AuthMenuDao">
+	<select id="getMenuList" parameterType="com.usher.dto.AuthMenuDto" resultType="com.usher.dto.AuthMenuDto">
+		select
+			id,
+			menu_name,
+			menu_level,
+			menu_icon,
+			menu_url,
+			menu_order,
+			menu_down_count,
+			menu_level1_id,
+			menu_level2_id,
+			menu_level3_id
+		from
+			auth_menu
+	</select>
+</mapper>

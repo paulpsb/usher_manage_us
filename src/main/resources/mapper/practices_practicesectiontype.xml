@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticesectiontypeDao">
+	<select id="getPracticeSectionTypeList" parameterType="com.usher.dto.PracticesPracticesectiontypeDto" resultType="com.usher.dto.PracticesPracticesectiontypeDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			c.short_title_kr,
+			a.practice_type,
+			a.is_study,
+			a.is_exam,
+			a.is_homework,
+			a.is_homework_achieve,
+			a.study_url,
+			a.exam_url,
+			a.homework_url,
+			a.study_result_url,
+			a.exam_result_url,
+			a.homework_result_url,
+			b.practice_name,
+			b.program_use		
+		from
+			practices_practicesectiontype a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practicesection c on a.section = c.section
+		where 1=1
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>	
+		<if test="program_use != null and program_use !='' ">			
+			and b.program_use = #{program_use}
+		</if>			
+		order by c.section_order, b.type_order, b.id
+	</select>
+	
+	<select id="getPracticeSectionType" parameterType="com.usher.dto.PracticesPracticesectiontypeDto" resultType="com.usher.dto.PracticesPracticesectiontypeDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			c.short_title_kr,
+			a.practice_type,
+			a.is_study,
+			a.is_exam,
+			a.is_homework,
+			a.is_homework_achieve,
+			a.study_url,
+			a.exam_url,
+			a.homework_url,
+			a.study_result_url,
+			a.exam_result_url,
+			a.homework_result_url,
+			b.practice_name,
+			b.program_use		
+		from
+			practices_practicesectiontype a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practicesection c on a.section = c.section
+		where
+			a.section = #{section}
+			and a.practice_type = #{practice_type}
+	</select>
+	
+	<insert id="insertPracticeSectionType" parameterType="com.usher.dto.PracticesPracticesectiontypeDto">
+		insert into practices_practicesectiontype(
+			created,
+			modified,
+			status,
+			section,
+			practice_type
+		) values (
+			now(),
+			now(),
+			#{status},
+			#{section},
+			#{practice_type}
+		)
+	</insert>
+	
+	<update id="updatePracticeSectionType" parameterType="com.usher.dto.PracticesPracticesectiontypeDto">
+		update practices_practicesectiontype set
+			modified = now(),
+			is_study = #{is_study},
+			is_exam = #{is_exam},
+			is_homework = #{is_homework},
+			is_homework_achieve = #{is_homework_achieve},
+			study_url = #{study_url},
+			exam_url = #{exam_url},
+			homework_url = #{homework_url},
+			study_result_url = #{study_result_url},
+			exam_result_url = #{exam_result_url},
+			homework_result_url = #{homework_result_url}
+		where
+			id = #{id}
+	</update>
+	
+	<delete id="deletePracticeSectionType" parameterType="com.usher.dto.PracticesPracticesectiontypeDto">
+		delete from practices_practicesectiontype	
+	</delete>
+</mapper>

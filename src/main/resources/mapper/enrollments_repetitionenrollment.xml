@@ -1,0 +1,824 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.EnrollmentsRepetitionenrollmentDao">
+<select id="getEnrollmentsRepetitionSemesterList" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto" resultType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with enrollment as (
+			select
+				c.student_id,
+				i.attend_date,
+				b.id as course_enrollment_id
+			from
+				courses_allocation a
+				join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+				join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+				join courses_course f on b.course_id = f.id
+				join courses_coursegroup e on f.course_group_id = e.id 
+				join courses_semester d on c.semester_id = d.id and e.semester_id = d.id
+				join students_student g on c.student_id = g.id
+				join auth_user h on g.user_id = h.id
+				join users_personalinfo i on h.id = i.user_id
+				 
+			where
+				COALESCE(b.status,'') != 'REGISTERED'
+				and COALESCE(b.status,'') != 'CANCEL_COMPLETED'
+				and to_char(d.date,'yyyy-mm') = #{prev_semester_date}
+		),
+		repetition as (
+			select
+				b.student_id
+			from
+				enrollments_courseenrollment a
+				join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+				join courses_semester c on b.semester_id = c.id
+			where
+				COALESCE(a.status,'') != 'REGISTERED'
+				and COALESCE(a.status,'') != 'CANCEL_COMPLETED'
+				and to_char(c.date,'yyyy-mm') = #{semester_date}
+			group by b.student_id
+		)
+		select
+			a.id,
+			b.student_id,
+			b.course_enrollment_id,
+			a.goal_score,
+			a.goal_score_id,
+			a.goal_score_name,
+			to_char(a.goal_score_date,'mm/dd hh24:mi') as goal_score_date,
+			a.attend_start_date,
+			a.attend_start_date_id,
+			a.attend_start_date_name,
+			to_char(a.attend_start_date_date,'mm/dd hh24:mi') as attend_start_date_date,
+			a.need_date,
+			a.need_date_id,
+			a.need_date_name,
+			to_char(a.need_date_date,'mm/dd hh24:mi') as need_date_date,
+			coalesce(a.attend_date,b.attend_date) as attend_date,
+			a.attend_date_id,
+			a.attend_date_name,
+			to_char(a.attend_date_date,'mm/dd hh24:mi') as attend_date_date,
+			a.goal_repetition_advise,
+			a.goal_repetition_advise_id,
+			a.goal_repetition_advise_name,
+			to_char(a.goal_repetition_advise_date,'mm/dd hh24:mi') as goal_repetition_advise_date,
+			a.first_repetition_result,
+			a.first_repetition_result_id,
+			a.first_repetition_result_name,
+			to_char(a.first_repetition_result_date,'mm/dd hh24:mi') as first_repetition_result_date,
+			a.first_repetition_advise,
+			a.first_repetition_advise_id,
+			a.first_repetition_advise_name,
+			to_char(a.first_repetition_advise_date,'mm/dd hh24:mi') as first_repetition_advise_date,
+			a.second_repetition_result,
+			a.second_repetition_result_id,
+			a.second_repetition_result_name,
+			to_char(a.second_repetition_result_date,'mm/dd hh24:mi') as second_repetition_result_date,
+			a.second_repetition_advise,
+			a.second_repetition_advise_id,
+			a.second_repetition_advise_name,
+			to_char(a.second_repetition_advise_date,'mm/dd hh24:mi') as second_repetition_advise_date,
+			a.third_student_repetition_result,
+			a.third_student_repetition_result_desc,
+			a.third_student_repetition_reason,
+			a.third_student_repetition_reason_desc,
+			a.third_student_repetition_course,
+			a.third_student_repetition_due_date,
+			to_char(a.third_student_repetition_date,'mm/dd hh24:mi') as third_student_repetition_date,
+			a.third_repetition_result,
+			a.third_repetition_result_id,
+			a.third_repetition_result_name,
+			to_char(a.third_repetition_result_date,'mm/dd hh24:mi') as third_repetition_result_date,
+			a.third_repetition_result_due_date,
+			a.third_repetition_advise,
+			a.third_repetition_advise_id,
+			a.third_repetition_advise_name,
+			to_char(a.third_repetition_advise_date,'mm/dd hh24:mi') as third_repetition_advise_date,
+			a.unregistered_reason,
+			a.unregistered_reason_id,
+			a.unregistered_reason_name,
+			to_char(a.unregistered_reason_date,'mm/dd hh24:mi') as unregistered_reason_date,
+			case when c.student_id is null then 'N' else 'Y' end as complete_repetition_result
+		from
+			enrollment b
+			left join enrollments_repetitionenrollment a on a.course_enrollment_id = b.course_enrollment_id
+			left join repetition c on b.student_id = c.student_id
+		order by b.course_enrollment_id
+</select>
+<select id="getEnrollmentsRepetitionCourseGroupList" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto" resultType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with enrollment as (
+			select
+				c.student_id,
+				b.id as course_enrollment_id
+			from
+				courses_allocation a
+				join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+				join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+			where
+				b.course_id in ( select id from courses_course where course_group_id = #{course_group_id})
+				and COALESCE(b.status,'') != 'REGISTERED'
+				and COALESCE(b.status,'') != 'CANCEL_COMPLETED'
+		),
+		repetition as (
+			select
+				b.student_id
+			from
+				enrollments_courseenrollment a
+				join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+				join courses_semester c on b.semester_id = c.id
+			where
+				COALESCE(a.status,'') != 'REGISTERED'
+				and COALESCE(a.status,'') != 'CANCEL_COMPLETED'
+				and to_char(c.date,'yyyy-mm') = #{semester_date}
+			group by b.student_id
+		)
+		select
+			a.id,
+			b.course_enrollment_id,
+			a.goal_score,
+			a.goal_score_id,
+			a.goal_score_name,
+			to_char(a.goal_score_date,'mm/dd hh24:mi') as goal_score_date,
+			a.attend_start_date,
+			a.attend_start_date_id,
+			a.attend_start_date_name,
+			to_char(a.attend_start_date_date,'mm/dd hh24:mi') as attend_start_date_date,
+			a.need_date,
+			a.need_date_id,
+			a.need_date_name,
+			to_char(a.need_date_date,'mm/dd hh24:mi') as need_date_date,
+			a.attend_date,
+			a.attend_date_id,
+			a.attend_date_name,
+			to_char(a.attend_date_date,'mm/dd hh24:mi') as attend_date_date,
+			a.goal_repetition_advise,
+			a.goal_repetition_advise_id,
+			a.goal_repetition_advise_name,
+			to_char(a.goal_repetition_advise_date,'mm/dd hh24:mi') as goal_repetition_advise_date,
+			a.first_repetition_result,
+			a.first_repetition_result_id,
+			a.first_repetition_result_name,
+			to_char(a.first_repetition_result_date,'mm/dd hh24:mi') as first_repetition_result_date,
+			a.first_repetition_advise,
+			a.first_repetition_advise_id,
+			a.first_repetition_advise_name,
+			to_char(a.first_repetition_advise_date,'mm/dd hh24:mi') as first_repetition_advise_date,
+			a.second_repetition_result,
+			a.second_repetition_result_id,
+			a.second_repetition_result_name,
+			to_char(a.second_repetition_result_date,'mm/dd hh24:mi') as second_repetition_result_date,
+			a.second_repetition_advise,
+			a.second_repetition_advise_id,
+			a.second_repetition_advise_name,
+			to_char(a.second_repetition_advise_date,'mm/dd hh24:mi') as second_repetition_advise_date,
+			a.third_student_repetition_result,
+			a.third_student_repetition_result_desc,
+			a.third_student_repetition_reason,
+			a.third_student_repetition_reason_desc,
+			a.third_student_repetition_course,
+			a.third_student_repetition_due_date,
+			to_char(a.third_student_repetition_date,'mm/dd hh24:mi') as third_student_repetition_date,
+			a.third_repetition_result,
+			a.third_repetition_result_id,
+			a.third_repetition_result_name,
+			to_char(a.third_repetition_result_date,'mm/dd hh24:mi') as third_repetition_result_date,
+			a.third_repetition_result_due_date,
+			a.third_repetition_advise,
+			a.third_repetition_advise_id,
+			a.third_repetition_advise_name,
+			to_char(a.third_repetition_advise_date,'mm/dd hh24:mi') as third_repetition_advise_date,
+			a.unregistered_reason,
+			a.unregistered_reason_id,
+			a.unregistered_reason_name,
+			to_char(a.unregistered_reason_date,'mm/dd hh24:mi') as unregistered_reason_date,
+			case when c.student_id is null then 'N' else 'Y' end as complete_repetition_result
+		from
+			enrollment b
+			left join enrollments_repetitionenrollment a on a.course_enrollment_id = b.course_enrollment_id
+			left join repetition c on b.student_id = c.student_id
+		order by b.course_enrollment_id
+	</select>
+	
+	<select id="getEnrollmentsRepetitionList" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto" resultType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with enrollment as (
+			select
+				c.student_id,
+				b.id as course_enrollment_id
+			from
+				courses_allocation a
+				join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+				join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+			where
+				( a.first_course_id = #{course_id} or a.current_course_id = #{course_id})
+				and COALESCE(b.status,'') != 'REGISTERED'
+				and COALESCE(b.status,'') != 'CANCEL_COMPLETED'
+		),
+		repetition as (
+			select
+				b.student_id
+			from
+				enrollments_courseenrollment a
+				join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+				join courses_semester c on b.semester_id = c.id
+			where
+				COALESCE(a.status,'') != 'REGISTERED'
+				and COALESCE(a.status,'') != 'CANCEL_COMPLETED'
+				and to_char(c.date,'yyyy-mm') = #{semester_date}
+			group by b.student_id
+		)
+		select
+			a.id,
+			b.course_enrollment_id,
+			a.goal_score,
+			a.goal_score_id,
+			a.goal_score_name,
+			to_char(a.goal_score_date,'mm/dd hh24:mi') as goal_score_date,
+			a.attend_start_date,
+			a.attend_start_date_id,
+			a.attend_start_date_name,
+			to_char(a.attend_start_date_date,'mm/dd hh24:mi') as attend_start_date_date,
+			a.need_date,
+			a.need_date_id,
+			a.need_date_name,
+			to_char(a.need_date_date,'mm/dd hh24:mi') as need_date_date,
+			a.attend_date,
+			a.attend_date_id,
+			a.attend_date_name,
+			to_char(a.attend_date_date,'mm/dd hh24:mi') as attend_date_date,
+			a.goal_repetition_advise,
+			a.goal_repetition_advise_id,
+			a.goal_repetition_advise_name,
+			to_char(a.goal_repetition_advise_date,'mm/dd hh24:mi') as goal_repetition_advise_date,
+			a.first_repetition_result,
+			a.first_repetition_result_id,
+			a.first_repetition_result_name,
+			to_char(a.first_repetition_result_date,'mm/dd hh24:mi') as first_repetition_result_date,
+			a.first_repetition_advise,
+			a.first_repetition_advise_id,
+			a.first_repetition_advise_name,
+			to_char(a.first_repetition_advise_date,'mm/dd hh24:mi') as first_repetition_advise_date,
+			a.second_repetition_result,
+			a.second_repetition_result_id,
+			a.second_repetition_result_name,
+			to_char(a.second_repetition_result_date,'mm/dd hh24:mi') as second_repetition_result_date,
+			a.second_repetition_advise,
+			a.second_repetition_advise_id,
+			a.second_repetition_advise_name,
+			to_char(a.second_repetition_advise_date,'mm/dd hh24:mi') as second_repetition_advise_date,
+			a.third_student_repetition_result,
+			a.third_student_repetition_result_desc,
+			a.third_student_repetition_reason,
+			a.third_student_repetition_reason_desc,
+			a.third_student_repetition_course,
+			a.third_student_repetition_due_date,
+			to_char(a.third_student_repetition_date,'mm/dd hh24:mi') as third_student_repetition_date,
+			a.third_repetition_result,
+			a.third_repetition_result_id,
+			a.third_repetition_result_name,
+			to_char(a.third_repetition_result_date,'mm/dd hh24:mi') as third_repetition_result_date,
+			a.third_repetition_result_due_date,
+			a.third_repetition_advise,
+			a.third_repetition_advise_id,
+			a.third_repetition_advise_name,
+			to_char(a.third_repetition_advise_date,'mm/dd hh24:mi') as third_repetition_advise_date,
+			a.unregistered_reason,
+			a.unregistered_reason_id,
+			a.unregistered_reason_name,
+			to_char(a.unregistered_reason_date,'mm/dd hh24:mi') as unregistered_reason_date,
+			case when c.student_id is null then 'N' else 'Y' end as complete_repetition_result
+		from
+			enrollment b
+			left join enrollments_repetitionenrollment a on a.course_enrollment_id = b.course_enrollment_id
+			left join repetition c on b.student_id = c.student_id
+		order by b.course_enrollment_id
+	</select>
+	<select id="getEnrollmentsRepetition" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto" resultType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		select
+			a.id,
+			a.course_enrollment_id,
+			a.goal_score,
+			a.goal_score_id,
+			a.goal_score_name,
+			to_char(a.goal_score_date,'mm/dd hh24:mi') as goal_score_date,
+			a.attend_start_date,
+			a.attend_start_date_id,
+			a.attend_start_date_name,
+			to_char(a.attend_start_date_date,'mm/dd hh24:mi') as attend_start_date_date,
+			a.need_date,
+			a.need_date_id,
+			a.need_date_name,
+			to_char(a.need_date_date,'mm/dd hh24:mi') as need_date_date,
+			a.attend_date,
+			a.attend_date_id,
+			a.attend_date_name,
+			to_char(a.attend_date_date,'mm/dd hh24:mi') as attend_date_date,
+			a.goal_repetition_advise,
+			a.goal_repetition_advise_id,
+			a.goal_repetition_advise_name,
+			to_char(a.goal_repetition_advise_date,'mm/dd hh24:mi') as goal_repetition_advise_date,
+			a.first_repetition_result,
+			a.first_repetition_result_id,
+			a.first_repetition_result_name,
+			to_char(a.first_repetition_result_date,'mm/dd hh24:mi') as first_repetition_result_date,
+			a.first_repetition_advise,
+			a.first_repetition_advise_id,
+			a.first_repetition_advise_name,
+			to_char(a.first_repetition_advise_date,'mm/dd hh24:mi') as first_repetition_advise_date,
+			a.second_repetition_result,
+			a.second_repetition_result_id,
+			a.second_repetition_result_name,
+			to_char(a.second_repetition_result_date,'mm/dd hh24:mi') as second_repetition_result_date,
+			a.second_repetition_advise,
+			a.second_repetition_advise_id,
+			a.second_repetition_advise_name,
+			to_char(a.second_repetition_advise_date,'mm/dd hh24:mi') as second_repetition_advise_date,
+			a.third_student_repetition_result,
+			a.third_student_repetition_result_desc,
+			a.third_student_repetition_reason,
+			a.third_student_repetition_reason_desc,
+			a.third_student_repetition_course,
+			a.third_student_repetition_due_date,
+			to_char(a.third_student_repetition_date,'mm/dd hh24:mi') as third_student_repetition_date,
+			a.third_repetition_result,
+			a.third_repetition_result_id,
+			a.third_repetition_result_name,
+			to_char(a.third_repetition_result_date,'mm/dd hh24:mi') as third_repetition_result_date,
+			a.third_repetition_result_due_date,
+			a.third_repetition_advise,
+			a.third_repetition_advise_id,
+			a.third_repetition_advise_name,
+			to_char(a.third_repetition_advise_date,'mm/dd hh24:mi') as third_repetition_advise_date,
+			a.unregistered_reason,
+			a.unregistered_reason_id,
+			a.unregistered_reason_name,
+			to_char(a.unregistered_reason_date,'mm/dd hh24:mi') as unregistered_reason_date
+		from
+			enrollments_repetitionenrollment a
+		where
+			a.course_enrollment_id = #{course_enrollment_id}
+	</select>
+	<select id="getEnrollmentsRepetitionUserList" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto" resultType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		select
+			to_char(f.date,'yyyy년 mm월') as semester_name,
+			e.name as course_group_name,
+			d.name as course_name,
+			c.status,
+			c.id as course_enrollment_id,
+			d.id as course_id,
+			e.id as course_group_id,
+			f.id as semester_id,
+			g.goal_score,
+			g.goal_score_id,
+			g.goal_score_name,
+			to_char(g.goal_score_date,'mm/dd hh24:mi') as goal_score_date,
+			g.attend_start_date,
+			g.attend_start_date_id,
+			g.attend_start_date_name,
+			to_char(g.attend_start_date_date,'mm/dd hh24:mi') as attend_start_date_date,
+			g.need_date,
+			g.need_date_id,
+			g.need_date_name,
+			to_char(g.need_date_date,'mm/dd hh24:mi') as need_date_date,
+			g.attend_date,
+			g.attend_date_id,
+			g.attend_date_name,
+			to_char(g.attend_date_date,'mm/dd hh24:mi') as attend_date_date,
+			g.goal_repetition_advise,
+			g.goal_repetition_advise_id,
+			g.goal_repetition_advise_name,
+			to_char(g.goal_repetition_advise_date,'mm/dd hh24:mi') as goal_repetition_advise_date,
+			g.first_repetition_result,
+			g.first_repetition_result_id,
+			g.first_repetition_result_name,
+			to_char(g.first_repetition_result_date,'mm/dd hh24:mi') as first_repetition_result_date,
+			g.first_repetition_advise,
+			g.first_repetition_advise_id,
+			g.first_repetition_advise_name,
+			to_char(g.first_repetition_advise_date,'mm/dd hh24:mi') as first_repetition_advise_date,
+			g.second_repetition_result,
+			g.second_repetition_result_id,
+			g.second_repetition_result_name,
+			to_char(g.second_repetition_result_date,'mm/dd hh24:mi') as second_repetition_result_date,
+			g.second_repetition_advise,
+			g.second_repetition_advise_id,
+			g.second_repetition_advise_name,
+			to_char(g.second_repetition_advise_date,'mm/dd hh24:mi') as second_repetition_advise_date,
+			g.third_student_repetition_result,
+			g.third_student_repetition_result_desc,
+			g.third_student_repetition_reason,
+			g.third_student_repetition_reason_desc,
+			g.third_student_repetition_course,
+			g.third_student_repetition_due_date,
+			to_char(g.third_student_repetition_date,'mm/dd hh24:mi') as third_student_repetition_date,
+			g.third_repetition_result,
+			g.third_repetition_result_id,
+			g.third_repetition_result_name,
+			to_char(g.third_repetition_result_date,'mm/dd hh24:mi') as third_repetition_result_date,
+			g.third_repetition_result_due_date,
+			g.third_repetition_advise,
+			g.third_repetition_advise_id,
+			g.third_repetition_advise_name,
+			to_char(g.third_repetition_advise_date,'mm/dd hh24:mi') as third_repetition_advise_date,
+			g.unregistered_reason,
+			g.unregistered_reason_id,
+			g.unregistered_reason_name,
+			to_char(g.unregistered_reason_date,'mm/dd hh24:mi') as unregistered_reason_date
+		from
+			students_student a
+			join enrollments_semesterenrollment b on a.id = b.student_id
+			join enrollments_courseenrollment c on b.id = c.semester_enrollment_id
+			join courses_course d on c.course_id = d.id
+			join courses_coursegroup e on d.course_group_id = e.id
+			join courses_semester f on e.semester_id = f.id
+			left join enrollments_repetitionenrollment g on c.id = g.course_enrollment_id
+		where
+			COALESCE(c.status,'') != 'REGISTERED'
+			and COALESCE(c.status,'') != 'CANCEL_COMPLETED'
+			and COALESCE(c.refund_status,'') != 'FULL_REFUND'
+			and a.user_id = #{user_id}
+		order by f.id, e.id, d.id	
+	</select>
+	<insert id="insertRepetitaionGoalScore" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				goal_score = #{goal_score},
+				goal_score_id = #{goal_score_id},
+				goal_score_name = #{goal_score_name},
+				goal_score_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			goal_score,
+			goal_score_id,
+			goal_score_name,
+			goal_score_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{goal_score},
+			#{goal_score_id},
+			#{goal_score_name},
+			now()
+		where not exists( select * from upsert)		
+	</insert>
+	<insert id="insertRepetitaionAttendStartDate" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				attend_start_date = #{attend_start_date},
+				attend_start_date_id = #{attend_start_date_id},
+				attend_start_date_name = #{attend_start_date_name},
+				attend_start_date_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			attend_start_date,
+			attend_start_date_id,
+			attend_start_date_name,
+			attend_start_date_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{attend_start_date},
+			#{attend_start_date_id},
+			#{attend_start_date_name},
+			now()
+		where not exists( select * from upsert)	
+	</insert>
+	<insert id="insertRepetitaionNeedDate" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				need_date = #{need_date},
+				need_date_id = #{need_date_id},
+				need_date_name = #{need_date_name},
+				need_date_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			need_date,
+			need_date_id,
+			need_date_name,
+			need_date_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{need_date},
+			#{need_date_id},
+			#{need_date_name},
+			now()
+		where not exists( select * from upsert)	
+	</insert>
+	
+	<insert id="insertRepetitaionAttendDate" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				attend_date = #{attend_date},
+				attend_date_id = #{attend_date_id},
+				attend_date_name = #{attend_date_name},
+				attend_date_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			attend_date,
+			attend_date_id,
+			attend_date_name,
+			attend_date_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{attend_date},
+			#{attend_date_id},
+			#{attend_date_name},
+			now()
+		where not exists( select * from upsert)	
+	</insert>		
+	
+	<insert id="insertRepetitaionGoalRepetitionAdvise" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				goal_repetition_advise = #{goal_repetition_advise},
+				goal_repetition_advise_id = #{goal_repetition_advise_id},
+				goal_repetition_advise_name = #{goal_repetition_advise_name},
+				goal_repetition_advise_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			goal_repetition_advise,
+			goal_repetition_advise_id,
+			goal_repetition_advise_name,
+			goal_repetition_advise_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{goal_repetition_advise},
+			#{goal_repetition_advise_id},
+			#{goal_repetition_advise_name},
+			now()
+		where not exists( select * from upsert)	
+	</insert>	
+	
+	<insert id="insertRepetitaionFirstRepetitionResult" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				first_repetition_result = #{first_repetition_result},
+				first_repetition_result_id = #{first_repetition_result_id},
+				first_repetition_result_name = #{first_repetition_result_name},
+				first_repetition_result_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			first_repetition_result,
+			first_repetition_result_id,
+			first_repetition_result_name,
+			first_repetition_result_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{first_repetition_result},
+			#{first_repetition_result_id},
+			#{first_repetition_result_name},
+			now()
+		where not exists( select * from upsert)	
+	</insert>	
+	
+	<insert id="insertRepetitaionFirstRepetitionAdvise" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				first_repetition_advise = #{first_repetition_advise},
+				first_repetition_advise_id = #{first_repetition_advise_id},
+				first_repetition_advise_name = #{first_repetition_advise_name},
+				first_repetition_advise_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			first_repetition_advise,
+			first_repetition_advise_id,
+			first_repetition_advise_name,
+			first_repetition_advise_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{first_repetition_advise},
+			#{first_repetition_advise_id},
+			#{first_repetition_advise_name},
+			now()
+		where not exists( select * from upsert)	
+	</insert>	
+	
+	<insert id="insertRepetitaionSecondRepetitionResult" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				second_repetition_result = #{second_repetition_result},
+				second_repetition_result_id = #{second_repetition_result_id},
+				second_repetition_result_name = #{second_repetition_result_name},
+				second_repetition_result_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			second_repetition_result,
+			second_repetition_result_id,
+			second_repetition_result_name,
+			second_repetition_result_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{second_repetition_result},
+			#{second_repetition_result_id},
+			#{second_repetition_result_name},
+			now()
+		where not exists( select * from upsert)	
+	</insert>	
+	
+	<insert id="insertRepetitaionSecondRepetitionAdvise" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				second_repetition_advise = #{second_repetition_advise},
+				second_repetition_advise_id = #{second_repetition_advise_id},
+				second_repetition_advise_name = #{second_repetition_advise_name},
+				second_repetition_advise_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			second_repetition_advise,
+			second_repetition_advise_id,
+			second_repetition_advise_name,
+			second_repetition_advise_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{second_repetition_advise},
+			#{second_repetition_advise_id},
+			#{second_repetition_advise_name},
+			now()
+		where not exists( select * from upsert)	
+	</insert>	
+	
+	<insert id="insertRepetitaionThirdRepetitionResult" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				third_repetition_result = #{third_repetition_result},
+				third_repetition_result_id = #{third_repetition_result_id},
+				third_repetition_result_name = #{third_repetition_result_name},
+				third_repetition_result_date = now(),
+				third_repetition_result_due_date = #{third_repetition_result_due_date}
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			third_repetition_result,
+			third_repetition_result_id,
+			third_repetition_result_name,
+			third_repetition_result_date,
+			third_repetition_result_due_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{third_repetition_result},
+			#{third_repetition_result_id},
+			#{third_repetition_result_name},
+			now(),
+			#{third_repetition_result_due_date}
+		where not exists( select * from upsert)	
+	</insert>							
+
+	<insert id="insertRepetitaionThirdRepetitionAdvise" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				third_repetition_advise = #{third_repetition_advise},
+				third_repetition_advise_id = #{third_repetition_advise_id},
+				third_repetition_advise_name = #{third_repetition_advise_name},
+				third_repetition_advise_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			third_repetition_advise,
+			third_repetition_advise_id,
+			third_repetition_advise_name,
+			third_repetition_advise_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{third_repetition_advise},
+			#{third_repetition_advise_id},
+			#{third_repetition_advise_name},
+			now()
+		where not exists( select * from upsert)	
+	</insert>	
+	
+	<insert id="insertRepetitaionUnregisteredReason" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentDto">
+		with upsert as (
+			update enrollments_repetitionenrollment set
+				modified = now(),
+				unregistered_reason = #{unregistered_reason},
+				unregistered_reason_id = #{unregistered_reason_id},
+				unregistered_reason_name = #{unregistered_reason_name},
+				unregistered_reason_date = now()
+			where
+				course_enrollment_id = #{course_enrollment_id}
+			returning * 
+		)
+		insert into enrollments_repetitionenrollment(
+			created,
+			modified,
+			course_enrollment_id,
+			unregistered_reason,
+			unregistered_reason_id,
+			unregistered_reason_name,
+			unregistered_reason_date
+		)
+		select
+			now(),
+			now(),
+			#{course_enrollment_id},
+			#{unregistered_reason},
+			#{unregistered_reason_id},
+			#{unregistered_reason_name},
+			now()
+		where not exists( select * from upsert)	
+	</insert>	
+							
+</mapper>

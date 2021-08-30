@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticequizresultDao">
+	<select id="getPracticeQuizResultCourseList" parameterType="com.usher.dto.PracticesPracticequizresultDto" resultType="com.usher.dto.PracticesPracticequizresultDto">
+		select
+			a.course_id,
+			a.id as course_enrollment_id,
+			d.user_id,
+			d.id as student_id,
+			f.seat_row,
+			f.seat_col,
+			concat(e.last_name,e.first_name) as student_name,
+			c.registration_type,
+			a.status,
+			case when g.status is not null then g.status else case when h.course_enrollment_id is not null then 'PERMITTED_ABSENT' else 'UNPERMITTED_ABSENT' end end as attend_status,
+			case when h.eta is not null then to_char(h.eta,'HH24:MI') else '' end as will_time,
+			COALESCE(i.come_time,'') as come_time,
+			case when j.practice_schedule_id is null then false else true end as is_exam,
+			j.pass_result,
+			j.result,
+			a.chamgang_yn,
+			case when position(to_char(current_date,'yyyy-mm-dd') in a.schedule ) > 0 then 'OK' else 'NO' end as is_today
+		from 
+			enrollments_courseenrollment a
+			join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+			left join courses_allocation c on a.id = c.course_enrollment_id and a.course_id = c.current_course_id 
+			join students_student d on b.student_id = d.id
+			join auth_user e on d.user_id = e.id
+			join enrollments_seatenrollment f on a.course_id = f.course_id and a.semester_enrollment_id = f.semester_enrollment_id
+			left join (select course_enrollment_id, max(status) as status from attendances_attendance where to_char(date,'yyyy-mm-dd') = to_char(now(),'yyyy-mm-dd') group by course_enrollment_id ) g on a.id = g.course_enrollment_id
+			left join ( select course_enrollment_id, max(eta) as eta from attendances_attendancereason where to_char(date,'yyyy-mm-dd') = to_char(now(),'yyyy-mm-dd') group by course_enrollment_id ) h on a.id = h.course_enrollment_id
+			left join (select user_id, to_char(min(date),'HH24:MI') as come_time from students_userloginlog where to_char(date,'yyyy-mm-dd') = to_char(now(),'yyyy-mm-dd') group by user_id ) i on d.user_id = i.user_id
+			left join (
+				select
+					practice_schedule_id,
+					course_enrollment_id,
+					array_to_string(array_agg(result order by id desc),'') as result,
+					case when sum(case when pass_result = false then 1 else 0 end) > 0 then false else true end as pass_result
+				from
+					practices_practicequizresult
+				where
+					practice_schedule_id = #{practice_schedule_id}
+				group by practice_schedule_id, course_enrollment_id		
+			) j on a.id = j.course_enrollment_id
+		where
+			a.course_id = #{course_id}
+			and a.status = 'PAID'
+			and e.username != 'test6' and e.username != 'test5'
+		order by concat(e.last_name,e.first_name)	
+	</select>
+	<select id="getPracticeQuizResultDailyList" parameterType="com.usher.dto.PracticesPracticequizresultDto" resultType="com.usher.dto.PracticesPracticequizresultDto">
+		select
+			a.course_enrollment_id,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			c.section,
+			a.practice_type,
+			c.book,
+			c.volume,
+			c."group",
+			c.article,
+			b.end_paragraph,
+			case when sum(case when a.pass_result = true then 1 else 0 end ) > 0 then true else false end as pass_result
+		from 
+			practices_practicequizresult a
+			join practices_practiceschedule b on a.practice_schedule_id = b.id and b.status = 'ACTIVE'
+			join practices_practiceproblem c on b.practice_problem_id = c.id	
+		where
+			b.course_id = #{course_id}
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		<if test="practice_type != null and practice_type !='' ">
+			and a.practice_type = #{practice_type}
+		</if>
+		group by a.course_enrollment_id, to_char(a.date,'yyyy-mm-dd'), c.section, a.practice_type, c.book, c.volume, c."group",c.article, b.end_paragraph
+		order by 2,1,3,4,5,6,7,8
+	</select>	
+	<select id="getPracticeQuizResultMonthlyList" parameterType="com.usher.dto.PracticesPracticequizresultDto" resultType="com.usher.dto.PracticesPracticequizresultDto">
+		select
+			a.course_enrollment_id,
+			c.section,
+			c.book,
+			c.volume,
+			c."group",
+			c.article,
+			a.passage,
+			case when sum(case when a.pass_result = true then 1 else 0 end ) > 0 then true else false end as pass_result
+		from 
+			practices_practicequizresult a
+			join practices_practiceschedule b on a.practice_schedule_id = b.id and b.status = 'ACTIVE'
+			join practices_practiceproblem c on b.practice_problem_id = c.id
+		where
+			a.section = #{section}
+			and a.practice_type = #{practice_type}
+			and a.course_enrollment_id in (
+				select id from enrollments_courseenrollment where course_id in ( select id from courses_course where course_group_id = ( select course_group_id from courses_course where id = #{course_id}))
+			)
+		group by a.course_enrollment_id, c.section, c.book, c.volume, c."group",c.article,a.passage
+		order by 1,2	
+	</select>	
+	<insert id="insertPracticeQuizResult" parameterType="com.usher.dto.PracticesPracticequizresultDto">
+		with upsert as ( 
+			update practices_practicequizresult set
+				modified = now(),
+				result = concat(result,#{result}),
+				pass_result = #{pass_result}
+			where
+				section = #{section}
+				and practice_type = #{practice_type}
+				and course_enrollment_id = #{course_enrollment_id}
+				and practice_schedule_id = #{practice_schedule_id}
+			<if test="passage != null and passage !='' ">
+				and passage = #{passage}
+			</if>
+			returning *
+		)
+		insert into practices_practicequizresult (
+			created,
+			modified,
+			status,
+			section,
+			practice_type,
+			pass_result,
+			result,
+			date,
+			course_enrollment_id,
+			practice_schedule_id,
+			passage
+		)
+		select
+			now() as created,
+			now() as modified,
+			'ACTIVE' as status,
+			#{section} as section,
+			#{practice_type} as practice_type,
+			#{pass_result} as pass_result,
+			#{result} as result,
+			now() as date,
+			#{course_enrollment_id} as course_enrollment_id,
+			#{practice_schedule_id} as practice_schedule_id,
+			#{passage} as passage
+		where not exists( select * from upsert )
+	</insert>	
+</mapper>

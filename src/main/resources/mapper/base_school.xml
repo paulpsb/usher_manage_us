@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseSchoolDao">
+	<select id="getBaseSchoolCount" parameterType="com.usher.dto.BaseSchoolDto" resultType="com.usher.dto.BaseSchoolDto">
+		select count(*) as total_count	
+		from
+			base_school
+		where 1=1
+		<if test="school_foreign_gubun != null and school_foreign_gubun !='' ">			
+			and school_foreign_gubun = #{school_foreign_gubun}
+		</if>	
+		<if test="school_gubun != null and school_gubun !='' ">			
+			and school_gubun = #{school_gubun}
+		</if>	
+		<if test="school_area1 != null and school_area1 !='' ">			
+			and school_area1 = #{school_area1}
+		</if>	
+		<if test="school_area2 != null and school_area2 !='' ">			
+			and school_area2 = #{school_area2}
+		</if>	
+		<if test="school_name != null and school_name !='' ">			
+			and ( school_name_kr like concat('%',#{school_name},'%') or school_name_en like concat('%',#{school_name},'%') )
+			
+		</if>											
+	</select>
+	<select id="getBaseSchoolList" parameterType="com.usher.dto.BaseSchoolDto" resultType="com.usher.dto.BaseSchoolDto">
+		select
+			id,
+			school_foreign_gubun,
+			school_gubun,
+			school_area1,
+			school_area2,
+			school_name_kr,
+			school_name_en
+		from
+			base_school
+		where 1=1
+		<if test="school_foreign_gubun != null and school_foreign_gubun !='' ">			
+			and school_foreign_gubun = #{school_foreign_gubun}
+		</if>	
+		<if test="school_gubun != null and school_gubun !='' ">			
+			and school_gubun = #{school_gubun}
+		</if>	
+		<if test="school_area1 != null and school_area1 !='' ">			
+			and school_area1 = #{school_area1}
+		</if>	
+		<if test="school_area2 != null and school_area2 !='' ">			
+			and school_area2 = #{school_area2}
+		</if>	
+		<if test="school_name != null and school_name !='' ">			
+			and ( school_name_kr like concat('%',#{school_name},'%') or school_name_en like concat('%',#{school_name},'%') )
+			
+		</if>											
+		order by school_foreign_gubun, school_gubun, coalesce(school_name_kr, school_name_en)
+		limit #{row_num} offset #{first_num}
+	</select>
+	
+		<select id="getBaseSchoolSearchList" parameterType="com.usher.dto.BaseSchoolDto" resultType="com.usher.dto.BaseSchoolDto">
+		select
+			id,
+			school_foreign_gubun,
+			school_gubun,
+			school_area1,
+			school_area2,
+			school_name_kr,
+			school_name_en
+		from
+			base_school
+		where 1=1
+			and ( school_name_kr like concat('%',#{school_name},'%') or school_name_en like concat('%',#{school_name},'%') )
+		order by school_foreign_gubun, school_gubun, coalesce(school_name_kr, school_name_en)
+	</select>
+	
+	<select id="getBaseSchoolMatchingList" parameterType="com.usher.dto.BaseSchoolDto" resultType="com.usher.dto.BaseSchoolDto">
+		select
+			id,
+			school_foreign_gubun,
+			school_gubun,
+			school_area1,
+			school_area2,
+			school_name_kr,
+			school_name_en
+		from
+			base_school
+		where 1=1
+		<if test="school_foreign_gubun != null and school_foreign_gubun !='' ">			
+			and school_foreign_gubun = #{school_foreign_gubun}
+		</if>	
+		<if test="school_gubun != null and school_gubun !='' ">			
+			and school_gubun = #{school_gubun}
+		</if>	
+		<if test="school_area1 != null and school_area1 !='' ">			
+			and school_area1 = #{school_area1}
+		</if>	
+		<if test="school_area2 != null and school_area2 !='' ">			
+			and school_area2 = #{school_area2}
+		</if>	
+		<if test="school_name != null and school_name !='' ">			
+			and ( school_name_kr like concat('%',#{school_name},'%') or school_name_en like concat('%',#{school_name},'%') )
+			
+		</if>											
+		order by school_foreign_gubun, school_gubun, coalesce(school_name_kr, school_name_en)
+	</select>
+		
+	<select id="getBaseSchool" parameterType="com.usher.dto.BaseSchoolDto" resultType="com.usher.dto.BaseSchoolDto">
+		select
+			id,
+			school_foreign_gubun,
+			school_gubun,
+			school_area1,
+			school_area2,
+			school_name_kr,
+			school_name_en
+		from
+			base_school
+		where
+			id = #{id}
+	</select>	
+	<insert id="insertBaseSchool" parameterType="com.usher.dto.BaseSchoolDto">
+		insert into base_school(
+			school_foreign_gubun,
+			school_gubun,
+			school_area1,
+			school_area2,
+			school_name_kr,
+			school_name_en
+		) values (
+			#{school_foreign_gubun},
+			#{school_gubun},
+			#{school_area1},
+			#{school_area2},
+			#{school_name_kr},
+			#{school_name_en}
+		)
+	</insert>	
+	<update id="updateBaseSchool" parameterType="com.usher.dto.BaseSchoolDto">
+		update base_school set
+			school_foreign_gubun = #{school_foreign_gubun},
+			school_gubun = #{school_gubun},
+			school_area1 = #{school_area1},
+			school_area2 = #{school_area2},
+			school_name_kr = #{school_name_kr},
+			school_name_en = #{school_name_en}
+		where
+			id = #{id}
+	</update>	
+	<update id="updateBaseSchoolAsUserSchool" parameterType="com.usher.dto.BaseSchoolDto">
+		update users_school set
+			school_foreign_gubun = #{school_foreign_gubun},
+			school_gubun = #{school_gubun},
+			school_area1 = #{school_area1},
+			school_area2 = #{school_area2},
+			school_name = #{school_name}
+		where
+			school_foreign_gubun = #{old_school_foreign_gubun}
+			and school_gubun = #{old_school_gubun}
+			and school_area1 = #{old_school_area1}
+			and school_area2 = #{old_school_area2}
+			and school_name = #{old_school_name}
+	</update>	
+	
+	
+	<select id="getUserSchoolCount" parameterType="com.usher.dto.BaseSchoolDto" resultType="com.usher.dto.BaseSchoolDto">
+		select count(*) as total_count	
+		from
+			users_school
+		where
+			school_check = 'N'			
+	</select>
+	<select id="getUserSchoolList" parameterType="com.usher.dto.BaseSchoolDto" resultType="com.usher.dto.BaseSchoolDto">
+		select
+			id as user_school_id,
+			school_gubun,
+			school_foreign_gubun,
+			school_area1,
+			school_area2,
+			school_name
+		from
+			users_school
+		where
+			school_check = 'N'
+		order by id desc
+		limit #{row_num} offset #{first_num}
+	</select>	
+	<select id="getUserSchool" parameterType="com.usher.dto.BaseSchoolDto" resultType="com.usher.dto.BaseSchoolDto">
+		select
+			id as user_school_id,
+			school_gubun,
+			school_foreign_gubun,
+			school_area1,
+			school_area2,
+			school_name
+		from
+			users_school
+		where
+			id = #{user_school_id}
+	</select>
+	<update id="updateUserSchool" parameterType="com.usher.dto.BaseSchoolDto">
+		update users_school set
+			school_gubun = #{school_gubun},
+			school_foreign_gubun = #{school_foreign_gubun},
+			school_area1 = #{school_area1},
+			school_area2 = #{school_area2},
+			school_name = #{school_name},
+			school_check = 'Y'
+		where
+			id = #{user_school_id}
+	</update>			
+</mapper>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CorrectionExamsAppealDao">
+	<select id="getCorrectionExamsAppealList" parameterType="com.usher.dto.CorrectionExamsAppealDto" resultType="com.usher.dto.CorrectionExamsAppealDto">
+		select 
+			a.id,
+			to_char(a.appeal_date,'yyyy-mm-dd hh24:mi:ss') as appeal_date,
+			a.appeal_comment,
+			a.appeal_question,
+			a.appeal_answer_id,
+			concat(coalesce(b.last_name,''), coalesce(b.first_name,'')) as appeal_answer_name,
+			to_char(a.appeal_answer_date,'yyyy-mm-dd hh24:mi:ss') as appeal_answer_date,
+			a.appeal_answer,
+			a.appeal_answer_comment,
+			a.appeal_answer_yn,
+			a.appeal_answer_review_yn,
+			a.appeal_answer_review_score,
+			a.correction_exams_answer_id		
+		from
+			correction_exams_appeal a
+			left join auth_user b on a.appeal_answer_id = b.id
+		where
+			a.correction_exams_answer_id = #{correction_exams_answer_id}
+		order by a.id asc
+	</select>
+	
+	<select id="getCorrectionExamsAppeal" parameterType="com.usher.dto.CorrectionExamsAppealDto" resultType="com.usher.dto.CorrectionExamsAppealDto">
+		select 
+			a.id,
+			to_char(a.appeal_date,'yyyy-mm-dd hh24:mi:ss') as appeal_date,
+			a.appeal_comment,
+			a.appeal_question,
+			a.appeal_answer_id,
+			concat(coalesce(b.last_name,''), coalesce(b.first_name,'')) as appeal_answer_name,
+			to_char(a.appeal_answer_date,'yyyy-mm-dd hh24:mi:ss') as appeal_answer_date,
+			a.appeal_answer,
+			a.appeal_answer_comment,
+			a.appeal_answer_yn,
+			a.appeal_answer_review_yn,
+			a.appeal_answer_review_score,
+			a.correction_exams_answer_id		
+		from
+			correction_exams_appeal a
+			left join auth_user b on a.appeal_answer_id = b.id
+		where
+			a.id = #{id}
+	</select>
+	
+	<update id="updateCorrectionExamsAppeal" parameterType="com.usher.dto.CorrectionExamsAppealDto">
+		update correction_exams_appeal set
+			appeal_answer_id = #{appeal_answer_id},
+			appeal_answer_date = now(),
+			appeal_answer = #{appeal_answer},
+			appeal_answer_comment = #{appeal_answer_comment},
+			appeal_answer_yn = 'Y'
+		where
+			id = #{id}
+	</update>
+</mapper>

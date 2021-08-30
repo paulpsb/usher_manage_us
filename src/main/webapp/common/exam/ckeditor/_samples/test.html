@@ -1,0 +1,372 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
+For licensing, see LICENSE.html or http://ckeditor.com/license
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>API Usage &mdash; CKEditor Sample</title>
+	<meta content="text/html; charset=utf-8" http-equiv="content-type" />
+	<script type="text/javascript" src="../ckeditor.js"></script>
+	<script src="sample.js" type="text/javascript"></script>
+	<link href="sample.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="../../helper/jquery.caret.1.02.min.js"></script>
+	<script type="text/javascript">
+	//<![CDATA[
+
+// The instanceReady event is fired, when an instance of CKEditor has finished
+// its initialization.
+CKEDITOR.on( 'instanceReady', function( ev )
+{
+	// Show the editor name and description in the browser status bar.
+	document.getElementById( 'eMessage' ).innerHTML = '<p>Instance <code>' + ev.editor.name + '<\/code> loaded.<\/p>';
+
+	// Show this sample buttons.
+	 document.getElementById( 'eButtons' ).style.display = 'block';
+	 
+	iframes = document.getElementsByTagName("iframe");
+	//iframes[0].contentWindow.document.body.attachEvent("onkeydown", catchKeyDown);
+	iframes[0].contentWindow.document.body.addEventListener("keydown", catchKeyDown);
+	//iframes[0].contentWindow.document.body.attachEvent("onclick", catchKeyDown);
+
+	var doc = iframes[0].contentWindow.document.body; 
+            //var body = $('body',doc); 
+            
+	var check = function() {
+		alert(doc.caret().start);
+	}
+	
+	function catchKeyDown (e) {
+		if(e.altKey) { 
+    		//alert('shift');
+			//iframes[0].focus();
+			//alert($(iframes[0].contentWindow.document.body).caret().end);
+			var iframebody = (iframes[0].contentWindow || iframes[0].contentWindow.document).body;
+			//alert($(iframebody).caret().end);
+			InsertHTML();
+			//check();
+			$(function() {
+				//alert($(iframes[0].contentWindow.document.body).caret().start);
+				//alert($(doc.caret().start));
+				//$(iframes[0].contentWindow.document.body).caret(10,15);
+			});
+			
+			
+
+/*********** **********/
+/*var ifr = document.getElementsByTagName("iframe");
+var idoc = ifr[0].contentDocument;
+var ibody = ifr[0].contentDocument.body; // content: "teststring|"
+
+var caret = 2;
+
+var sel = ifr[0].contentDocument.getSelection();
+var range = sel.getRangeAt(0);
+
+var el = ibody;
+range.setStart(el, caret);
+range.setEnd(el, caret);
+
+sel.removeAllRanges();
+sel.addRange(range); */
+/********** **********/
+
+
+
+			
+			
+			
+/*			var editor = CKEDITOR.instances.editor1;
+			var dummyElement = editor.document.createElement( 'img', {
+				attributes : {
+					src : 'null',
+				 	width : 0,
+					height : 0
+				}
+			});
+
+			editor.insertElement( dummyElement );
+			var obj = dummyElement.$;
+			var cursor = {
+				x : 0,
+				y : 0
+			}
+
+			cursor.keydown = false;
+
+			while (obj.offsetParent) {
+				cursor.x += obj.offsetLeft;
+				cursor.y += obj.offsetTop;
+				obj = obj.offsetParent;
+			}
+			
+			cursor.x += obj.offsetLeft;
+			cursor.y += obj.offsetTop;
+			cursor.keydown = true;
+
+			dummyElement.remove(); */
+
+			//alert(cursor.x + '-' + cursor.y);
+
+			/*var editor2 = CKEDITOR.instances.editor1;
+			//var target = $(sdpParam).find('iframe')[0].contentDocument.elementFromPoint(event.layerX,event.layerY);                
+			var range = new CKEDITOR.dom.range(editor2.document);
+
+    	    range.setStart(new CKEDITOR.dom.node('p'), 0);
+			range.collapse();
+			editor2.getSelection().selectRanges( [ range ] );        
+			editor2.focus();*/
+			
+			
+			
+			
+			
+			
+			
+			
+			//alert('start-' + $("iframes[0].contentWindow.document.body").caret().start+'-end-'+ $("iframes[0].contentWindow.document.body").caret().end);
+					
+			/*(function($) {
+				alert('start-' + $(iframes[0].contentWindow.document.body).caret().start+'-end-'+ $(iframes[0].contentWindow.document.body).caret().end);
+				//alert('start-' +$(this).caret().start+'-end-'+$(this).caret().end);
+			});*/
+		} 
+		
+		
+function getCaretCharacterOffsetWithin(element) {
+    var doc = element.ownerDocument || element.document;
+    var win = doc.defaultView || doc.parentWindow;
+    var sel, range, preCaretRange, caretOffset = 0;
+    if (typeof win.getSelection != "undefined") {
+        sel = win.getSelection();
+        if (sel.rangeCount) {
+            range = sel.getRangeAt(0);
+            preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(element);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            caretOffset = preCaretRange.toString().length;
+        }
+    } else if ( (sel = doc.selection) && sel.type != "Control") {
+        range = doc.selection.createRange();
+        preCaretRange = doc.body.createTextRange();
+        preCaretRange.moveToElementText(element);
+        preCaretRange.setEndPoint("EndToEnd", textRange);
+        caretOffset = preCaretTextRange.text.length;
+    }
+    return caretOffset;
+}
+		
+		
+		
+		/*if (e.keyCode == 17) {
+			key++;
+		}
+		if (e.keyCode == 83 && key == 1) {
+			key++;
+		}
+		if (e.keyCode != 17 && e.keyCode != 83) {
+			key = 0;
+		}
+		if (key == 2) {
+			key = 0;
+			//CKEDITOR.instances.editor1.execCommand('searcher');
+		} */
+	}
+
+
+
+	
+	
+	
+	
+	
+	 
+});
+//CKEDITOR.config.removePlugins = 'hotkey';
+
+
+function InsertHTML()
+{
+	// Get the editor instance that we want to interact with.
+	var oEditor = CKEDITOR.instances.editor1;
+	//var value = document.getElementById( 'htmlArea' ).value;
+	//oEditor.execCommand('strike');
+	
+	//var val = oEditor.getSelection().getRanges()[0];
+	//alert(val.endOffset);
+	//oEditor.getSelection().selectRanges(0,-1);
+	//oEditor.getSelection().selectRanges([10,12]);
+	var text = oEditor.getSelection().getSelectedText();
+	//alert(text);
+	var value;
+	
+	if(!text) 
+		value = '<strong><span style="color: rgb(255, 0, 0);">()</span></strong>';
+	else 
+		value = '<strike><strong>'+text+'<strong></strike> <span style="color: rgb(255, 0, 0);">()</span>';
+
+	// Check the active editing mode.
+	if ( oEditor.mode == 'wysiwyg' )
+	{
+		// Insert HTML code.
+		// http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.editor.html#insertHtml
+		oEditor.insertHtml( value );
+	}
+	else
+		alert( 'You must be in WYSIWYG mode!' );
+}
+
+function InsertText()
+{
+	// Get the editor instance that we want to interact with.
+	var oEditor = CKEDITOR.instances.editor1;
+	var value = document.getElementById( 'txtArea' ).value;
+
+	// Check the active editing mode.
+	if ( oEditor.mode == 'wysiwyg' )
+	{
+		// Insert as plain text.
+		// http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.editor.html#insertText
+		oEditor.insertText( value );
+	}
+	else
+		alert( 'You must be in WYSIWYG mode!' );
+}
+
+function SetContents()
+{
+	// Get the editor instance that we want to interact with.
+	var oEditor = CKEDITOR.instances.editor1;
+	var value = document.getElementById( 'htmlArea' ).value;
+
+	// Set editor contents (replace current contents).
+	// http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.editor.html#setData
+	oEditor.setData( value );
+}
+
+function GetContents()
+{
+	// Get the editor instance that you want to interact with.
+	var oEditor = CKEDITOR.instances.editor1;
+
+	// Get editor contents
+	// http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.editor.html#getData
+	alert( oEditor.getData() );
+}
+
+function ExecuteCommand( commandName )
+{
+	// Get the editor instance that we want to interact with.
+	var oEditor = CKEDITOR.instances.editor1;
+
+	// Check the active editing mode.
+	if ( oEditor.mode == 'wysiwyg' )
+	{
+		// Execute the command.
+		// http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.editor.html#execCommand
+		oEditor.execCommand( commandName );
+	}
+	else
+		alert( 'You must be in WYSIWYG mode!' );
+}
+
+function CheckDirty()
+{
+	// Get the editor instance that we want to interact with.
+	var oEditor = CKEDITOR.instances.editor1;
+	// Checks whether the current editor contents present changes when compared
+	// to the contents loaded into the editor at startup
+	// http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.editor.html#checkDirty
+	alert( oEditor.checkDirty() );
+}
+
+function ResetDirty()
+{
+	// Get the editor instance that we want to interact with.
+	var oEditor = CKEDITOR.instances.editor1;
+	// Resets the "dirty state" of the editor (see CheckDirty())
+	// http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.editor.html#resetDirty
+	oEditor.resetDirty();
+	alert( 'The "IsDirty" status has been reset' );
+}
+
+	//]]>
+	</script>
+
+</head>
+<body>
+	<h1 class="samples">
+		CKEditor Sample &mdash; Using CKEditor JavaScript API
+	</h1>
+	<div class="description">
+	<p>
+		This sample shows how to use the
+		<a class="samples" href="http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.editor.html">CKEditor JavaScript API</a>
+		to interact with the editor at runtime.
+	</p>
+	<p>
+		For details on how to create this setup check the source code of this sample page.
+	</p>
+	</div>
+
+	<!-- This <div> holds alert messages to be display in the sample page. -->
+	<div id="alerts">
+		<noscript>
+			<p>
+				<strong>CKEditor requires JavaScript to run</strong>. In a browser with no JavaScript
+				support, like yours, you should still see the contents (HTML data) and you should
+				be able to edit it normally, without a rich editor interface.
+			</p>
+		</noscript>
+	</div>
+	<form action="sample_posteddata.php" method="post">
+		<textarea cols="100" id="editor1" name="editor1" rows="10">&lt;p&gt;This is some &lt;strong&gt;sample text&lt;/strong&gt;. You are using &lt;a href="http://ckeditor.com/"&gt;CKEditor&lt;/a&gt;.&lt;/p&gt;</textarea>
+
+		<script type="text/javascript">
+		//<![CDATA[
+			// Replace the <textarea id="editor1"> with an CKEditor instance.
+			var editor = CKEDITOR.replace( 'editor1' );
+			CKEDITOR.config.removePlugins = 'elementspath';
+		//]]>
+		</script>
+
+		<div id="eMessage">
+		</div>
+		<div id="eButtons">
+			<input onclick="InsertHTML();" type="button" value="Insert HTML" />
+			<input onclick="SetContents();" type="button" value="Set Editor Contents" />
+			<input onclick="GetContents();" type="button" value="Get Editor Contents (XHTML)" />
+			<br />
+			<textarea cols="100" id="htmlArea" rows="3">&lt;h2&gt;Test&lt;/h2&gt;&lt;p&gt;This is some &lt;a href="/Test1.html"&gt;sample&lt;/a&gt; HTML code.&lt;/p&gt;</textarea>
+			<br />
+			<br />
+			<input onclick="InsertText();" type="button" value="Insert Text" />
+			<br />
+			<textarea cols="100" id="txtArea" rows="3">   First line with some leading whitespaces.
+
+Second line of text preceded by two line breaks.</textarea>
+			<br />
+			<input onclick="ExecuteCommand('bold');" type="button" value="Execute &quot;bold&quot; Command" />
+			<input onclick="ExecuteCommand('link');" type="button" value="Execute &quot;link&quot; Command" />
+			<br />
+			<br />
+			<input onclick="CheckDirty();" type="button" value="checkDirty()" />
+			<input onclick="ResetDirty();" type="button" value="resetDirty()" />
+		</div>
+	</form>
+	<div id="footer">
+		<hr />
+		<p>
+			CKEditor - The text editor for the Internet - <a class="samples" href="http://ckeditor.com/">http://ckeditor.com</a>
+		</p>
+		<p id="copy">
+			Copyright &copy; 2003-2012, <a class="samples" href="http://cksource.com/">CKSource</a> - Frederico
+			Knabben. All rights reserved.
+		</p>
+	</div>
+<script type="text/javascript">
+
+</script>
+</body>
+</html>

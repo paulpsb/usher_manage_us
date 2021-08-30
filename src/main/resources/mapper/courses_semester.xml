@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CoursesSemesterDao">
+	<select id="getSemesterList" resultType="com.usher.dto.CoursesSemesterDto">
+		select
+			id,
+			to_char(date,'yyyy년 mm월') as date,
+			to_char(date,'yyyy-mm') as date_code
+		from 
+			courses_semester 
+		order by id desc
+	</select>
+	
+	<select id="getSemesterDate" resultType="com.usher.dto.CoursesSemesterDto" parameterType="com.usher.dto.CoursesSemesterDto">
+		select
+			to_char(date,'yyyy-mm') as date,
+			to_char(date - interval '1 months','yyyy-mm') as pre_date,
+			to_char(date - interval '2 months','yyyy-mm') as last_date,
+			to_char(date - interval '1 months','yyyy-mm') as pre_date1,
+			to_char(date - interval '2 months','yyyy-mm') as pre_date2,
+			to_char(date - interval '3 months','yyyy-mm') as pre_date3,
+			to_char(date - interval '4 months','yyyy-mm') as pre_date4,
+			to_char(date - interval '5 months','yyyy-mm') as pre_date5
+		from 
+			courses_semester 
+		where 
+			id = #{id}
+	</select>
+		
+</mapper>

@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesTaskDao">
+	<select id="getNoticesTaskCount" resultType="com.usher.dto.NoticesTaskDto" parameterType="com.usher.dto.NoticesTaskDto">
+		select count(*) as total_count
+		from
+			notices_task a
+			join auth_user b on a.task_user_id = b.id
+		where
+			to_char(a.task_date,'yyyy-mm-dd') between #{task_start_date} and #{task_end_date}
+		<if test="task_status != null and task_status !='' ">			
+			and a.task_status = #{task_status}
+		</if>		
+		<if test="task_title != null and task_title !='' ">			
+			and a.task_title like concat('%',#{task_status},'%')
+		</if>		
+		<if test="task_reference_content != null and task_reference_content !='' ">			
+			and a.task_reference_content like concat('%',#{task_reference_content},'%')
+		</if>		
+		<if test="task_user_name != null and task_user_name !='' ">			
+			and concat(b.last_name, b.first_name) like concat('%',#{task_user_name},'%')
+		</if>
+	</select>
+	<select id="getNoticesTaskList" resultType="com.usher.dto.NoticesTaskDto" parameterType="com.usher.dto.NoticesTaskDto">
+		select
+			a.id,
+			a.task_status,
+			a.task_estimated_time,
+			a.task_user_id,
+			concat(b.last_name, b.first_name) as task_user_name,
+			to_char(a.task_date,'yyyy-mm-dd') as task_date,
+			a.task_time,
+			a.task_title,
+			a.task_reference_title,
+			a.task_reference_content,
+			a.task_reference_image,
+			a.task_reference_image_name,
+			a.task_reference_url,
+			a.task_reference_file,
+			a.task_reference_file_name,
+			a.task_report_image,
+			a.task_report_url,
+			a.task_report_file,
+			a.task_content,
+			a.task_image,
+			a.task_image_name,
+			a.task_url,
+			a.task_file,
+			a.task_file_name,
+			a.task_return_content,
+			a.task_category_detail_id
+		from
+			notices_task a
+			join auth_user b on a.task_user_id = b.id
+		where
+			to_char(a.task_date,'yyyy-mm-dd') between #{task_start_date} and #{task_end_date}
+		<if test="task_status != null and task_status !='' ">			
+			and a.task_status = #{task_status}
+		</if>	
+		<if test="task_title != null and task_title !='' ">			
+			and a.task_title like concat('%',#{task_status},'%')
+		</if>		
+		<if test="task_reference_content != null and task_reference_content !='' ">			
+			and a.task_reference_content like concat('%',#{task_reference_content},'%')
+		</if>		
+		<if test="task_user_name != null and task_user_name !='' ">			
+			and concat(b.last_name, b.first_name) like concat('%',#{task_user_name},'%')
+		</if>	
+		order by a.task_date desc, a.task_user_id desc, a.id desc	
+		limit #{row_num} offset #{first_num}	
+	</select>
+	<select id="getNoticesTaskStatusList" resultType="com.usher.dto.NoticesTaskDto" parameterType="com.usher.dto.NoticesTaskDto">
+		select
+			a.detail_user_id,
+			concat(b.last_name, b.first_name) as detail_user_name,
+			to_char(a.detail_date,'yyyy-mm-dd') as detail_date,
+			to_char(a.detail_date,'hh24:mi:ss') as detail_time,
+			a.task_id,
+			a.task_seq,
+			a.task_status as task_detail_status
+		from
+			notices_task_detail a
+			join auth_user b on a.detail_user_id = b.id
+		where
+			a.task_id in (
+				select
+					a.id
+				from
+					notices_task a
+					join auth_user b on a.task_user_id = b.id
+				where
+					to_char(a.task_date,'yyyy-mm-dd') between #{task_start_date} and #{task_end_date}
+				<if test="task_status != null and task_status !='' ">			
+					and a.task_status = #{task_status}
+				</if>	
+				<if test="task_title != null and task_title !='' ">			
+					and a.task_title like concat('%',#{task_status},'%')
+				</if>		
+				<if test="task_reference_content != null and task_reference_content !='' ">			
+					and a.task_reference_content like concat('%',#{task_reference_content},'%')
+				</if>		
+				<if test="task_user_name != null and task_user_name !='' ">			
+					and concat(b.last_name, b.first_name) like concat('%',#{task_user_name},'%')
+				</if>	
+				order by a.task_date desc, a.task_user_id desc, a.id desc	
+				limit #{row_num} offset #{first_num}	
+			)
+		order by a.task_id, a.task_seq	
+	</select>
+	<select id="getNoticesTaskDailyList" resultType="com.usher.dto.NoticesTaskDto" parameterType="com.usher.dto.NoticesTaskDto">
+		select
+			id,
+			task_status,
+			task_estimated_time,
+			task_user_id,
+			task_date,
+			task_time,
+			task_title,
+			task_reference_title,
+			task_reference_content,
+			task_reference_image,
+			task_reference_image_name,
+			task_reference_url,
+			task_reference_file,
+			task_reference_file_name,
+			task_report_image,
+			task_report_url,
+			task_report_file,
+			task_content,
+			task_image,
+			task_image_name,
+			task_url,
+			task_file,
+			task_file_name,
+			task_return_content,
+			task_category_detail_id
+		from
+			notices_task
+		where
+			to_char(task_date,'yyyy-mm-dd') = #{task_date}
+		order by task_user_id, id		
+	</select>
+
+	<select id="getNoticesTaskUserDailyList" resultType="com.usher.dto.NoticesTaskDto" parameterType="com.usher.dto.NoticesTaskDto">
+		select
+			id,
+			task_status,
+			task_estimated_time,
+			task_user_id,
+			task_date,
+			task_time,
+			task_title,
+			task_reference_title,
+			task_reference_content,
+			task_reference_image,
+			task_reference_image_name,
+			task_reference_url,
+			task_reference_file,
+			task_reference_file_name,
+			task_report_image,
+			task_report_url,
+			task_report_file,
+			task_content,
+			task_image,
+			task_image_name,
+			task_url,
+			task_file,
+			task_file_name,
+			task_return_content,
+			task_category_detail_id
+		from
+			notices_task
+		where
+			task_user_id = #{task_user_id}
+			and ( to_char(task_date,'yyyy-mm-dd') = #{task_date} or ( #{task_date} > to_char(task_date,'yyyy-mm-dd') and task_status != 'COMPLETE' ) )
+		order by task_user_id, id		
+	</select>
+	
+	<select id="getNoticesTask" resultType="com.usher.dto.NoticesTaskDto" parameterType="com.usher.dto.NoticesTaskDto">
+		select
+			id,
+			task_status,
+			task_estimated_time,
+			task_user_id,
+			task_date,
+			task_time,
+			task_title,
+			task_reference_title,
+			task_reference_content,
+			task_reference_image,
+			task_reference_image_name,
+			task_reference_url,
+			task_reference_file,
+			task_reference_file_name,
+			task_report_image,
+			task_report_url,
+			task_report_file,
+			task_content,
+			task_image,
+			task_image_name,
+			task_url,
+			task_file,
+			task_file_name,
+			task_return_content,
+			task_category_detail_id
+		from
+			notices_task
+		where
+			id = #{id}	
+	</select>
+	
+	<insert id="insertNoticesTask" parameterType="com.usher.dto.NoticesTaskDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into notices_task(
+			created,
+			modified,
+			task_status,
+			task_estimated_time,
+			task_user_id,
+			task_date,
+			task_time,
+			task_title,
+			task_reference_title,
+			task_reference_content,
+			task_reference_image,
+			task_reference_image_name,
+			task_reference_url,
+			task_reference_file,
+			task_reference_file_name,
+			task_report_image,
+			task_report_url,
+			task_report_file,
+			task_content,
+			task_image,
+			task_image_name,
+			task_url,
+			task_file,
+			task_file_name,
+			task_return_content,
+			task_category_detail_id
+		) values ( 
+			now(),
+			now(),
+			'REQUEST',
+			#{task_estimated_time},
+			#{task_user_id},
+			to_date(#{task_date},'yyyy-mm-dd'),
+			'0',
+			#{task_title},
+			#{task_reference_title},
+			#{task_reference_content},
+			#{task_reference_image},
+			#{task_reference_image_name},
+			#{task_reference_url},
+			#{task_reference_file},
+			#{task_reference_file_name},
+			#{task_report_image},
+			#{task_report_url},
+			#{task_report_file},
+			'',
+			'',
+			'',
+			'',
+			'',
+			'',
+			'',
+			#{task_category_detail_id}		
+		)
+	</insert>
+	<update id="updateNoticesTask" parameterType="com.usher.dto.NoticesTaskDto">
+		update notices_task set
+			task_status = #{task_status},
+			task_content = #{task_content},
+			task_image = #{task_image},
+			task_image_name = #{task_image_name},
+			task_url = #{task_url},
+			task_file = #{task_file},
+			task_file_name = #{task_file_name}
+		where
+			id = #{id}
+	</update>
+	<update id="updateNoticesTaskMove" parameterType="com.usher.dto.NoticesTaskDto">
+		update notices_task set
+			 task_status = 'TIMEING',
+			 task_time = #{task_time}
+		where
+			id = #{id}
+	</update>	
+	<update id="updateNoticesTaskReturn" parameterType="com.usher.dto.NoticesTaskDto">
+		update notices_task set
+			 task_status = 'RETURN',
+			 task_return_content = #{task_return_content}
+		where
+			id = #{id}
+	</update>	
+	<update id="updateNoticesTaskComplete" parameterType="com.usher.dto.NoticesTaskDto">
+		update notices_task set
+			 task_status = 'COMPLETE'
+		where
+			id = #{id}
+	</update>	
+	<delete id="deleteNoticesTask" parameterType="com.usher.dto.NoticesTaskDto">
+		delete from notices_task 
+		where
+			id = #{id}
+	</delete>
+	<delete id="deleteNoticesTaskDetailAll" parameterType="com.usher.dto.NoticesTaskDto">
+		delete from notices_task_detail 
+		where
+			task_id = #{id}
+	</delete>
+	
+</mapper>

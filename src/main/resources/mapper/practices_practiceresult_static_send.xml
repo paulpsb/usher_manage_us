@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticeresultStaticSendDao">
+	<select id="getPracticeResultStaticSendList" parameterType="com.usher.dto.PracticesPracticeresultStaticSendDto" resultType="com.usher.dto.PracticesPracticeresultStaticSendDto">
+		select
+		    id,
+		    course_enrollment_id,
+		    to_char(date,'yyyy-mm-dd') as date,
+		    contents,
+		    send_yn
+		from
+			practices_practiceresult_static_send
+		where
+			course_enrollment_id in ( select course_enrollment_id from courses_allocation  where first_course_id = #{course_id} or current_course_id = #{course_id} )
+		<if test="date != null and date !='' ">			
+			and to_char(date,'yyyy-mm-dd') = #{date}
+		</if>
+		order by course_enrollment_id
+	</select>
+
+	<select id="getPracticeResultStaticSend" parameterType="com.usher.dto.PracticesPracticeresultStaticSendDto" resultType="com.usher.dto.PracticesPracticeresultStaticSendDto">
+		select
+		    id,
+		    course_enrollment_id,
+		    to_char(date,'yyyy-mm-dd') as date,
+		    resv_mobile,
+		    contents,
+		    send_yn
+		from
+			practices_practiceresult_static_send
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and to_char(date,'yyyy-mm-dd') = #{date}
+	</select>
+			
+	<insert id="insertPracticeResultStaticSend" parameterType="com.usher.dto.PracticesPracticeresultStaticSendDto">
+		insert into practices_practiceresult_static_send(
+			created,
+			modified,
+			course_enrollment_id,
+			date,	
+			contents,	
+			resv_mobile,
+			send_yn
+		)values(
+			now(),
+			now(),
+			#{course_enrollment_id},	
+			to_date(#{date},'yyyy-mm-dd'),	
+			#{contents},
+			#{resv_mobile},	
+			#{send_yn}
+		)
+	</insert>	
+	
+	<update id="updatePracticeResultStaticSend" parameterType="com.usher.dto.PracticesPracticeresultStaticSendDto">
+		update practices_practiceresult_static_send set
+			contents = #{contents},
+			resv_mobile = #{resv_mobile},	
+			send_yn = #{send_yn}
+		where
+			id = #{id}
+	</update>
+	
+	<insert id="insertPracticeResultStaticSendLog" parameterType="com.usher.dto.PracticesPracticeresultStaticSendDto">
+		insert into practices_practiceresult_static_send_log(
+			created,
+			modified,
+			course_enrollment_id,
+			date,	
+			contents,	
+			resv_mobile,
+			send_yn,
+			writer_id
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,	
+			date,	
+			contents,	
+			resv_mobile,
+			send_yn,
+			#{writer_id} as writer_id
+		from
+			practices_practiceresult_static_send
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and to_char(date,'yyyy-mm-dd') = #{date} 
+	</insert>			
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseExamRuburicDao">
+	<select id="getBaseExamRuburicList" parameterType="com.usher.dto.BaseExamRuburicDto" resultType="com.usher.dto.BaseExamRuburicDto">
+		select
+			id,
+			section,
+			book,
+			ruburic_num,
+			ruburic_category_title,
+			ruburic_category_sub,
+			ruburic_content_title,
+			ruburic_content_sub
+		from
+			base_exam_ruburic
+		where
+			1 = 1
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>				
+		<if test="book != null and book !='' ">			
+			and book = #{book}
+		</if>				
+		order by section, book, ruburic_num
+	</select>
+	
+	<select id="getBaseExamRuburic" parameterType="com.usher.dto.BaseExamRuburicDto" resultType="com.usher.dto.BaseExamRuburicDto">
+		select
+			id,
+			section,
+			book,
+			ruburic_num,
+			ruburic_category_title,
+			ruburic_category_sub,
+			ruburic_content_title,
+			ruburic_content_sub
+		from
+			base_exam_ruburic
+		where
+			id = #{id}
+	</select>
+	
+	<insert id="insertBaseExamRuburic" parameterType="com.usher.dto.BaseExamRuburicDto">
+		insert into base_exam_ruburic(
+			created,
+			modified,
+			section,
+			book,
+			ruburic_num,
+			ruburic_category_title,
+			ruburic_category_sub,
+			ruburic_content_title,
+			ruburic_content_sub
+		) values (
+			now(),
+			now(),
+			#{section},
+			#{book},
+			#{ruburic_num},
+			#{ruburic_category_title},
+			#{ruburic_category_sub},
+			#{ruburic_content_title},
+			#{ruburic_content_sub}
+		)
+	</insert>	
+	<update id="updateBaseExamRuburic" parameterType="com.usher.dto.BaseExamRuburicDto">
+		update base_exam_ruburic set
+			modified = now(),
+			ruburic_category_title = #{ruburic_category_title},
+			ruburic_category_sub = #{ruburic_category_sub},
+			ruburic_content_title = #{ruburic_content_title},
+			ruburic_content_sub = #{ruburic_content_sub}
+		where
+			id = #{id}
+	</update>	
+	<delete id="deleteBaseExamRuburic" parameterType="com.usher.dto.BaseExamRuburicDto">
+		delete from base_exam_ruburic
+		where
+			id = #{id}
+	</delete>	
+</mapper>

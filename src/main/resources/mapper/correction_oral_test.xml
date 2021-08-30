@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CorrectionOralTestDao">
+	<select id="getCorrectionOralTestSectionList" resultType="com.usher.dto.CorrectionOralTestDto">
+		select 
+			a.section
+		from
+			practices_practiceproblem a
+			join practices_practicesection b on a.section = b.section
+		where
+			a.correction_yn = 'Y'
+		group by a.section, b.section_order
+		order by b.section_order
+	</select>
+	
+	<select id="getCorrectionOralTestBookList" parameterType="com.usher.dto.CorrectionOralTestDto"  resultType="com.usher.dto.CorrectionOralTestDto">
+		select 
+			a.book
+		from
+			practices_practiceproblem a
+			join practices_practicesection b on a.section = b.section
+			join practices_practicebook c on b.id = c.practice_section_id and a.book = c.book
+		where
+			a.section = #{section}
+			and a.correction_yn = 'Y'
+		group by a.book, c.book_order
+		order by c.book_order
+		
+	</select>
+		
+	<select id="getCorrectionOralTestList" parameterType="com.usher.dto.CorrectionOralTestDto" resultType="com.usher.dto.CorrectionOralTestDto">
+		select 
+			id,
+			section,
+			book,
+			oral_test_type,
+			oral_test_title,
+			oral_test_url,
+			oral_test_sort
+		from
+			correction_oral_test
+		where
+			section = #{section}
+			and book = #{book}
+			and oral_test_type = #{oral_test_type}
+		order by oral_test_sort
+	</select>
+	
+	<insert id="insertCorrectionOralTest" parameterType="com.usher.dto.CorrectionOralTestDto">
+		insert into correction_oral_test(
+			created,
+			modified,
+			section,
+			book,
+			oral_test_type,
+			oral_test_title,
+			oral_test_url,
+			oral_test_sort
+		)values(
+			now(),
+			now(),
+			#{section},
+			#{book},
+			#{oral_test_type},
+			#{oral_test_title},
+			#{oral_test_url},
+			#{oral_test_sort}		
+		)
+	</insert>
+	<update id="updateCorrectionOralTest" parameterType="com.usher.dto.CorrectionOralTestDto">
+		update correction_oral_test set
+			modified = now(),
+			oral_test_title = #{oral_test_title},
+			oral_test_url = #{oral_test_url},
+			oral_test_sort = #{oral_test_sort}
+		where
+			id = #{id}		
+	</update>
+	<update id="deleteCorrectionOralTest" parameterType="com.usher.dto.CorrectionOralTestDto">
+		delete from correction_oral_test
+		where
+			id = #{id}		
+	</update>
+</mapper>

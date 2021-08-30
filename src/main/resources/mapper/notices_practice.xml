@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesPracticeDao">
+	<select id="getNoticesPracticeUserList" resultType="com.usher.dto.NoticesPracticeDto" parameterType="com.usher.dto.NoticesPracticeDto">
+		select
+			c.id,
+			c.section,
+			c.practice_type,
+			c.book,
+			c.volume,
+			c."group",
+			c.article,
+			c.paragraph,
+			c.course_id,
+			c.course_count,
+			c.course_first_success_count,
+			c.course_first_giveup_count,
+			c.course_last_success_count,
+			c.course_last_giveup_count,
+			c.comments,
+			c.is_comments,
+			c.is_success,
+			c.user_id
+		from
+			notices_practice c
+		where
+			to_char(c.date,'yyyy-mm-dd') = #{date}
+			and c.user_id = #{user_id}
+		order by c.section,	c.practice_type, c.book, c.volume, c."group", c.article, c.paragraph	
+	</select>
+	<select id="getNoticesPracticeAsCoursePracticeList" resultType="com.usher.dto.NoticesPracticeDto" parameterType="com.usher.dto.NoticesPracticeDto">
+		select
+			c.id,
+			c.section,
+			c.practice_type,
+			c.book,
+			c.volume,
+			c."group",
+			c.article,
+			c.paragraph,
+			c.course_id,
+			c.course_count,
+			c.course_first_success_count,
+			c.course_first_giveup_count,
+			c.course_last_success_count,
+			c.course_last_giveup_count,
+			c.comments,
+			c.is_success,
+			c.is_comments
+		from
+			notices_practice c
+		where
+			to_char(c.date,'yyyy-mm-dd') = #{date}
+			and c.section = #{section}
+			and c.practice_type = #{practice_type}
+			and c.course_id = #{course_id}
+			and c.is_success = false
+		order by c.section,	c.practice_type, c.book, c.volume, c."group", c.article, c.paragraph	
+	</select>	
+	<select id="getNoticesPractice" resultType="com.usher.dto.NoticesPracticeDto" parameterType="com.usher.dto.NoticesPracticeDto">
+		select
+			c.id,
+			c.section,
+			c.practice_type,
+			c.book,
+			c.volume,
+			c."group",
+			c.article,
+			c.paragraph,
+			c.course_id,
+			c.course_count,
+			c.course_first_success_count,
+			c.course_first_giveup_count,
+			c.course_last_success_count,
+			c.course_last_giveup_count,
+			c.comments,
+			c.is_success,
+			c.is_comments
+		from
+			notices_practice c
+		where
+			c.id = #{id}
+	</select>	
+	<update id="updatNoticesPracticeComment" parameterType="com.usher.dto.NoticesPracticeDto">
+		update notices_practice set 
+			modified = now(),
+			comments = #{comments},
+			is_comments = #{is_comments}
+		where
+			id = #{id}
+	</update>
+</mapper>

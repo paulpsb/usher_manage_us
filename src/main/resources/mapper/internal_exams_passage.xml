@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsPassageDao">
+	<select id="getPassageCount" resultType="com.usher.dto.InternalExamsPassageDto" parameterType="com.usher.dto.InternalExamsPassageDto">
+		select count(*) as total_count
+		from 
+			internal_exams_passage 
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and volume = #{volume}
+		</if>						
+	</select>
+	
+	<select id="getPassageList" resultType="com.usher.dto.InternalExamsPassageDto" parameterType="com.usher.dto.InternalExamsPassageDto">
+		select 
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.netpg_book,
+			a.netpg_jindo
+		from
+			internal_exams_passage a
+			left join (
+				select
+					a.section,
+					a.section_order,
+					b.book,
+					b.book_order,
+					c.volume,
+					c.volume_order,
+					coalesce(d.group,'') as group,
+					coalesce(d.group_order,0) as group_order
+				from
+					practices_practicesection a
+					join practices_practicebook b on a.id = b.practice_section_id
+					join practices_practicevolume c on b.practice_section_id = c.practice_section_id and b.id = c.practice_book_id
+					left join practices_practicegroup d on c.practice_section_id = d.practice_section_id and c.practice_book_id = d.practice_book_id and c.id = d.practice_volume_id			
+			) b on a.section = b.section and a.book = b.book and a.volume = b.volume and a.group = b.group			
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and a.book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and a.volume = #{volume}
+		</if>	
+		order by coalesce(b.section_order,0), a.section, coalesce(b.book_order,0), a.book, coalesce(b.volume_order,0), a.volume, coalesce(b.group_order,0), a.group, a.article
+		limit #{row_num} offset #{first_num}
+	</select>
+
+	<select id="getPassage" resultType="com.usher.dto.InternalExamsPassageDto" parameterType="com.usher.dto.InternalExamsPassageDto">
+		select 
+			a.id,
+			a.section,
+			a.book,
+			a."group",
+			a.volume,
+			a.article,
+			a.netpg_book,
+			a.netpg_jindo,
+			coalesce(b.voca_paragraph1,0) as voca_paragraph1,
+			coalesce(b.voca_paragraph2,0) as voca_paragraph2,
+			coalesce(b.voca_paragraph3,0) as voca_paragraph3,
+			coalesce(b.voca_paragraph4,0) as voca_paragraph4,
+			coalesce(b.voca_paragraph5,0) as voca_paragraph5,
+			coalesce(b.voca_paragraph6,0) as voca_paragraph6,
+			coalesce(b.voca_paragraph7,0) as voca_paragraph7,
+			coalesce(b.voca_paragraph8,0) as voca_paragraph8,
+			coalesce(b.voca_paragraph9,0) as voca_paragraph9,
+			coalesce(b.voca_paragraph10,0) as voca_paragraph10,
+			coalesce(c.phrase_paragraph1,0) as phrase_paragraph1,
+			coalesce(c.phrase_paragraph2,0) as phrase_paragraph2,
+			coalesce(c.phrase_paragraph3,0) as phrase_paragraph3,
+			coalesce(c.phrase_paragraph4,0) as phrase_paragraph4,
+			coalesce(c.phrase_paragraph5,0) as phrase_paragraph5,
+			coalesce(c.phrase_paragraph6,0) as phrase_paragraph6,
+			coalesce(c.phrase_paragraph7,0) as phrase_paragraph7,
+			coalesce(c.phrase_paragraph8,0) as phrase_paragraph8,
+			coalesce(c.phrase_paragraph9,0) as phrase_paragraph9,
+			coalesce(c.phrase_paragraph10,0) as phrase_paragraph10
+		from
+			internal_exams_passage a
+			left join (
+				select
+					passage_id,
+					max(case when paragraph = 1 then question_num else 0 end ) as voca_paragraph1,
+					max(case when paragraph = 2 then question_num else 0 end ) as voca_paragraph2,
+					max(case when paragraph = 3 then question_num else 0 end ) as voca_paragraph3,
+					max(case when paragraph = 4 then question_num else 0 end ) as voca_paragraph4,
+					max(case when paragraph = 5 then question_num else 0 end ) as voca_paragraph5,
+					max(case when paragraph = 6 then question_num else 0 end ) as voca_paragraph6,
+					max(case when paragraph = 7 then question_num else 0 end ) as voca_paragraph7,
+					max(case when paragraph = 8 then question_num else 0 end ) as voca_paragraph8,
+					max(case when paragraph = 9 then question_num else 0 end ) as voca_paragraph9,
+					max(case when paragraph = 10 then question_num else 0 end ) as voca_paragraph10
+				from
+					internal_exams_passage_voca
+				where
+					passage_id = #{id}
+				group by passage_id				
+			) b on a.id = b.passage_id
+			left join (
+				select
+					passage_id,
+					max(case when paragraph = 1 then question_num else 0 end ) as phrase_paragraph1,
+					max(case when paragraph = 2 then question_num else 0 end ) as phrase_paragraph2,
+					max(case when paragraph = 3 then question_num else 0 end ) as phrase_paragraph3,
+					max(case when paragraph = 4 then question_num else 0 end ) as phrase_paragraph4,
+					max(case when paragraph = 5 then question_num else 0 end ) as phrase_paragraph5,
+					max(case when paragraph = 6 then question_num else 0 end ) as phrase_paragraph6,
+					max(case when paragraph = 7 then question_num else 0 end ) as phrase_paragraph7,
+					max(case when paragraph = 8 then question_num else 0 end ) as phrase_paragraph8,
+					max(case when paragraph = 9 then question_num else 0 end ) as phrase_paragraph9,
+					max(case when paragraph = 10 then question_num else 0 end ) as phrase_paragraph10
+				from
+					internal_exams_passage_phrase
+				where
+					passage_id = #{id}
+				group by passage_id			
+			) c on a.id = c.passage_id
+		where
+			a.id = #{id}
+	</select>
+	
+	<insert id="insertPassage" parameterType="com.usher.dto.InternalExamsPassageDto"  useGeneratedKeys="true" keyProperty="id">
+		insert into internal_exams_passage (
+			created,
+			modified,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+			netpg_book,
+			netpg_jindo
+		) values (
+			now(),
+			now(),
+			#{section},
+			#{book},
+			#{volume},
+			#{group},
+			#{article},
+			#{netpg_book},
+			#{netpg_jindo}
+		)
+	</insert>
+	
+	<update id="updatePassage" parameterType="com.usher.dto.InternalExamsPassageDto">
+		update internal_exams_passage set
+			modified = now(),
+			section = #{section},
+			book = #{book},
+			volume = #{volume},
+			"group" = #{group},
+			article = #{article},
+			netpg_book = #{netpg_book},
+			netpg_jindo = #{netpg_jindo}
+		where
+			id = #{id}	
+	</update>
+	
+	<delete id="deletePassage" parameterType="com.usher.dto.InternalExamsPassageDto">
+		delete from internal_exams_passage
+		where
+			id = #{id}	
+	</delete>
+	<delete id="deletePassagePhraseAll" parameterType="com.usher.dto.InternalExamsPassageDto">
+		delete from internal_exams_passage_phrase
+		where
+			passage_id = #{id}	
+	</delete>
+	<delete id="deletePassageVocaAll" parameterType="com.usher.dto.InternalExamsPassageDto">
+		delete from internal_exams_passage_voca
+		where
+			passage_id = #{id}	
+	</delete>		
+</mapper>

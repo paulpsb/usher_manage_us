@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesAttendDetailDao">
+	<select id="getNoticesAttendDetailList" resultType="com.usher.dto.NoticesAttendDetailDto" parameterType="com.usher.dto.NoticesAttendDetailDto">
+		select
+			id,
+			course_id,
+			course_enrollment_id,
+			student_name,
+			attend_date,
+			attend_status,
+			student_reason,
+			teacher_reason,
+			notice_attend_id
+		from
+			notices_attend_detail
+		where
+			notice_attend_id = #{notice_attend_id}
+		order by student_name
+	</select>
+	<update id="updateNoticesAttendDetail" parameterType="com.usher.dto.NoticesAttendDetailDto">
+		update notices_attend_detail set 
+			modified = now(),
+			teacher_reason = #{teacher_reason}
+		where
+			notice_attend_id = #{notice_attend_id}
+			and course_enrollment_id = #{course_enrollment_id}
+	</update>
+</mapper>

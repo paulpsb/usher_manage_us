@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchResultSendDao">
+	<select id="getBatchResultSendList" resultType="com.usher.dto.BatchResultSendDto" parameterType="com.usher.dto.BatchResultSendDto">
+		select
+			a.id,
+			a.batch_result_id,
+			a.batch_send_id,
+			concat(coalesce(b.last_name,''),coalesce(b.first_name,'')) as batch_send_name,
+			a.batch_send_type,
+			to_char(a.batch_send_date,'yyyy-mm-dd hh24:mi:ss') as batch_send_date,
+			a.batch_send_desc
+		from
+			batch_result_send a
+			join auth_user b on a.batch_send_id = b.id
+		where
+			a.batch_result_id = #{batch_result_id}
+			and a.batch_send_type = #{batch_send_type}
+		order by a.id desc	
+	</select>
+	<insert id="insertBatchResultSend" parameterType="com.usher.dto.BatchResultSendDto">
+		insert into batch_result_send(
+			batch_result_id,
+			batch_send_id,
+			batch_send_type,
+			batch_send_date,
+			batch_send_desc
+		)values(
+			#{batch_result_id},
+			#{batch_send_id},
+			#{batch_send_type},
+			now(),
+			#{batch_send_desc}
+		)	
+	</insert>
+</mapper>

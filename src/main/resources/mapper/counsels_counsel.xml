@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CounselsCounselDao">
+	<select id="getCounselsCounselList" resultType="com.usher.dto.CounselsCounselDto" parameterType="com.usher.dto.CounselsCounselDto">
+		select
+			id,
+			to_char(date,'yyyy-mm-dd hh24:mi:ss') as date,
+		    name,
+		    birthday,
+		    mobile_no,
+		    e_mail,
+		    gubun,
+		    service,
+		    foregin,
+		    area
+		from
+			counsels_counsel
+		order by id desc
+	</select>
+
+	<insert id="insertCounselsCounsel" parameterType="com.usher.dto.CounselsCounselDto">
+		insert into counsels_counsel(
+			created,
+			modified,
+			date,
+		    name,
+		    birthday,
+		    mobile_no,
+		    e_mail,
+		    gubun,
+		    service,
+		    foregin,
+		    area			
+		)values(
+			now(),		
+			now(),		
+			now(),		
+			#{name},
+			#{birthday},
+			#{mobile_no},
+			#{e_mail},
+			#{gubun},
+			#{service},
+			#{foregin},
+			#{area}
+		)
+	</insert>
+</mapper>

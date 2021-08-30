@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.GoalsGoalconcentrationPracticeDao">
+	<select id="getGoalConcentrationPracticeList" parameterType="com.usher.dto.GoalsGoalconcentrationPracticeDto" resultType="com.usher.dto.GoalsGoalconcentrationPracticeDto">
+		select
+			a.id,
+			a.section,
+			c.short_title_kr as section_name,
+			a.practice_type,
+			d.practice_name,
+			d.program_use,
+			a.course_enrollment_id,
+			a.pass_user_score,
+			a.pass_course_score,
+			a.accept_result,
+			a.comments,
+			a.writer_id,
+			a.writer_comments,
+			a.book			
+		from 
+			goals_goalconcentration_practice a
+			join practices_practicesection c on a.section = c.section
+			join practices_practicetype d on a.practice_type = d.practice_type
+		where
+			a.date = current_date
+			and	a.course_enrollment_id in (select id from enrollments_courseenrollment where course_id = #{course_id})
+		order by a.id
+	</select>
+	<select id="getGoalConcentrationPractice" parameterType="com.usher.dto.GoalsGoalconcentrationPracticeDto" resultType="com.usher.dto.GoalsGoalconcentrationPracticeDto">
+		select
+			a.id,
+			a.section,
+			c.short_title_kr as section_name,
+			a.practice_type,
+			d.practice_name,
+			d.program_use,
+			a.course_enrollment_id,
+			a.pass_user_score,
+			a.pass_course_score,
+			a.accept_result,
+			a.comments,
+			a.writer_id,
+			a.writer_comments,
+			a.book
+		from 
+			goals_goalconcentration_practice a
+			join practices_practicesection c on a.section = c.section
+			join practices_practicetype d on a.practice_type = d.practice_type
+		where
+			a.id = #{id}
+	</select>	
+	<select id="getGoalToPractice" parameterType="com.usher.dto.GoalsGoalconcentrationPracticeDto" resultType="com.usher.dto.GoalsGoalconcentrationPracticeDto">
+		select
+			section,
+			practice_type,
+			book,
+			case when practice_type = 'VOCA' then pass_course_score * 100 / 200 else pass_course_score end as pass_course_score,
+			case when practice_type = 'VOCA' then pass_user_score * 100 / 200 else pass_user_score end as pass_user_score,
+			delay_yn
+		from
+			(
+				select
+					a.section,
+					a.practice_type,
+					a.pass_score as pass_course_score,
+					case when b.accept_result = true then b.book else 'toefl' end as book,
+					case when b.accept_result = true then b.pass_user_score else a.pass_score end as pass_user_score,
+					case when to_char(now(),'hh24:mi') between a.start_time and a.end_time then 'N' else 'Y' end as delay_yn
+				from
+					courses_course_practice_daily a
+					left join goals_goalconcentration_practice b on 
+						a.section = b.section 
+						and a.practice_type = b.practice_type 
+						and a.date = b.date 
+						and b.course_enrollment_id = #{course_enrollment_id}
+				where
+					a.course_id = #{course_id}
+					and a.date = current_date
+					and a.section = #{section}
+					and a.practice_type = #{practice_type}
+			) a
+		limit 1
+	</select>	
+	<update id="updateGoalConcentrationPractice" parameterType="com.usher.dto.GoalsGoalconcentrationPracticeDto">
+		update goals_goalconcentration_practice set
+			modified = now(),
+			accept_result = true,
+			pass_user_score = #{pass_user_score},
+			writer_id = #{writer_id},
+			writer_comments = #{writer_comments},
+			book = #{book}
+		where
+			id = #{id}
+	</update>
+</mapper>

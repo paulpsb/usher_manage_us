@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.MockTestScheduleExamDao">
+	<insert id="insertMockTestScheduleExam" parameterType="com.usher.dto.MockTestScheduleExamDto">
+		insert into mock_test_schedule_exam (
+			created,
+			modified,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+			mock_test_exam_min,
+			mock_test_schedule_id
+		) values (
+			now(),
+			now(),
+			#{section},
+			#{book},
+			#{volume},
+			#{group},
+			#{article},
+			#{mock_test_exam_min},
+			#{mock_test_schedule_id}
+		)
+	</insert>
+
+</mapper>

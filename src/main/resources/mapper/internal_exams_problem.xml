@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsProblemDao">
+	<update id="updateExamsProblemPractice" parameterType="com.usher.dto.InternalExamsProblemDto">
+		update practices_practiceproblem set
+			section = #{section}
+		<if test="book != null and book !='' ">			
+			, book = #{book}
+		</if>			
+		<if test="volume != null and volume !='' ">			
+			, volume = #{volume}
+		</if>			
+		<if test="group != null and group !='' ">			
+			, "group" = #{group}
+		</if>			
+		<if test="article != null and article !='' ">			
+			, article = #{article}
+		</if>			
+		where
+			section = #{old_section}
+		<if test="old_book != null and old_book !='' ">			
+			and book = #{old_book}
+		</if>			
+		<if test="old_volume != null and old_volume !='' ">			
+			and volume = #{old_volume}
+		</if>			
+		<if test="old_group != null and old_group !='' ">			
+			and "group" = #{old_group}
+		</if>			
+		<if test="old_article != null and old_article !='' ">			
+			and article = #{old_article}
+		</if>			
+	</update>
+	<update id="updateExamsProblemPassage" parameterType="com.usher.dto.InternalExamsProblemDto">
+		update internal_exams_passage set
+			section = #{section}
+		<if test="book != null and book !='' ">			
+			, book = #{book}
+		</if>			
+		<if test="volume != null and volume !='' ">			
+			, volume = #{volume}
+		</if>			
+		<if test="group != null and group !='' ">			
+			, "group" = #{group}
+		</if>			
+		<if test="article != null and article !='' ">			
+			, article = #{article}
+		</if>			
+		where
+			section = #{old_section}
+		<if test="old_book != null and old_book !='' ">			
+			and book = #{old_book}
+		</if>			
+		<if test="old_volume != null and old_volume !='' ">			
+			and volume = #{old_volume}
+		</if>			
+		<if test="old_group != null and old_group !='' ">			
+			and "group" = #{old_group}
+		</if>			
+		<if test="old_article != null and old_article !='' ">			
+			and article = #{old_article}
+		</if>		
+	</update>	
+	<update id="updateExamsProblemChain" parameterType="com.usher.dto.InternalExamsProblemDto">
+		update internal_exams_chain set
+			section = #{section}
+		<if test="book != null and book !='' ">			
+			, book = #{book}
+		</if>			
+		<if test="volume != null and volume !='' ">			
+			, volume = #{volume}
+		</if>			
+		<if test="group != null and group !='' ">			
+			, "group" = #{group}
+		</if>			
+		<if test="article != null and article !='' ">			
+			, article = #{article}
+		</if>			
+		where
+			section = #{old_section}
+		<if test="old_book != null and old_book !='' ">			
+			and book = #{old_book}
+		</if>			
+		<if test="old_volume != null and old_volume !='' ">			
+			and volume = #{old_volume}
+		</if>			
+		<if test="old_group != null and old_group !='' ">			
+			and "group" = #{old_group}
+		</if>			
+		<if test="old_article != null and old_article !='' ">			
+			and article = #{old_article}
+		</if>			
+	</update>	
+	<update id="updateExamsProblemListening" parameterType="com.usher.dto.InternalExamsProblemDto">
+		update internal_exams_listening set
+			section = #{section}
+		<if test="book != null and book !='' ">			
+			, book = #{book}
+		</if>			
+		<if test="volume != null and volume !='' ">			
+			, volume = #{volume}
+		</if>			
+		<if test="group != null and group !='' ">			
+			, "group" = #{group}
+		</if>			
+		<if test="article != null and article !='' ">			
+			, article = #{article}
+		</if>			
+		where
+			section = #{old_section}
+		<if test="old_book != null and old_book !='' ">			
+			and book = #{old_book}
+		</if>			
+		<if test="old_volume != null and old_volume !='' ">			
+			and volume = #{old_volume}
+		</if>			
+		<if test="old_group != null and old_group !='' ">			
+			and "group" = #{old_group}
+		</if>			
+		<if test="old_article != null and old_article !='' ">			
+			and article = #{old_article}
+		</if>			
+	</update>
+	<update id="updateExamsProblemReading" parameterType="com.usher.dto.InternalExamsProblemDto">
+		update internal_exams_reading set
+			section = #{section}
+		<if test="book != null and book !='' ">			
+			, book = #{book}
+		</if>			
+		<if test="volume != null and volume !='' ">			
+			, volume = #{volume}
+		</if>			
+		<if test="group != null and group !='' ">			
+			, "group" = #{group}
+		</if>			
+		<if test="article != null and article !='' ">			
+			, article = #{article}
+		</if>			
+		where
+			section = #{old_section}
+		<if test="old_book != null and old_book !='' ">			
+			and book = #{old_book}
+		</if>			
+		<if test="old_volume != null and old_volume !='' ">			
+			and volume = #{old_volume}
+		</if>			
+		<if test="old_group != null and old_group !='' ">			
+			and "group" = #{old_group}
+		</if>			
+		<if test="old_article != null and old_article !='' ">			
+			and article = #{old_article}
+		</if>			
+	</update>		
+</mapper>

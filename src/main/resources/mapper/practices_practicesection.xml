@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticesectionDao">
+	<select id="getPracticeSectionList" resultType="com.usher.dto.PracticesPracticesectionDto">
+		select
+			id,
+			status,
+			section,
+			short_title,
+			short_title_kr,
+			section_order
+		from
+			practices_practicesection
+		where
+			status = 'ACTIVE'
+		order by section_order, id
+	</select>
+	
+	<select id="getPracticeSection" resultType="com.usher.dto.PracticesPracticesectionDto" parameterType="com.usher.dto.PracticesPracticesectionDto">
+		select
+			id,
+			status,
+			section,
+			short_title,
+			short_title_kr,
+			section_order
+		from
+			practices_practicesection
+		where
+			id = #{id}
+	</select>
+	
+	<insert id="insertPracticeSection" parameterType="com.usher.dto.PracticesPracticesectionDto">
+		insert into practices_practicesection(
+			created,
+			modified,
+			status,
+			section,
+			short_title,
+			short_title_kr,
+			section_order
+		) values (
+			now(),
+			now(),
+			#{status},
+			#{section},
+			#{short_title},
+			#{short_title_kr},
+			#{section_order}
+		)
+	</insert>
+	
+	<update id="updatePracticeSection" parameterType="com.usher.dto.PracticesPracticesectionDto">
+		update practices_practicesection set
+			modified = now(),
+			status = #{status},
+			section = #{section},
+			short_title = #{short_title},
+			short_title_kr = #{short_title_kr},
+			section_order = #{section_order}
+		where
+			id = #{id}	
+	</update>
+</mapper>

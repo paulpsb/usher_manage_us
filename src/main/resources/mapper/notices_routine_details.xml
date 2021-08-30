@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesRoutineDetailsDao">
+	<select id="getNoticesRoutineDetailsList" resultType="com.usher.dto.NoticesRoutineDetailsDto" parameterType="com.usher.dto.NoticesRoutineDetailsDto">
+		select
+			id,
+			routine_detail_title,
+			routine_detail_content,		
+			routine_detail_reference_image,		
+			routine_detail_reference_image_name,		
+			routine_detail_reference_url,
+			routine_detail_reference_file,		
+			routine_detail_reference_file_name,		
+			routine_detail_report_image,
+			routine_detail_report_url,
+			routine_detail_report_ox,
+			routine_detail_report_file,
+			routine_id
+		from
+			notices_routine_details
+		where
+			routine_id = #{routine_id}
+		order by id
+	</select>
+	
+	<insert id="insertNoticesRoutineDetails" parameterType="com.usher.dto.NoticesRoutineDetailsDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into notices_routine_details (
+			created,
+			modified,
+			routine_detail_title,
+			routine_detail_content,		
+			routine_detail_reference_image,		
+			routine_detail_reference_image_name,		
+			routine_detail_reference_url,
+			routine_detail_reference_file,		
+			routine_detail_reference_file_name,		
+			routine_detail_report_image,
+			routine_detail_report_url,
+			routine_detail_report_ox,
+			routine_detail_report_file,
+			routine_id
+		) values (
+			now(),
+			now(),
+			#{routine_detail_title},
+			#{routine_detail_content},		
+			#{routine_detail_reference_image},		
+			#{routine_detail_reference_image_name},		
+			#{routine_detail_reference_url},
+			#{routine_detail_reference_file},		
+			#{routine_detail_reference_file_name},		
+			#{routine_detail_report_image},
+			#{routine_detail_report_url},
+			#{routine_detail_report_ox},
+			#{routine_detail_report_file},
+			#{routine_id}
+		)
+	</insert>
+	<insert id="updateNoticesRoutineDetails" parameterType="com.usher.dto.NoticesRoutineDetailsDto">
+		update notices_routine_details set
+			modified = now(),
+			routine_detail_title = #{routine_detail_title},
+			routine_detail_content = #{routine_detail_content},		
+			routine_detail_reference_image = #{routine_detail_reference_image},		
+			routine_detail_reference_image_name = #{routine_detail_reference_image_name},		
+			routine_detail_reference_url = #{routine_detail_reference_url},		
+			routine_detail_reference_file = #{routine_detail_reference_file},
+			routine_detail_reference_file_name = #{routine_detail_reference_file_name},
+			routine_detail_report_image = #{routine_detail_report_image},
+			routine_detail_report_url = #{routine_detail_report_url},
+			routine_detail_report_ox = #{routine_detail_report_ox},
+			routine_detail_report_file = #{routine_detail_report_file}
+		where
+			id = #{id}
+	</insert>
+	
+	<delete id="deleteNoticesRoutineDetails" parameterType="com.usher.dto.NoticesRoutineDetailsDto">
+		delete from notices_routine_details 
+		where
+			id = #{id}
+	</delete>
+</mapper>

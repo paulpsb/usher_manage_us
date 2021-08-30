@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseOrientationDao">
+	<select id="getBaseOrientationList" parameterType="com.usher.dto.BaseOrientationDto" resultType="com.usher.dto.BaseOrientationDto">
+		select
+			id,
+			orientation_code,
+			orientation_name,
+			orientation_sort,
+			senior_institute,
+			senior_chamgang,
+			junior_institute,
+			junior_chamgang,
+			junior_special_institute,
+			junior_special_chamgang,
+			orientation_gubun,
+			orientation_video_time,
+			use_yn
+		from
+			base_orientation
+		where
+			orientation_gubun = #{orientation_gubun}
+		<if test="use_yn != null and use_yn !='' ">			
+			and use_yn = #{use_yn}
+		</if>				
+		order by orientation_gubun, orientation_sort
+	</select>
+	
+	<insert id="insertBaseOrientation" parameterType="com.usher.dto.BaseOrientationDto">
+		insert into base_orientation(
+			orientation_code,
+			orientation_name,
+			orientation_sort,
+			senior_institute,
+			senior_chamgang,
+			junior_institute,
+			junior_chamgang,
+			junior_special_institute,
+			junior_special_chamgang,			
+			orientation_gubun,
+			orientation_video_time,
+			use_yn
+		) values (
+			#{orientation_code},
+			#{orientation_name},
+			#{orientation_sort},
+			#{senior_institute},
+			#{senior_chamgang},
+			#{junior_institute},
+			#{junior_chamgang},
+			#{junior_special_institute},
+			#{junior_special_chamgang},			
+			#{orientation_gubun},
+			#{orientation_video_time},
+			#{use_yn}
+		)
+	</insert>	
+	<update id="updateBaseOrientation" parameterType="com.usher.dto.BaseOrientationDto">
+		update base_orientation set
+			orientation_code = #{orientation_code},
+			orientation_name = #{orientation_name},
+			orientation_sort = #{orientation_sort},
+			senior_institute = #{senior_institute},
+			senior_chamgang = #{senior_chamgang},
+			junior_institute = #{junior_institute},
+			junior_chamgang = #{junior_chamgang},
+			junior_special_institute = #{junior_special_institute},
+			junior_special_chamgang = #{junior_special_chamgang},
+			orientation_gubun = #{orientation_gubun},
+			orientation_video_time = #{orientation_video_time},
+			use_yn = #{use_yn}
+		where
+			id = #{id}
+	</update>	
+</mapper>

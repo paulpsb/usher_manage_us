@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchDirectionDao">
+	<select id="getBatchDirection" resultType="com.usher.dto.BatchDirectionDto" parameterType="com.usher.dto.BatchDirectionDto">
+		select
+			id,
+			section,
+			title,
+			direction,
+			usher_title,
+			usher_direction
+		from 
+			batch_direction 
+		where
+			section = #{section}
+	</select>
+
+	<insert id="insertBatchDirection" parameterType="com.usher.dto.BatchDirectionDto">
+		insert into batch_direction(
+			created,
+			modified,
+			section,
+			title,
+			direction,
+			usher_title,
+			usher_direction
+		) values (
+			now(),
+			now(),
+			#{section},
+			#{title},
+			#{direction},
+			#{usher_title},
+			#{usher_direction}
+		)
+	</insert>	
+
+	<update id="updateBatchDirection" parameterType="com.usher.dto.BatchDirectionDto">
+		update batch_direction set
+			title = #{title},
+			direction = #{direction},
+			usher_title = #{usher_title},
+			usher_direction = #{usher_direction}
+		where
+			id = #{id}
+	</update>	
+</mapper>

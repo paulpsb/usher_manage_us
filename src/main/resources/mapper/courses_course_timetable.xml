@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CoursesCourseTimetableDao">
+	<select id="getCourseGroupTimeTableTeacher" resultType="com.usher.dto.CoursesCourseTimetableDto" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		select
+			b.user_name
+		from 
+			courses_course_practice a
+			join (
+				select
+					a.section,
+					a.study_type,
+					a.class_hour,
+					a.user_id,
+					concat(coalesce(b.last_name,''), coalesce(b.first_name,'')) as user_name,
+					a.course_id
+				from
+					courses_course_timetable a
+					join auth_user b on a.user_id = b.id	
+			) b on a.start_time = b.class_hour and a.course_id = b.course_id
+		where
+			a.section = #{section}
+			and a.practice_type = #{practice_type}
+			and a.course_id = #{course_id}
+		limit 1
+	</select>
+	
+	<select id="getCourseGroupTimeTableList" resultType="com.usher.dto.CoursesCourseTimetableDto" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		select
+			a.section,
+			a.study_type,
+			a.class_hour,
+			a.user_id,
+			concat(coalesce(b.last_name,''), coalesce(b.first_name,'')) as user_name,
+			b.user_color,
+			a.course_id
+		from
+			courses_course_timetable a
+			left join auth_user b on a.user_id = b.id
+		where
+			a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+		order by a.course_id, a.class_hour
+	</select>
+	
+	<select id="getCourseGroupTimeTableDailyList" resultType="com.usher.dto.CoursesCourseTimetableDto" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		select
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.section,
+			c.short_title_kr,
+			a.study_type,
+			a.class_hour,
+			a.user_id,
+			b.user_color,
+			concat(coalesce(b.last_name,''), coalesce(b.first_name,'')) as user_name,
+			a.course_id
+		from
+			courses_course_timetable_daily a
+			left join auth_user b on a.user_id = b.id
+			left join practices_practicesection c on a.section = c.section
+		where
+			a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		order by a.course_id, a.class_hour
+	</select>
+
+	<select id="getCourseTimeTableList" resultType="com.usher.dto.CoursesCourseTimetableDto" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		select
+			a.section,
+			a.study_type,
+			a.class_hour,
+			a.user_id,
+			b.user_color,
+			concat(coalesce(b.last_name,''), coalesce(b.first_name,'')) as user_name,
+			a.course_id
+		from
+			courses_course_timetable a
+			left join auth_user b on a.user_id = b.id
+		where
+			a.course_id = #{course_id}
+		order by a.course_id, a.class_hour
+	</select>
+	
+	<select id="getCourseTimeTableDailyList" resultType="com.usher.dto.CoursesCourseTimetableDto" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		select
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.section,
+			a.study_type,
+			a.class_hour,
+			a.user_id,
+			b.user_color,
+			concat(coalesce(b.last_name,''), coalesce(b.first_name,'')) as user_name,
+			a.course_id
+		from
+			courses_course_timetable_daily a
+			left join auth_user b on a.user_id = b.id
+		where
+			a.course_id = #{course_id}
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		order by a.course_id, a.class_hour
+	</select>
+	
+	<select id="getCourseTimeTableListDaily" resultType="com.usher.dto.CoursesCourseTimetableDto" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		select
+			a.section,
+			a.study_type,
+			a.class_hour,
+			a.user_id,
+			b.user_color,
+			concat(coalesce(b.last_name,''), coalesce(b.first_name,'')) as user_name,
+			a.course_id
+		from
+			courses_course_timetable a
+			left join auth_user b on a.user_id = b.id
+		where
+			a.course_id = #{course_id}
+		order by a.course_id, a.class_hour
+	</select>
+	<select id="getCourseGroupTimeTableAsTeacherList" resultType="com.usher.dto.CoursesCourseTimetableDto" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		select
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.section,
+			d.short_title_kr as section_name,
+			a.study_type,
+			case when a.study_type = 'STUDY' then '스터디' else '수업' end as study_type_name,
+			a.class_hour,
+			a.user_id,
+			a.course_id,
+			b.name as course_name,
+			c.name as course_group_name
+		from
+			courses_course_timetable_daily a
+			join courses_course b on a.course_id = b.id
+			join courses_coursegroup c on b.course_group_id = c.id
+			join practices_practicesection d on a.section = d.section
+		where
+			to_char(a.date,'yyyy-mm-dd') = #{date}
+			and a.user_id = #{user_id}
+		order by a.class_hour
+	</select>		
+	<select id="getCourseGroupTimeTableAsTeacherAllList" resultType="com.usher.dto.CoursesCourseTimetableDto" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		select
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.section,
+			d.short_title_kr as section_name,
+			a.study_type,
+			case when a.study_type = 'STUDY' then '스터디' else '수업' end as study_type_name,
+			a.class_hour,
+			a.user_id,
+			a.course_id,
+			b.name as course_name,
+			c.name as course_group_name
+		from
+			courses_course_timetable_daily a
+			join courses_course b on a.course_id = b.id
+			join courses_coursegroup c on b.course_group_id = c.id
+			join practices_practicesection d on a.section = d.section
+		where
+			to_char(a.date,'yyyy-mm-dd') = #{date}
+		order by a.class_hour
+	</select>		
+	<insert id="insertCourseTimeTable" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		insert into courses_course_timetable (
+			created,
+			modified,
+			section,
+			study_type,
+			class_hour,
+			user_id,
+			course_id
+		)values(
+			now(),
+			now(),
+			#{section},
+			#{study_type},
+			#{class_hour},
+			#{user_id},
+			#{course_id}
+		)
+	</insert>
+	
+	<insert id="insertCourseTimeTableDailyAll" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		insert into courses_course_timetable_daily (
+			created,
+			modified,
+			date,
+			section,
+			study_type,
+			class_hour,
+			user_id,
+			course_id
+		)
+		select
+			now(),
+			now(),
+			to_date(a.schedule,'yyyy-mm-dd') as date,
+			b.section,
+			b.study_type,
+			b.class_hour,
+			b.user_id,
+			b.course_id	
+		from
+			(
+				select 
+					unnest(string_to_array(schedule, ',')) as schedule 
+				from 
+					courses_coursegroup 
+				where 
+					id = #{course_group_id}
+			) a,
+			(
+				select * from courses_course_timetable where course_id in ( select id from courses_course where course_group_id = #{course_group_id})
+			) b		
+	</insert>	
+	
+	<insert id="insertCourseTimeTableDaily" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		insert into courses_course_timetable_daily (
+			created,
+			modified,
+			date,
+			section,
+			study_type,
+			class_hour,
+			user_id,
+			course_id
+		)values(
+			now(),
+			now(),
+			to_date(#{date},'yyyy-mm-dd'),
+			#{section},
+			#{study_type},
+			#{class_hour},
+			#{user_id},
+			#{course_id}
+		)
+	</insert>
+	
+	<delete id="deleteCourseTimeTable" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		delete
+		from
+			courses_course_timetable
+		where
+			course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+	</delete>
+	
+	<delete id="deleteCourseTimeTableDailyAll" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		delete
+		from
+			courses_course_timetable_daily
+		where
+			course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+	</delete>	
+	
+	<delete id="deleteCourseTimeTableDaily" parameterType="com.usher.dto.CoursesCourseTimetableDto">
+		delete
+		from
+			courses_course_timetable_daily
+		where
+			course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+			and to_char(date,'yyyy-mm-dd') = #{date}
+	</delete>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsUseranswerNoteDao">
+	<select id="getExamUserAnswerNote" parameterType="com.usher.dto.InternalExamsUseranswerNoteDto" resultType="com.usher.dto.InternalExamsUseranswerNoteDto">
+		select 
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.note_comment,
+			a.arrange_comment,
+			a.practice_result_id
+		from 
+			internal_exams_useranswer_note a
+		where
+			a.practice_result_id = #{practice_result_id}
+	</select>
+</mapper>

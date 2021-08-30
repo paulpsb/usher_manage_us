@@ -1,0 +1,29 @@
+package com.usher.dao;
+
+
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import com.usher.dto.EnrollmentsRepetitionenrollmentDto;
+
+@Repository
+public interface EnrollmentsRepetitionenrollmentDao{
+	public List<EnrollmentsRepetitionenrollmentDto> getEnrollmentsRepetitionSemesterList(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public List<EnrollmentsRepetitionenrollmentDto> getEnrollmentsRepetitionCourseGroupList(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public List<EnrollmentsRepetitionenrollmentDto> getEnrollmentsRepetitionList(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public EnrollmentsRepetitionenrollmentDto getEnrollmentsRepetition(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public List<EnrollmentsRepetitionenrollmentDto> getEnrollmentsRepetitionUserList(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionGoalScore(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionAttendStartDate(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionNeedDate(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionAttendDate(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionGoalRepetitionAdvise(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionFirstRepetitionResult(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionFirstRepetitionAdvise(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionSecondRepetitionResult(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionSecondRepetitionAdvise(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionThirdRepetitionResult(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionThirdRepetitionAdvise(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+	public void insertRepetitaionUnregisteredReason(EnrollmentsRepetitionenrollmentDto dto) throws Exception;
+}

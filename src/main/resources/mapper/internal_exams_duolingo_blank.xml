@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsDuolingoBlankDao">
+	<select id="getExamsDuolingoBlankList" resultType="com.usher.dto.InternalExamsDuolingoBlankDto" parameterType="com.usher.dto.InternalExamsDuolingoBlankDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			a.created_id,
+			concat(coalesce(b.last_name,''),coalesce(b.first_name,'')) as created_name,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.modified_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as modified_name,
+			a.status,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.blank_title,
+			a.blank_sort
+		from
+			internal_exams_duolingo_blank a
+			left join auth_user b on a.created_id = b.id
+			left join auth_user c on a.modified_id = c.id
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume = #{volume}
+			and a."group" = #{group}
+			and a.article = #{article}
+		order by a.blank_sort
+	</select>
+	
+	<select id="getExamsDuolingoBlank" resultType="com.usher.dto.InternalExamsDuolingoBlankDto" parameterType="com.usher.dto.InternalExamsDuolingoBlankDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			a.created_id,
+			concat(coalesce(b.last_name,''),coalesce(b.first_name,'')) as created_name,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.modified_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as modified_name,
+			a.status,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.blank_title,
+			a.blank_contents,
+			a.blank_sort
+		from
+			internal_exams_duolingo_blank a
+			left join auth_user b on a.created_id = b.id
+			left join auth_user c on a.modified_id = c.id
+		where
+			a.id = #{id}
+	</select>
+	
+	<select id="getExamsDuolingoBlankSort" resultType="com.usher.dto.InternalExamsDuolingoBlankDto" parameterType="com.usher.dto.InternalExamsDuolingoBlankDto">
+		select coalesce(max(blank_sort),0) + 1 as blank_sort 
+		from
+			internal_exams_duolingo_blank a
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume = #{volume}
+			and a."group" = #{group}
+			and a.article = #{article}
+	</select>
+	
+	<insert id="insertDuolingoBlank" parameterType="com.usher.dto.InternalExamsDuolingoBlankDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into internal_exams_duolingo_blank (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			status,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+		    blank_title,
+			blank_contents,
+			blank_sort
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{status},
+			#{section},
+			#{book},
+			#{volume},
+			#{group},
+			#{article},
+		    #{blank_title},
+			#{blank_contents},
+			#{blank_sort}
+		)
+	</insert>	
+	
+	<update id="updateDuolingoBlank" parameterType="com.usher.dto.InternalExamsDuolingoBlankDto">
+		update internal_exams_duolingo_blank set
+			modified = now(),
+			modified_id = #{modified_id},
+			status = #{status},
+			blank_title = #{blank_title},
+			blank_contents = #{blank_contents}
+		where
+			id = #{id}
+	</update>
+		
+	<update id="updateDuolingoBlankSort" parameterType="com.usher.dto.InternalExamsDuolingoBlankDto">
+		update internal_exams_duolingo_blank set
+			modified = now(),
+			modified_id = #{modified_id},
+			blank_sort = #{blank_sort}
+		where
+			id = #{id}
+	</update>
+	<delete id="deleteDuolingoBlank" parameterType="com.usher.dto.InternalExamsDuolingoBlankDto">
+		delete from internal_exams_duolingo_blank
+		where
+			id = #{id}
+	</delete>
+	<delete id="deleteDuolingoBlankQuestionAll" parameterType="com.usher.dto.InternalExamsDuolingoBlankDto">
+		delete from internal_exams_duolingo_blank_question
+		where
+			duolingo_blank_id = #{id}
+	</delete>				
+</mapper>

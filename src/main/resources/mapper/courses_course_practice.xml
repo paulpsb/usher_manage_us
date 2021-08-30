@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CoursesCoursePracticeDao">
+	<select id="getCoursesCourseSectionList" parameterType="com.usher.dto.CoursesCoursePracticeDto" resultType="com.usher.dto.CoursesCoursePracticeDto">
+		select
+			a.section	
+		from
+			courses_course_practice a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practicesection c on a.section = c.section 
+		where
+			a.course_id = #{course_id}
+		group by a.section, c.section_order
+		order by c.section_order
+	</select>
+	
+	<select id="getCoursesCoursePracticeList" parameterType="com.usher.dto.CoursesCoursePracticeDto" resultType="com.usher.dto.CoursesCoursePracticeDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			c.short_title_kr,
+			a.practice_type,
+			b.practice_name,
+			b.program_use,
+			a.start_time,
+			a.end_time,
+			a.pass_score,
+			b.paragraph_use,
+			b.type_comment	
+		from
+			courses_course_practice a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practicesection c on a.section = c.section 
+			join practices_practicesectiontype d on a.section = d.section and a.practice_type = d.practice_type
+		where
+			a.course_id = #{course_id}
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>	
+		<if test="program_use != null and program_use !='' ">			
+			and b.program_use = #{program_use}
+		</if>	
+		<if test="is_homework != null and is_homework !='' ">			
+			and d.is_homework = #{is_homework}
+		</if>	
+		order by c.section_order, b.type_order, b.id
+	</select>
+	
+	<select id="getCoursesCoursePracticeDailyList" parameterType="com.usher.dto.CoursesCoursePracticeDto" resultType="com.usher.dto.CoursesCoursePracticeDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			c.short_title_kr,
+			a.practice_type,
+			b.practice_name,
+			b.program_use,
+			a.start_time,
+			a.end_time,
+			a.pass_score,
+			b.paragraph_use,
+			b.type_comment	
+		from
+			courses_course_practice_daily a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practicesection c on a.section = c.section 
+		where
+			a.course_id = #{course_id}
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>			
+		order by c.section_order, b.type_order, b.id
+	</select>
+	<select id="getCoursesCourseGroupPracticeList" parameterType="com.usher.dto.CoursesCoursePracticeDto" resultType="com.usher.dto.CoursesCoursePracticeDto">
+		select
+			a.id,
+			a.course_id,
+			a.status,
+			a.section,
+			c.short_title_kr,
+			a.practice_type,
+			b.practice_name,
+			b.program_use,
+			a.start_time,
+			a.end_time,
+			a.pass_score,
+			b.paragraph_use,
+			b.type_comment	
+		from
+			courses_course_practice a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practicesection c on a.section = c.section 
+		where
+			a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+		order by a.course_id, c.section_order, b.type_order, b.id
+	</select>
+	
+	<select id="getCoursesCourseGroupPracticeDailyList" parameterType="com.usher.dto.CoursesCoursePracticeDto" resultType="com.usher.dto.CoursesCoursePracticeDto">
+		select
+			a.id,
+			a.course_id,
+			a.status,
+			a.section,
+			c.short_title_kr,
+			a.practice_type,
+			b.practice_name,
+			b.program_use,
+			a.start_time,
+			a.end_time,
+			a.pass_score,
+			b.paragraph_use,
+			b.type_comment	
+		from
+			courses_course_practice_daily a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practicesection c on a.section = c.section 
+		where
+			a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		order by a.course_id, c.section_order, b.type_order, b.id
+	</select>	
+	<select id="getCoursesCoursePracticeDailyAllList" parameterType="com.usher.dto.CoursesCoursePracticeDto" resultType="com.usher.dto.CoursesCoursePracticeDto">
+		select
+			a.id,
+			a.status,
+			a.course_id,
+			a.section,
+			c.short_title_kr,
+			a.practice_type,
+			b.practice_name,
+			b.program_use,
+			a.start_time,
+			a.end_time,
+			a.pass_score,
+			b.paragraph_use,
+			b.type_comment,
+			to_char(a.date,'yyyy-mm-dd') as date	
+		from
+			courses_course_practice_daily a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practicesection c on a.section = c.section 
+		where
+			a.course_id = #{course_id}
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>			
+		order by c.section_order, b.type_order, b.id
+	</select>	
+	<select id="getCoursesCoursePracticeTodayList" parameterType="com.usher.dto.CoursesCoursePracticeDto" resultType="com.usher.dto.CoursesCoursePracticeDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			c.short_title_kr,
+			a.practice_type,
+			b.practice_name,
+			b.program_use,
+			a.start_time,
+			a.end_time,
+			a.pass_score,
+			b.paragraph_use,
+			b.type_comment,
+			to_char(a.date,'yyyy-mm-dd') as date	
+		from
+			courses_course_practice_daily a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practicesection c on a.section = c.section 
+		where
+			a.course_id = #{course_id}
+			and to_char(a.date,'yyyy-mm-dd') = to_char(now(),'yyyy-mm-dd') 
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>			
+		order by c.section_order, b.type_order, b.id
+	</select>		
+	<select id="getCoursesCoursePracticeAsTeacherList" parameterType="com.usher.dto.CoursesCoursePracticeDto" resultType="com.usher.dto.CoursesCoursePracticeDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			c.short_title_kr,
+			a.practice_type,
+			b.practice_name,
+			b.program_use,
+			a.course_id,
+			a.start_time,
+			a.end_time,
+			a.pass_score,
+			b.paragraph_use,
+			b.type_comment	
+		from
+			courses_course_practice_daily a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practicesection c on a.section = c.section 
+			join courses_course_timetable_daily d on a.course_id = d.course_id and a.start_time = d.class_hour and to_char(a.date,'yyyy-mm-dd') = to_char(d.date,'yyyy-mm-dd')
+		where
+			to_char(a.date,'yyyy-mm-dd') = #{date}
+			and d.user_id = #{user_id}
+		order by a.start_time, c.section_order, b.type_order, b.id
+	</select>		
+	<insert id="insertCoursesCoursePractice" parameterType="com.usher.dto.CoursesCoursePracticeDto">
+		insert into courses_course_practice(
+			created,
+			modified,
+			status,
+			practice_type,
+			section,
+			course_id,
+			start_time,
+			end_time,
+			pass_score
+		) values (
+			now(),
+			now(),
+			#{status},
+			#{practice_type},
+			#{section},
+			#{course_id},
+			#{start_time},
+			#{end_time},
+			#{pass_score}
+		)
+	</insert>
+	
+	<insert id="insertCoursesCoursePracticeDailyAll" parameterType="com.usher.dto.CoursesCoursePracticeDto">
+		insert into courses_course_practice_daily (
+			created,
+			modified,
+			date,
+			status,
+			practice_type,
+			section,
+			course_id,
+			start_time,
+			end_time,
+			pass_score
+		)
+		select
+			now(),
+			now(),
+			to_date(a.schedule,'yyyy-mm-dd') as date,
+			b.status,
+			b.practice_type,
+			b.section,
+			b.course_id,
+			b.start_time,
+			b.end_time,
+			b.pass_score	
+		from
+			(
+				select 
+					unnest(string_to_array(schedule, ',')) as schedule 
+				from 
+					courses_coursegroup 
+				where 
+					id = ( select course_group_id from courses_course where id = #{course_id} )
+			) a,
+			(
+				select * from courses_course_practice where course_id = #{course_id}
+			) b		
+	</insert>
+
+	<insert id="insertCoursesCoursePracticeDaily" parameterType="com.usher.dto.CoursesCoursePracticeDto">
+		insert into courses_course_practice_daily(
+			created,
+			modified,
+			date,
+			status,
+			practice_type,
+			section,
+			course_id,
+			start_time,
+			end_time,
+			pass_score
+		) values (
+			now(),
+			now(),
+			to_date(#{date},'yyyy-mm-dd'),
+			#{status},
+			#{practice_type},
+			#{section},
+			#{course_id},
+			#{start_time},
+			#{end_time},
+			#{pass_score}
+		)
+	</insert>
+		
+	<delete id="deleteCoursesCoursePractice" parameterType="com.usher.dto.CoursesCoursePracticeDto">
+		delete from courses_course_practice where course_id = #{course_id}	
+	</delete>
+	<delete id="deleteCoursesCoursePracticeDailyAll" parameterType="com.usher.dto.CoursesCoursePracticeDto">
+		delete from courses_course_practice_daily where course_id = #{course_id}	
+	</delete>
+	<delete id="deleteCoursesCoursePracticeDaily" parameterType="com.usher.dto.CoursesCoursePracticeDto">
+		delete from courses_course_practice_daily where course_id = #{course_id} and to_char(date,'yyyy-mm-dd') = #{date}	
+	</delete>
+</mapper>

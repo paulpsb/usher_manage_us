@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticeexceptionDao">
+	<select id="getPracticeException" resultType="com.usher.dto.PracticesPracticeexceptionDto" parameterType="com.usher.dto.PracticesPracticeexceptionDto">
+		select
+			section,
+			practice_type,
+			date,
+			course_enrollment_id,
+			reason
+		from
+			practices_practiceexception
+		where
+			section = #{section}
+			and practice_type = #{practice_type}
+			and date = current_date
+			and course_enrollment_id = #{course_enrollment_id}			
+	</select>
+	
+	<insert id="insertPracticeException" parameterType="com.usher.dto.PracticesPracticeexceptionDto">
+		with upsert as (
+			update practices_practiceexception set
+				reason = #{reason}
+			where
+				section = #{section}
+				and practice_type = #{practice_type}
+				and date = current_date
+				and course_enrollment_id = #{course_enrollment_id} returning * 
+		)
+		insert into practices_practiceexception (
+			created,
+			modified,
+			section,
+			practice_type,
+			date,
+			course_enrollment_id,
+			reason
+		)
+		select
+			now(),
+			now(),
+			#{section},
+			#{practice_type},
+			current_date,
+			#{course_enrollment_id},
+			#{reason}
+		where not exists(select * from upsert)			
+	</insert>
+	<delete id="deletePracticeException" parameterType="com.usher.dto.PracticesPracticeexceptionDto">
+		delete from practices_practiceexception
+		where
+			section = #{section}
+			and practice_type = #{practice_type}
+			and date = current_date
+			and course_enrollment_id = #{course_enrollment_id}			
+	</delete>
+</mapper>

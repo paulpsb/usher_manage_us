@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchExamsUseranswerDao">
+	<select id="getBatchExamsUseranswer" resultType="com.usher.dto.BatchExamsUseranswerDto" parameterType="com.usher.dto.BatchExamsUseranswerDto">
+		select
+			id,
+			type,
+			num,
+			result
+		from
+			batch_exams_useranswer
+		where
+			id = #{id}
+	</select>	
+</mapper>

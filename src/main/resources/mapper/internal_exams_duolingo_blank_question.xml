@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsDuolingoBlankQuestionDao">
+	<select id="getExamsDuolingoBlankQuestionNum" resultType="com.usher.dto.InternalExamsDuolingoBlankQuestionDto" parameterType="com.usher.dto.InternalExamsDuolingoBlankQuestionDto">
+		select
+			coalesce(max(question_num),0) + 1 as question_num
+		from
+			internal_exams_duolingo_blank_question
+		where
+			duolingo_blank_id = #{duolingo_blank_id}
+	</select>
+	<select id="getExamsDuolingoBlankQuestionList" resultType="com.usher.dto.InternalExamsDuolingoBlankQuestionDto" parameterType="com.usher.dto.InternalExamsDuolingoBlankQuestionDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			a.created_id,
+			concat(coalesce(b.last_name,''),coalesce(b.first_name,'')) as created_name,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.modified_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as modified_name,
+			a.duolingo_blank_id,
+			a.question_num,
+			a.question
+		from
+			internal_exams_duolingo_blank_question a
+			left join auth_user b on a.created_id = b.id
+			left join auth_user c on a.modified_id = c.id
+		where
+			a.duolingo_blank_id = #{duolingo_blank_id}
+		order by a.question_num
+	</select>
+	
+	<insert id="insertDuolingoBlankQuestion" parameterType="com.usher.dto.InternalExamsDuolingoBlankQuestionDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into internal_exams_duolingo_blank_question (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			duolingo_blank_id,
+			question_num,
+			question
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{duolingo_blank_id},
+			#{question_num},
+			#{question}
+		)
+	</insert>	
+	
+	<update id="updateDuolingoBlankQuestion" parameterType="com.usher.dto.InternalExamsDuolingoBlankQuestionDto">
+		update internal_exams_duolingo_blank_question set
+			modified = now(),
+			modified_id = #{modified_id},
+			question = #{question}
+		where
+			id = #{id}
+	</update>
+	<delete id="deleteDuolingoBlankQuestion" parameterType="com.usher.dto.InternalExamsDuolingoBlankQuestionDto">
+		delete from internal_exams_duolingo_blank_question
+		where
+			id = #{id}
+	</delete>
+</mapper>

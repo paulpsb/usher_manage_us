@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsUseranswerRubricDao">
+	<select id="getExamUserAnswerRubric" parameterType="com.usher.dto.InternalExamsUseranswerRubricDto" resultType="com.usher.dto.InternalExamsUseranswerRubricDto">
+		select 
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.rubric_id,
+			concat(b.last_name,b.first_name) as rubric_name,
+			a.rubric_score01,
+			a.rubric_score02,
+			a.rubric_score03,
+			a.rubric_score04,
+			a.rubric_score05,
+			a.rubric_score06,
+			a.rubric_score07,
+			a.rubric_score08,
+			a.rubric_score09,
+			a.rubric_score10,
+			a.rubric_total_score,
+			a.practice_result_id
+		from 
+			internal_exams_useranswer_rubric a
+			join auth_user b on a.rubric_id = b.id
+		where
+			a.practice_result_id = #{practice_result_id}
+
+	</select>
+	<insert id="insertExamUserAnswerRubric" parameterType="com.usher.dto.InternalExamsUseranswerRubricDto" >
+		insert into internal_exams_useranswer_rubric ( 
+			created,
+			modified,
+			rubric_id,
+			rubric_score01,
+			rubric_score02,
+			rubric_score03,
+			rubric_score04,
+			rubric_score05,
+			rubric_score06,
+			rubric_score07,
+			rubric_score08,
+			rubric_score09,
+			rubric_score10,
+			rubric_total_score,
+			practice_result_id
+		) values (
+			now(),
+			now(),
+			#{rubric_id},
+			#{rubric_score01},
+			#{rubric_score02},
+			#{rubric_score03},
+			#{rubric_score04},
+			#{rubric_score05},
+			#{rubric_score06},
+			#{rubric_score07},
+			#{rubric_score08},
+			#{rubric_score09},
+			#{rubric_score10},
+			#{rubric_total_score},
+			#{practice_result_id}
+		)
+	</insert>	
+		<insert id="insertExamUserAnswerRubricLog" parameterType="com.usher.dto.InternalExamsUseranswerRubricDto" >
+		insert into internal_exams_useranswer_rubric_log ( 
+			created,
+			modified,
+			rubric_id,
+			rubric_score01,
+			rubric_score02,
+			rubric_score03,
+			rubric_score04,
+			rubric_score05,
+			rubric_score06,
+			rubric_score07,
+			rubric_score08,
+			rubric_score09,
+			rubric_score10,
+			rubric_total_score,
+			practice_result_id
+		) 
+		select
+			created,
+			modified,
+			rubric_id,
+			rubric_score01,
+			rubric_score02,
+			rubric_score03,
+			rubric_score04,
+			rubric_score05,
+			rubric_score06,
+			rubric_score07,
+			rubric_score08,
+			rubric_score09,
+			rubric_score10,
+			rubric_total_score,
+			practice_result_id
+		from
+			internal_exams_useranswer_rubric
+		where
+			practice_result_id = #{practice_result_id}
+	</insert>	
+	<update id="updateExamUserAnswerRubric" parameterType="com.usher.dto.InternalExamsUseranswerRubricDto" >
+		update internal_exams_useranswer_rubric set
+			modified = now(),
+			rubric_id = #{rubric_id},
+			rubric_score01 = #{rubric_score01},
+			rubric_score02 = #{rubric_score02},
+			rubric_score03 = #{rubric_score03},
+			rubric_score04 = #{rubric_score04},
+			rubric_score05 = #{rubric_score05},
+			rubric_score06 = #{rubric_score06},
+			rubric_score07 = #{rubric_score07},
+			rubric_score08 = #{rubric_score08},
+			rubric_score09 = #{rubric_score09},
+			rubric_score10 = #{rubric_score10},
+			rubric_total_score = #{rubric_total_score}
+		where
+			practice_result_id = #{practice_result_id}
+	</update>	
+	<delete id="deleteExamUserAnswerRubric" parameterType="com.usher.dto.InternalExamsUseranswerRubricDto" >
+		delete from internal_exams_useranswer_rubric
+		where
+			id = #{id}
+	</delete>		
+</mapper>

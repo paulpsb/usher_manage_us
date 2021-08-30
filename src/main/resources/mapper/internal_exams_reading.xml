@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsReadingDao">
+	<select id="getInternalExamsReadingCount" resultType="com.usher.dto.InternalExamsReadingDto" parameterType="com.usher.dto.InternalExamsReadingDto">
+		select count(*) as total_count
+		from 
+			internal_exams_reading
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and volume = #{volume}
+		</if>						
+	</select>
+	
+	<select id="getInternalExamsReadingList" resultType="com.usher.dto.InternalExamsReadingDto" parameterType="com.usher.dto.InternalExamsReadingDto">
+		select 
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.passage
+		from
+			internal_exams_reading a
+			join (
+				select
+					a.section,
+					a.section_order,
+					b.book,
+					b.book_order,
+					c.volume,
+					c.volume_order,
+					coalesce(d.group,'') as group,
+					coalesce(d.group_order,0) as group_order
+				from
+					practices_practicesection a
+					join practices_practicebook b on a.id = b.practice_section_id
+					join practices_practicevolume c on b.practice_section_id = c.practice_section_id and b.id = c.practice_book_id
+					left join practices_practicegroup d on c.practice_section_id = d.practice_section_id and c.practice_book_id = d.practice_book_id and c.id = d.practice_volume_id			
+			) c on a.section = c.section and a.book = c.book and a.volume = c.volume and a.group = c.group				
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and a.book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and a.volume = #{volume}
+		</if>	
+		order by coalesce(c.section_order,0), a.section, coalesce(c.book_order,0), a.book, coalesce(c.volume_order,0), a.volume, coalesce(c.group_order,0), a.group, a.article
+		limit #{row_num} offset #{first_num}
+	</select>
+
+	<select id="getInternalExamsReading" resultType="com.usher.dto.InternalExamsReadingDto" parameterType="com.usher.dto.InternalExamsReadingDto">
+		select 
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.passage,
+			a.paragraph1,
+			a.paragraph2,
+			a.paragraph3,
+			a.paragraph4,
+			a.paragraph5,
+			a.paragraph6,
+			a.paragraph7,
+			a.paragraph8,
+			a.paragraph9,
+			a.paragraph10,
+			a.type,
+			a.num			
+		from
+			internal_exams_reading a
+		where
+			a.id = #{id}
+	</select>
+	
+	<select id="getInternalExamsReadingOne" resultType="com.usher.dto.InternalExamsReadingDto" parameterType="com.usher.dto.InternalExamsReadingDto">
+		select 
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.passage,
+			a.paragraph1,
+			a.paragraph2,
+			a.paragraph3,
+			a.paragraph4,
+			a.paragraph5,
+			a.paragraph6,
+			a.paragraph7,
+			a.paragraph8,
+			a.paragraph9,
+			a.paragraph10,
+			a.type,
+			a.num			
+		from
+			internal_exams_reading a
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume = #{volume}
+			and a."group" = #{group}
+			and a.article = #{article}
+	</select>
+		
+	<insert id="insertInternalExamsReading" parameterType="com.usher.dto.InternalExamsReadingDto"  useGeneratedKeys="true" keyProperty="id">
+		insert into internal_exams_reading (
+			created,
+			modified,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+			passage
+		) values (
+			now(),
+			now(),
+			#{section},
+			#{book},
+			#{volume},
+			#{group},
+			#{article},
+			#{passage}
+		)
+	</insert>
+	
+	<update id="updateInternalExamsReading" parameterType="com.usher.dto.InternalExamsReadingDto">
+		update internal_exams_reading set
+			modified = now(),
+			passage = #{passage},
+			paragraph1 = #{paragraph1},
+			paragraph2 = #{paragraph2},
+			paragraph3 = #{paragraph3},
+			paragraph4 = #{paragraph4},
+			paragraph5 = #{paragraph5},
+			paragraph6 = #{paragraph6},
+			paragraph7 = #{paragraph7},
+			paragraph8 = #{paragraph8},
+			paragraph9 = #{paragraph9},
+			paragraph10 = #{paragraph10}
+		where
+			id = #{id}	
+	</update>
+	
+	<delete id="deleteInternalExamsReading" parameterType="com.usher.dto.InternalExamsReadingDto">
+		delete from internal_exams_reading
+		where
+			id = #{id}	
+	</delete>
+	<delete id="deleteInternalExamsReadingQuestionAll" parameterType="com.usher.dto.InternalExamsReadingDto">
+		delete from internal_exams_reading_question
+		where
+			reading_id = #{id}	
+	</delete>
+</mapper>

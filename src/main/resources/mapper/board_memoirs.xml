@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BoardMemoirsDao">
+	<select id="getBoardMemoirsAvg" resultType="com.usher.dto.BoardMemoirsDto" parameterType="com.usher.dto.BoardMemoirsDto">
+		select
+			round(avg(end_toefl_score),1) as avg_toefl_score,
+			round(avg(course_month),1) as avg_course_month,
+			count(*) as avg_course_count
+		from board_memoirs 
+		where 
+			test_type = #{test_type}
+			and first_course = #{first_course}
+			and end_toefl_score >= #{end_toefl_score}
+	</select>	
+	<select id="getBoardMemoirsList" resultType="com.usher.dto.BoardMemoirsDto" parameterType="com.usher.dto.BoardMemoirsDto">
+		select
+			id,
+			to_char(created,'yyyy-mm-dd') as created,
+			test_type,
+			student_type,
+			title,
+			hit,
+			write_name,
+			end_toefl_score,
+			course_month,
+			modify_yn				
+		from
+			board_memoirs
+		where 1=1
+		<if test="test_type != null and test_type !='' ">			
+			and test_type = #{test_type}
+		</if>		
+		<if test="student_type != null and student_type !='' ">			
+			and student_type = #{student_type}
+		</if>		
+		<if test="modify_yn != null and modify_yn !='' ">			
+			and modify_yn = #{modify_yn}
+		</if>		
+		order by id desc
+		limit #{row_num} offset #{first_num}
+	</select>
+	<select id="getBoardMemoirsCount" resultType="com.usher.dto.BoardMemoirsDto" parameterType="com.usher.dto.BoardMemoirsDto">
+		select
+			count(*) as total_count		
+		from
+			board_memoirs
+		where 1=1
+		<if test="test_type != null and test_type !='' ">			
+			and test_type = #{test_type}
+		</if>		
+		<if test="student_type != null and student_type !='' ">			
+			and student_type = #{student_type}
+		</if>		
+		<if test="modify_yn != null and modify_yn !='' ">			
+			and modify_yn = #{modify_yn}
+		</if>		
+	</select>
+	<select id="getBoardMemoirs" resultType="com.usher.dto.BoardMemoirsDto" parameterType="com.usher.dto.BoardMemoirsDto">
+		select
+			test_type,
+			student_type,
+			study_abroad,
+			first_course,
+			last_course,
+			course_month,
+			start_toeic_score,
+			start_teps_score,
+			start_scholastic_score,
+			start_toefl_score,
+			start_toefl_rc_score,
+			start_toefl_lc_score,
+			start_toefl_sp_score,
+			start_toefl_wr_score,
+			end_toefl_score,
+			end_toefl_rc_score,
+			end_toefl_lc_score,
+			end_toefl_sp_score,
+			end_toefl_wr_score,
+			exam_year,
+			exam_month,
+			exam_day,
+			title,
+			content,
+			hit,
+			write_id,
+			write_name,
+			modify_yn,
+			service_type
+		from
+			board_memoirs
+		where 
+			id = #{id}
+	</select>
+	<update id="updateBoardMemoirs" parameterType="com.usher.dto.BoardMemoirsDto">
+		update  board_memoirs set
+			test_type = #{test_type},
+			student_type = #{student_type},
+			study_abroad = #{study_abroad},
+			first_course = #{first_course},
+			last_course = #{last_course},
+			course_month = #{course_month},
+			start_toeic_score = #{start_toeic_score},
+			start_teps_score = #{start_teps_score},
+			start_scholastic_score = #{start_scholastic_score},
+			start_toefl_score = #{start_toefl_score},
+			start_toefl_rc_score = #{start_toefl_rc_score},
+			start_toefl_lc_score = #{start_toefl_lc_score},
+			start_toefl_sp_score = #{start_toefl_sp_score},
+			start_toefl_wr_score = #{start_toefl_wr_score},
+			end_toefl_score = #{end_toefl_score},
+			end_toefl_rc_score = #{end_toefl_rc_score},
+			end_toefl_lc_score = #{end_toefl_lc_score},
+			end_toefl_sp_score = #{end_toefl_sp_score},
+			end_toefl_wr_score = #{end_toefl_wr_score},
+			exam_year = #{exam_year},
+			exam_month = #{exam_month},
+			exam_day = #{exam_day},
+			modify_yn = #{modify_yn},
+			service_type = #{service_type}
+		where 
+			id = #{id}
+	</update>	
+</mapper>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticetypeDao">
+	<select id="getPracticeTypeList" resultType="com.usher.dto.PracticesPracticetypeDto">
+		select
+			id,
+			status,
+			practice_type,
+			practice_name,
+			program_use,
+			type_order,
+			paragraph_use,
+			type_comment
+		from
+			practices_practicetype
+		order by type_order, id
+	</select>
+	
+	<insert id="insertPracticeType" parameterType="com.usher.dto.PracticesPracticetypeDto">
+		insert into practices_practicetype(
+			created,
+			modified,
+			status,
+			practice_type,
+			practice_name,
+			program_use,
+			type_order,
+			paragraph_use,
+			type_comment
+		) values (
+			now(),
+			now(),
+			#{status},
+			#{practice_type},
+			#{practice_name},
+			#{program_use},
+			#{type_order},
+			#{paragraph_use},
+			#{type_comment}
+		)
+	</insert>
+	
+	<update id="updatePracticeType" parameterType="com.usher.dto.PracticesPracticetypeDto">
+		update practices_practicetype set
+			modified = now(),
+			status = #{status},
+			practice_type = #{practice_type},
+			practice_name = #{practice_name},
+			program_use = #{program_use},
+			type_order = #{type_order},
+			paragraph_use = #{paragraph_use},
+			type_comment = #{type_comment}			
+		where
+			id = #{id}	
+	</update>
+</mapper>

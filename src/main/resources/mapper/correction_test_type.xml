@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CorrectionTestTypeDao">
+	<select id="getCorrectionTestTypeList" parameterType="com.usher.dto.CorrectionTestTypeDto" resultType="com.usher.dto.CorrectionTestTypeDto">
+		select 
+			a.id,
+			a.section,
+			a.practice_type,
+			a.test_type,
+			a.test_name,
+			a.test_exam_url,
+			a.test_result_url,
+			a.test_order
+		from
+			correction_test_type a
+			join practices_practicesection b on a.section = b.section
+		where
+			1 = 1
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		order by b.section_order, a.practice_type desc, a.test_order	
+	</select>
+	
+	<insert id="insertCorrectionTestType" parameterType="com.usher.dto.CorrectionTestTypeDto">
+		insert into correction_test_type(
+			created,
+			modified,
+			section,
+			practice_type,
+			test_type,
+			test_name,
+			test_exam_url,
+			test_result_url,
+			test_order		
+		)values(
+			now(),
+			now(),
+			#{section},
+			#{practice_type},
+			#{test_type},
+			#{test_name},
+			#{test_exam_url},
+			#{test_result_url},
+			#{test_order}			
+		)
+	</insert>
+	<update id="updateCorrectionTestType" parameterType="com.usher.dto.CorrectionTestTypeDto">
+		update correction_test_type set
+			modified = now(),
+			section = #{section},
+			practice_type = #{practice_type},
+			test_type = #{test_type},
+			test_name = #{test_name},
+			test_exam_url = #{test_exam_url},
+			test_result_url = #{test_result_url},
+			test_order = #{test_order}
+		where
+			id = #{id}		
+	</update>
+	<update id="deleteCorrectionTestType" parameterType="com.usher.dto.CorrectionTestTypeDto">
+		delete from correction_test_type
+		where
+			id = #{id}		
+	</update>
+</mapper>

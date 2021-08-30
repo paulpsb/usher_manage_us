@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticevolumeDao">
+	<select id="getPracticeVolumePageCount" resultType="com.usher.dto.PracticesPracticevolumeDto" parameterType="com.usher.dto.PracticesPracticevolumeDto">
+		select
+			count(*) as total_count	
+		from
+			practices_practicevolume a
+			join practices_practicesection b on a.practice_section_id = b.id and b.status = 'ACTIVE'
+			join practices_practicebook c on a.practice_book_id = c.id and c.status = 'ACTIVE'
+		where 1=1
+			and a.status = 'ACTIVE'
+		<if test="practice_section_id > 0 ">
+			and a.practice_section_id = #{practice_section_id}
+		</if>
+		<if test="practice_book_id > 0 ">
+			and a.practice_book_id = #{practice_book_id}
+		</if>
+		<if test="section != null and section !='' ">			
+			and b.section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and c.book = #{book}
+		</if>				
+	</select>
+	<select id="getPracticeVolumePageList" resultType="com.usher.dto.PracticesPracticevolumeDto" parameterType="com.usher.dto.PracticesPracticevolumeDto">
+		select
+			a.id,
+			a.status,
+			b.section,
+			c.book,
+			a.volume,
+			a.volume_order,
+			a.practice_section_id,
+			a.practice_book_id
+		from
+			practices_practicevolume a
+			join practices_practicesection b on a.practice_section_id = b.id and b.status = 'ACTIVE'
+			join practices_practicebook c on a.practice_book_id = c.id and c.status = 'ACTIVE'
+		where 1=1
+			and a.status = 'ACTIVE'
+		<if test="practice_section_id > 0 ">
+			and a.practice_section_id = #{practice_section_id}
+		</if>
+		<if test="practice_book_id > 0 ">
+			and a.practice_book_id = #{practice_book_id}
+		</if>
+		<if test="section != null and section !='' ">			
+			and b.section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and c.book = #{book}
+		</if>		
+		order by b.section_order, b.id, c.book_order, c.id, a.volume_order, a.id 
+		limit #{row_num} offset #{first_num}
+	</select>	
+	<select id="getPracticeVolumeList" resultType="com.usher.dto.PracticesPracticevolumeDto" parameterType="com.usher.dto.PracticesPracticevolumeDto">
+		select
+			a.id,
+			a.status,
+			b.section,
+			c.book,
+			a.volume,
+			a.volume_order,
+			a.practice_section_id,
+			a.practice_book_id
+		from
+			practices_practicevolume a
+			join practices_practicesection b on a.practice_section_id = b.id and b.status = 'ACTIVE'
+			join practices_practicebook c on a.practice_book_id = c.id and c.status = 'ACTIVE'
+		where 1=1
+			and a.status = 'ACTIVE'
+		<if test="practice_section_id > 0 ">
+			and a.practice_section_id = #{practice_section_id}
+		</if>
+		<if test="practice_book_id > 0 ">
+			and a.practice_book_id = #{practice_book_id}
+		</if>
+		<if test="section != null and section !='' ">			
+			and b.section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and c.book = #{book}
+		</if>	
+		order by b.section_order, b.id, c.book_order, c.id, a.volume_order, a.id 
+	</select>
+	
+	<select id="getPracticeVolume" resultType="com.usher.dto.PracticesPracticevolumeDto" parameterType="com.usher.dto.PracticesPracticevolumeDto">
+		select
+			a.id,
+			a.status,
+			b.section,
+			c.book,
+			a.volume,
+			a.volume_order,
+			a.practice_section_id,
+			a.practice_book_id
+		from
+			practices_practicevolume a
+			join practices_practicesection b on a.practice_section_id = b.id
+			join practices_practicebook c on a.practice_book_id = c.id
+		where
+			a.id = #{id}
+	</select>
+	
+	<insert id="insertPracticeVolume" parameterType="com.usher.dto.PracticesPracticevolumeDto">
+		insert into practices_practicevolume (
+			created,
+			modified,
+			status,
+			volume,
+			volume_order,
+			practice_section_id,
+			practice_book_id
+		) values (
+			now(),
+			now(),
+			#{status},
+			#{volume},
+			#{volume_order},
+			#{practice_section_id},
+			#{practice_book_id}
+		)
+	</insert>
+	
+	<update id="updatePracticeVolume" parameterType="com.usher.dto.PracticesPracticevolumeDto">
+		update practices_practicevolume set
+			modified = now(),
+			status = #{status},
+			volume = #{volume},
+			volume_order = #{volume_order},
+			practice_section_id = #{practice_section_id},
+			practice_book_id = #{practice_book_id}
+		where
+			id = #{id}	
+	</update>
+	<update id="updatePracticeVolumeOrder" parameterType="com.usher.dto.PracticesPracticevolumeDto">
+		update practices_practicevolume set
+			modified = now(),
+			volume_order = #{volume_order}
+		where
+			id = #{id}	
+	</update>	
+</mapper>

@@ -1,0 +1,24 @@
+package com.usher.dao;
+
+
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import com.usher.dto.PracticesPracticescheduleHomeworkDto;
+
+@Repository
+public interface PracticesPracticescheduleHomeworkDao{
+	public List<PracticesPracticescheduleHomeworkDto> getPracticeScheduleHomeworkSectionList(PracticesPracticescheduleHomeworkDto dto) throws Exception;
+	public List<PracticesPracticescheduleHomeworkDto> getPracticeScheduleHomeworkPracticeList(PracticesPracticescheduleHomeworkDto dto) throws Exception;
+	public List<PracticesPracticescheduleHomeworkDto> getPracticeScheduleHomeworkCourseList(PracticesPracticescheduleHomeworkDto dto) throws Exception;
+
+	
+	public List<PracticesPracticescheduleHomeworkDto> getPracticeScheduleHomeworkList(PracticesPracticescheduleHomeworkDto dto) throws Exception;
+	
+	public void insertPracticeScheduleHomework(PracticesPracticescheduleHomeworkDto dto) throws Exception;
+	public void updatePracticeScheduleHomeworkParagraph(PracticesPracticescheduleHomeworkDto dto) throws Exception;
+	public void updatePracticeScheduleHomeworkParagraphAsSchedule(PracticesPracticescheduleHomeworkDto dto) throws Exception;
+	public void updatePracticeScheduleHomework(PracticesPracticescheduleHomeworkDto dto) throws Exception;
+	public void updatePracticeScheduleHomeworkAsSchedule(PracticesPracticescheduleHomeworkDto dto) throws Exception;
+}

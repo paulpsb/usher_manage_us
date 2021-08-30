@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.AuthUserOrganizationDao">
+	<select id="getAuthUserOrganizationList" parameterType="com.usher.dto.AuthUserOrganizationDto" resultType="com.usher.dto.AuthUserOrganizationDto">
+		select
+			a.id,
+			a.status,
+			a.organization_id,
+			a.user_id,
+			c.group_id,
+			b.username,
+			b.first_name,
+			b.last_name,
+			b.start_time,
+			b.end_time
+		from
+			auth_user_organization a
+			join auth_user b on a.user_id = b.id
+			join auth_user_groups c on b.id = c.user_id
+			join auth_group d on c.group_id = d.id	
+		where
+			a.organization_id = #{organization_id}
+		order by concat(b.last_name,b.first_name)
+	</select>
+	<select id="getAuthUserOrganizationAllList" resultType="com.usher.dto.AuthUserOrganizationDto">
+		select
+			a.id,
+			a.status,
+			a.organization_id,
+			a.user_id,
+			b.username,
+			b.first_name,
+			b.last_name
+		from
+			auth_user_organization a
+			join auth_user b on a.user_id = b.id
+		order by concat(b.last_name,b.first_name)
+	</select>	
+	<select id="getAuthUserOrganization" parameterType="com.usher.dto.AuthUserOrganizationDto" resultType="com.usher.dto.AuthUserOrganizationDto">
+		select
+			id,
+			status,
+			organization_id,
+			user_id
+		from
+			auth_user_organization
+		where 
+			organization_id = #{organization_id}
+			and user_id = #{user_id}
+	</select>
+
+	<insert id="insertAuthUserOrganization" parameterType="com.usher.dto.AuthUserOrganizationDto">
+		insert into auth_user_organization(
+			created,
+			modified,
+			status,
+			organization_id,
+			user_id
+		)values(
+			now(),
+			now(),
+			#{status},
+			#{organization_id},
+			#{user_id}
+		)
+	</insert>
+	<update id="updateAuthUserOrganization" parameterType="com.usher.dto.AuthUserOrganizationDto">
+		update auth_user_organization set
+			modified = now(),
+			status = #{status}
+		where 
+			organization_id = #{organization_id}
+			and user_id = #{user_id}
+	</update>
+
+	<delete id="deleteAuthUserOrganization" parameterType="com.usher.dto.AuthUserOrganizationDto">
+		delete from auth_user_organization
+		where 
+			organization_id = #{organization_id}
+			and user_id = #{user_id}
+	</delete>
+</mapper>

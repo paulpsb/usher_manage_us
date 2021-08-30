@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CorrectionTestBookDao">
+	<select id="getCorrectionTestBookList" parameterType="com.usher.dto.CorrectionTestBookDto" resultType="com.usher.dto.CorrectionTestBookDto">
+		select 
+			id,
+			section,
+			practice_type,
+			test_type,
+			book
+		from
+			correction_test_book
+		where
+			1 = 1
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		order by section, practice_type, test_type, book
+	</select>
+	
+	<insert id="insertCorrectionTestBook" parameterType="com.usher.dto.CorrectionTestBookDto">
+		with upsert as(
+			update correction_test_book
+				set modified = now()
+			where
+				section = #{section}
+				and practice_type = #{practice_type}
+				and test_type = #{test_type}
+				and book = #{book}
+			returning *
+		)
+		insert into correction_test_book(
+			created,
+			modified,
+			section,
+			practice_type,
+			test_type,
+			book	
+		)
+		select
+			now() as created,
+			now() as modified,
+			#{section} as section,
+			#{practice_type} as practice_type,
+			#{test_type} as test_type,
+			#{book}	as book
+		where not exists ( select * from upsert )
+	</insert>
+	
+	<update id="deleteCorrectionTestBook" parameterType="com.usher.dto.CorrectionTestBookDto">
+		delete from correction_test_book
+		where
+			section = #{section}
+			and practice_type = #{practice_type}
+			and test_type = #{test_type}
+		<if test="book != null and book !='' ">			
+			and book = #{book}
+		</if>			
+	</update>
+</mapper>

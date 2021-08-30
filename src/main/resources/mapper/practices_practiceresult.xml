@@ -1,0 +1,842 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticeresultDao">
+	<select id="getPracticeResult" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			a.status,	
+			a.section,	
+			a.practice_type,	
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			a.score1,
+			a.score2,
+			a.score,
+			a.pass_result,
+			a.real,
+			a.result_url,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.course_enrollment_id,
+			a.practice_problem_id,
+			a.practice_schedule_id,
+			a.practice_statistics_id,
+			a.answer_id,
+			a.end_time,
+			a.start_time,
+			a.total_score1,
+			a.total_score2,
+			a.total_score,
+			a.total_minitues,
+			coalesce(a.student_pen_yn,'N') as student_pen_yn,
+			coalesce(a.answer_rublic_yn,'N') as answer_rublic_yn,
+			coalesce(a.answer_pen_yn,'N') as answer_pen_yn,
+			coalesce(a.answer_spk_yn,'N') as answer_spk_yn		
+		from 
+			practices_practiceresult a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where
+			a.id = #{id}
+	</select>
+	<select id="getDailyPracticeResultList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.id,
+			a.section,	
+			a.practice_type,	
+			concat(c.short_title_kr, ' ', d.practice_name) as practice_name,
+			a.score,
+			a.pass_result,
+			a.real,
+			a.result_url,
+			a.total_score,
+			b.book,
+			b.volume,
+			b.article,
+			to_char(a.date,'HH24:MI') as practice_time,
+			1 as repeat_count
+		from 
+			practices_practiceresult a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+			join practices_practicesection c on a.section = c.section
+			join practices_practicetype d on a.practice_type = d.practice_type
+		where
+			a.course_enrollment_id in (
+				select
+					b.id
+				from
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+				where
+					a.student_id = #{student_id}
+					and b.status IN ('PAID','REFUND_REQUESTED')	
+			)
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+			and ( a.practice_type != 'VOCA' or a.real != true )
+		union all		
+		select
+			max(a.id) as id,
+			a.section,	
+			a.practice_type,	
+			concat(c.short_title_kr, ' ', d.practice_name) as practice_name,
+			max(a.score) as score,
+			case when max(case when a.pass_result = true then 1 else 0 end ) = 1 then true else false end as pass_result,
+			a.real as real,
+			max(a.result_url) as result_url,
+			max(a.total_score) as total_score,
+			b.book,
+			b.volume,
+			b.article,
+			max(to_char(a.date,'HH24:MI')) as practice_time,
+			count(*) as repeat_count
+		from 
+			practices_practiceresult a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+			join practices_practicesection c on a.section = c.section
+			join practices_practicetype d on a.practice_type = d.practice_type
+		where
+			a.course_enrollment_id in (
+				select
+					b.id
+				from
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+				where
+					a.student_id = #{student_id}
+					and b.status IN ('PAID','REFUND_REQUESTED')	
+			)
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+			and a.practice_type = 'VOCA' 
+			and a.real = true
+		group by a.section,	a.practice_type,a.real, b.book, b.volume, b.article,c.short_title_kr, d.practice_name
+		order by 2, 3, 13 desc
+	</select>
+
+	<select id="getMonthlyPracticeResultList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			d.practice_name as practice_type,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			max(a.score) as score
+		from 
+			practices_practiceresult a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+			join practices_practicesection c on a.section = c.section
+			join practices_practicetype d on a.practice_type = d.practice_type
+		where
+			a.course_enrollment_id in (
+				select
+					b.id
+				from
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+				where
+					a.student_id = #{student_id}
+					and b.status IN ('PAID','REFUND_REQUESTED')	
+			)
+			and to_char(a.date,'yyyy-mm') = #{date}
+			and real = true
+		group by to_char(a.date,'yyyy-mm-dd'), d.practice_name
+	</select>
+	<select id="getIndependentPracticeResultList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			f.name as course_name,
+			concat(e.last_name, e.first_name) as student_name,
+			coalesce(i.score,-1) as real_score,
+			coalesce(h.score,-1) as score,
+			coalesce(h.score1,-1) as score1,
+			coalesce(h.score2,-1) as score2,
+			coalesce(h.score3,-1) as score3,
+			coalesce(h.score4,-1) as score4,
+			coalesce(h.score5,-1) as score5,
+			coalesce(h.score6,-1) as score6,
+			coalesce(h.score7,-1) as score7,
+			coalesce(h.score8,-1) as score8,
+			coalesce(h.score9,-1) as score9,
+			coalesce(h.score10,-1) as score10,
+			coalesce(h.score11,-1) as score11,
+			coalesce(h.score12,-1) as score12,
+			coalesce(h.score13,-1) as score13,
+			coalesce(h.score14,-1) as score14,
+			coalesce(h.score15,-1) as score15,
+			coalesce(h.score16,-1) as score16,
+			coalesce(i.total_score,-1) as real_total_score,
+			coalesce(h.total_score,-1) as total_score,
+			coalesce(h.total_score1,-1) as total_score1,
+			coalesce(h.total_score2,-1) as total_score2,
+			coalesce(h.total_score3,-1) as total_score3,
+			coalesce(h.total_score4,-1) as total_score4,
+			coalesce(h.total_score5,-1) as total_score5,
+			coalesce(h.total_score6,-1) as total_score6,
+			coalesce(h.total_score7,-1) as total_score7,
+			coalesce(h.total_score8,-1) as total_score8,
+			coalesce(h.total_score9,-1) as total_score9,
+			coalesce(h.total_score10,-1) as total_score10,
+			coalesce(h.total_score11,-1) as total_score11,
+			coalesce(h.total_score12,-1) as total_score12,
+			coalesce(h.total_score13,-1) as total_score13,
+			coalesce(h.total_score14,-1) as total_score14,
+			coalesce(h.total_score15,-1) as total_score15,
+			coalesce(h.total_score16,-1) as total_score16,
+			coalesce(h.practice_result_id1,-1) as practice_result_id1,
+			coalesce(h.practice_result_id2,-1) as practice_result_id2,
+			coalesce(h.practice_result_id3,-1) as practice_result_id3,
+			coalesce(h.practice_result_id4,-1) as practice_result_id4,
+			coalesce(h.practice_result_id5,-1) as practice_result_id5,
+			coalesce(h.practice_result_id6,-1) as practice_result_id6,
+			coalesce(h.practice_result_id7,-1) as practice_result_id7,
+			coalesce(h.practice_result_id8,-1) as practice_result_id8,
+			coalesce(h.practice_result_id9,-1) as practice_result_id9,
+			coalesce(h.practice_result_id10,-1) as practice_result_id10,
+			coalesce(h.practice_result_id11,-1) as practice_result_id11,
+			coalesce(h.practice_result_id12,-1) as practice_result_id12,
+			coalesce(h.practice_result_id13,-1) as practice_result_id13,
+			coalesce(h.practice_result_id14,-1) as practice_result_id14,
+			coalesce(h.practice_result_id15,-1) as practice_result_id15,
+			coalesce(h.practice_result_id16,-1) as practice_result_id16
+		from 
+			enrollments_courseenrollment a
+			join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+			left join courses_allocation c on a.id = c.course_enrollment_id and a.course_id = c.current_course_id 
+			join students_student d on b.student_id = d.id
+			join auth_user e on d.user_id = e.id
+			join courses_course f on f.id = a.course_id
+			join courses_coursegroup g on g.id = f.course_group_id
+			left join (
+				select
+					a.course_enrollment_id,
+					a.book,
+					sum(a.score) as score,
+					sum(a.total_score) as total_score,
+					max(case when a.idx = 1 then a.score else -1 end)       as       score1,
+					max(case when a.idx = 1 then a.total_score else -1 end) as total_score1,
+					max(case when a.idx = 2 then a.score else -1 end)       as       score2,
+					max(case when a.idx = 2 then a.total_score else -1 end) as total_score2,
+					max(case when a.idx = 3 then a.score else -1 end)       as       score3,
+					max(case when a.idx = 3 then a.total_score else -1 end) as total_score3,
+					max(case when a.idx = 4 then a.score else -1 end)       as       score4,
+					max(case when a.idx = 4 then a.total_score else -1 end) as total_score4,
+					max(case when a.idx = 5 then a.score else -1 end)       as       score5,
+					max(case when a.idx = 5 then a.total_score else -1 end) as total_score5,
+					max(case when a.idx = 6 then a.score else -1 end)       as       score6,
+					max(case when a.idx = 6 then a.total_score else -1 end) as total_score6,
+					max(case when a.idx = 7 then a.score else -1 end)       as       score7,
+					max(case when a.idx = 7 then a.total_score else -1 end) as total_score7,
+					max(case when a.idx = 8 then a.score else -1 end)       as       score8,
+					max(case when a.idx = 8 then a.total_score else -1 end) as total_score8,
+					max(case when a.idx = 9 then a.score else -1 end)       as       score9,
+					max(case when a.idx = 9 then a.total_score else -1 end) as total_score9,
+					max(case when a.idx = 10 then a.score else -1 end)       as       score10,
+					max(case when a.idx = 10 then a.total_score else -1 end) as total_score10,
+					max(case when a.idx = 11 then a.score else -1 end)       as       score11,
+					max(case when a.idx = 11 then a.total_score else -1 end) as total_score11,
+					max(case when a.idx = 12 then a.score else -1 end)       as       score12,
+					max(case when a.idx = 12 then a.total_score else -1 end) as total_score12,
+					max(case when a.idx = 13 then a.score else -1 end)       as       score13,
+					max(case when a.idx = 13 then a.total_score else -1 end) as total_score13,
+					max(case when a.idx = 14 then a.score else -1 end)       as       score14,
+					max(case when a.idx = 14 then a.total_score else -1 end) as total_score14,
+					max(case when a.idx = 15 then a.score else -1 end)       as       score15,
+					max(case when a.idx = 15 then a.total_score else -1 end) as total_score15,
+					max(case when a.idx = 16 then a.score else -1 end)       as       score16,
+					max(case when a.idx = 16 then a.total_score else -1 end) as total_score16,
+					max(case when a.idx = 1 then a.practice_result_id else -1 end) as practice_result_id1,
+					max(case when a.idx = 2 then a.practice_result_id else -1 end) as practice_result_id2,
+					max(case when a.idx = 3 then a.practice_result_id else -1 end) as practice_result_id3,
+					max(case when a.idx = 4 then a.practice_result_id else -1 end) as practice_result_id4,
+					max(case when a.idx = 5 then a.practice_result_id else -1 end) as practice_result_id5,
+					max(case when a.idx = 6 then a.practice_result_id else -1 end) as practice_result_id6,
+					max(case when a.idx = 7 then a.practice_result_id else -1 end) as practice_result_id7,
+					max(case when a.idx = 8 then a.practice_result_id else -1 end) as practice_result_id8,
+					max(case when a.idx = 9 then a.practice_result_id else -1 end) as practice_result_id9,
+					max(case when a.idx = 10 then a.practice_result_id else -1 end) as practice_result_id10,
+					max(case when a.idx = 11 then a.practice_result_id else -1 end) as practice_result_id11,
+					max(case when a.idx = 12 then a.practice_result_id else -1 end) as practice_result_id12,
+					max(case when a.idx = 13 then a.practice_result_id else -1 end) as practice_result_id13,
+					max(case when a.idx = 14 then a.practice_result_id else -1 end) as practice_result_id14,
+					max(case when a.idx = 15 then a.practice_result_id else -1 end) as practice_result_id15,
+					max(case when a.idx = 16 then a.practice_result_id else -1 end) as practice_result_id16
+				from
+					(
+						select
+							a.practice_result_id,
+							a.course_enrollment_id,
+							a.book,
+							a.paragraph as idx,
+							a.score,
+							a.total_score
+						from 
+							practices_practiceresult_special_voca a
+							join (
+								select
+									course_enrollment_id,
+									max(book) as book
+								from 
+									practices_practiceresult_special_voca
+								where 
+									to_char(date,'yyyy-mm-dd') = #{date}
+								group by course_enrollment_id								
+							) b on a.course_enrollment_id = b.course_enrollment_id
+						where 
+							to_char(a.date,'yyyy-mm-dd') = #{date}
+					) a
+				group by a.course_enrollment_id, a.book
+			
+			)h on a.id = h.course_enrollment_id
+			left join (
+				select
+					a.course_enrollment_id,
+					max(a.score) as score,
+					max(a.total_score) as total_score
+				from 
+					practices_practiceresult a
+				where 
+					to_char(a.date,'yyyy-mm-dd') = #{date}
+					and a.real = true
+					and a.practice_type = 'VOCA'
+				group by a.course_enrollment_id		
+			) i on a.id = i.course_enrollment_id
+		where
+			f.course_group_id = #{course_group_id}
+			and a.status IN ('PAID','REFUND_REQUESTED')
+			and position(#{date} in a.schedule) > 0
+			and e.username != 'test6' and e.username != 'test5'
+		order by f.difficulty desc, e.last_name, e.first_name
+	</select>	
+	<select id="getPracticeResultAttendList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.course_enrollment_id,
+			a.date,
+			d.timem,
+			coalesce(b.status,'UNPERMITTED_ABSENT') as status,
+			coalesce(c.attendance_reason_type,'') as attendance_reason_type
+		from
+			(
+				select
+					b.id as course_enrollment_id,
+					a.schedule as date
+				from
+					(
+						select 
+							unnest(string_to_array(schedule, ',')) as schedule 
+						from 
+							courses_coursegroup 
+						where 
+							id = ( select course_group_id from courses_course where id = #{course_id})
+					) a,
+					(
+						select * from enrollments_courseenrollment
+						where
+							id in (
+								select course_enrollment_id from courses_allocation where first_course_id = #{course_id} or current_course_id = #{course_id}			
+							)
+					) b
+		
+			) a
+			left join attendances_attendance b on a.course_enrollment_id = b.course_enrollment_id and a.date = to_char(b.date,'yyyy-mm-dd')
+			left join attendances_attendancereason c on a.course_enrollment_id = c.course_enrollment_id and a.date = to_char(c.date,'yyyy-mm-dd')
+			left join (
+				select
+					a.id as course_enrollment_id,
+					to_char(e.date,'yyyy-mm-dd') as date,
+					min(to_char(e.date,'hh24:mi')) as timem
+				from
+					enrollments_courseenrollment a
+					join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+					join students_student c on b.student_id = c.id
+					join auth_user d on c.user_id = d.id
+					join students_userloginlog e on d.id = e.user_id
+				where
+					a.id in ( select course_enrollment_id from courses_allocation where first_course_id = #{course_id}  or current_course_id = #{course_id}  )
+				group by a.id, to_char(e.date,'yyyy-mm-dd')			
+			) d on a.course_enrollment_id = d.course_enrollment_id and a.date = d.date 
+		where 1=1
+		<if test="date != null and date !='' ">
+			and a.date = #{date}
+		</if>						
+		order by a.date desc, a.course_enrollment_id
+	</select>
+		
+	<select id="getPracticeResultSpeechList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.student_id,
+			a.schedule_date as date,
+			a.book,
+			max(a.score) as score,
+			case when sum(case when a.pass_result = true then 1 else 0 end) > 0 then true else false end as pass_result
+		from
+			(
+				select
+					c.student_id,
+					a.practice_problem_id,
+					e.book,
+					a.score,
+					a.pass_result,
+					to_char(a.date,'yyyy-mm-dd') as start_date,
+					to_char(a.date + interval '8 day','yyyy-mm-dd') as end_date,
+					to_char(d.date,'yyyy-mm-dd') as schedule_date
+				from 
+					practices_practiceresult a
+					join enrollments_courseenrollment b on b.id = a.course_enrollment_id
+					join enrollments_semesterenrollment c on c.id = b.semester_enrollment_id	
+					join practices_practiceschedule d on a.practice_problem_id = d.practice_problem_id and d.practice_type = 'VOCA' and d.status='ACTIVE' and d.course_id = #{course_id}
+					join practices_practiceproblem e on d.practice_problem_id = e.id
+				where
+					a.section = 'VOCA'
+					and a.practice_type = 'SPEECH'
+					and a.course_enrollment_id in  (
+						select
+							b.id
+						from
+							enrollments_semesterenrollment a
+							join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+						where
+							a.student_id in (
+								select
+									a.student_id 
+								from
+									enrollments_semesterenrollment a
+									join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+								where
+									b.course_id in (select id from courses_course where course_group_id = ( select course_group_id from courses_course where id = #{course_id}))		
+							)
+					)
+			) a
+		where
+			a.schedule_date between a.start_date and a.end_date
+		<if test="date != null and date !='' ">
+			and a.schedule_date = #{date}
+		</if>				
+		group by a.student_id, a.schedule_date, a.book
+		order by a.student_id, a.schedule_date, a.book desc			
+	</select>
+	<select id="getPracticeResultVocaList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			d.student_id,
+			a.course_enrollment_id,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			max(score) as score,
+			case when sum(case when a.pass_result = true then 1 else 0 end) > 0 then true else false end as pass_result
+		from 
+			practices_practiceresult a
+			join practices_practiceschedule b on a.practice_schedule_id = b.id and b.status = 'ACTIVE'
+			join enrollments_courseenrollment c on c.id = a.course_enrollment_id
+			join enrollments_semesterenrollment d on d.id = c.semester_enrollment_id
+		where 
+			a.status = 'ACTIVE'
+			and a.section = 'VOCA'
+			and a.practice_type = 'VOCA'
+			and a.course_enrollment_id in (
+				select id from enrollments_courseenrollment where course_id in ( select id from courses_course where course_group_id = ( select course_group_id from courses_course where id = #{course_id}))
+			)
+		group by d.student_id, a.course_enrollment_id, to_char(a.date,'yyyy-mm-dd')
+	</select>
+	
+	<select id="getPracticeResultVocaIntervalList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.id,
+			a.status,	
+			a.section,	
+			a.practice_type,	
+			a.score1,
+			a.score2,
+			a.score,
+			a.pass_result,
+			a.real,
+			a.result_url,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			to_char(a.date,'hh24:mi') as timem,
+			a.course_enrollment_id,
+			a.practice_problem_id,
+			a.practice_schedule_id,
+			a.practice_statistics_id,
+			a.answer_id,
+			a.end_time,
+			a.start_time,
+			a.total_score1,
+			a.total_score2,
+			a.total_score,
+			a.total_minitues
+		from 
+			practices_practiceresult a
+		where 
+			a.status = 'ACTIVE'
+			and a.section = 'VOCA'
+			and a.practice_type = 'VOCA_INTERVAL'
+			and a.real = true
+			and a.course_enrollment_id in (
+				select id from enrollments_courseenrollment where course_id in ( select id from courses_course where course_group_id = ( select course_group_id from courses_course where id = #{course_id}))
+			)
+		<if test="date != null and date !='' ">
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		</if>
+		<if test="date == null or date =='' ">
+			and to_char(a.date,'yyyy-mm-dd') = to_char(current_date,'yyyy-mm-dd')
+		</if>
+		order by a.course_enrollment_id, a.practice_schedule_id, a.score2
+	</select>
+	
+	<select id="getPracticeResultVocaIntervalCourseGroupList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.id,
+			a.status,	
+			a.section,	
+			a.practice_type,	
+			a.score1,
+			a.score2,
+			a.score,
+			a.pass_result,
+			a.real,
+			a.result_url,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			to_char(a.date,'hh24:mi') as timem,
+			a.course_enrollment_id,
+			a.practice_problem_id,
+			a.practice_schedule_id,
+			a.practice_statistics_id,
+			a.answer_id,
+			a.end_time,
+			a.start_time,
+			a.total_score1,
+			a.total_score2,
+			a.total_score,
+			a.total_minitues
+		from 
+			practices_practiceresult a
+		where 
+			a.status = 'ACTIVE'
+			and a.section = 'VOCA'
+			and a.practice_type = 'VOCA_INTERVAL'
+			and a.real = true
+			and a.course_enrollment_id in (
+				select id from enrollments_courseenrollment where course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+			)
+		<if test="date != null and date !='' ">
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		</if>
+		<if test="date == null or date =='' ">
+			and to_char(a.date,'yyyy-mm-dd') = to_char(current_date,'yyyy-mm-dd')
+		</if>
+		order by a.course_enrollment_id, a.practice_schedule_id, a.score2
+	</select>
+		
+	<select id="getPracticeResultPraticeTypeList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.course_enrollment_id,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			c.section,
+			b.practice_type,
+			c.book,
+			c.volume,
+			c."group",
+			c.article,
+			b.end_paragraph,
+			case when sum(case when a.pass_result = true then 1 else 0 end) > 0 then true else false end as pass_result,
+			max(coalesce(a.score,0)) as score,
+			max(coalesce(a.score1,0)) as score1,
+			max(coalesce(a.score2,0)) as score2,
+			max(coalesce(a.total_score,0)) as total_score,
+			max(coalesce(a.total_score1,0)) as total_score1,
+			max(coalesce(a.total_score2,0)) as total_score2
+		from 
+			practices_practiceresult a
+			join practices_practiceschedule b on a.practice_schedule_id = b.id and b.status = 'ACTIVE'
+			join practices_practiceproblem c on a.practice_problem_id = c.id
+		where
+			a.real = true
+			and b.course_id = #{course_id}
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		<if test="practice_type != null and practice_type !='' ">
+			and a.practice_type = #{practice_type}
+		</if>			
+		group by a.course_enrollment_id, to_char(a.date,'yyyy-mm-dd'), c.section, b.practice_type, c.book, c.volume, c."group", c.article, b.end_paragraph
+		order by 2,1,3,4,5,6,7,8
+	</select>
+
+	<select id="getPracticeResultPraticeTypeMonthlyList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.course_enrollment_id,
+			c.section,
+			c.book,
+			c.volume,
+			c."group",
+			c.article,
+			b.end_paragraph,
+			case when sum(case when a.pass_result = true then 1 else 0 end) > 0 then true else false end as pass_result,
+			max(coalesce(a.score,0)) as score,
+			max(coalesce(a.score1,0)) as score1,
+			max(coalesce(a.score2,0)) as score2,
+			max(coalesce(a.total_score,0)) as total_score,
+			max(coalesce(a.total_score1,0)) as total_score1,
+			max(coalesce(a.total_score2,0)) as total_score2
+		from 
+			practices_practiceresult a
+			join practices_practiceschedule b on a.practice_schedule_id = b.id and b.status = 'ACTIVE'
+			join practices_practiceproblem c on a.practice_problem_id = c.id
+		where
+			a.real = true
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+			and a.course_enrollment_id in (
+				select id from enrollments_courseenrollment where course_id in ( select id from courses_course where course_group_id = ( select course_group_id from courses_course where id = #{course_id}))
+			)
+		group by a.course_enrollment_id, c.section, c.book, c.volume, c."group", c.article, b.end_paragraph
+		order by 2,1,3,4,5,6,7
+	</select>
+	<select id="getPracticeResultList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.id,
+			a.section,	
+			a.practice_type,
+			a.course_enrollment_id,
+			to_char(a.date,'yyyy-mm-dd hh24:mi') as date,
+			c.book,
+			c.volume,
+			c.group,
+			c.article,
+			b.start_paragraph,
+			b.end_paragraph,
+			a.score,
+			a.score1,
+			a.score2,
+			a.total_score,
+			a.total_score1,
+			a.total_score2,
+			a.pass_result
+		from 
+			practices_practiceresult a
+			join practices_practiceschedule b on a.practice_schedule_id = b.id and b.status = 'ACTIVE'
+			join practices_practiceproblem c on a.practice_problem_id = c.id
+		where 
+			a.status = 'ACTIVE'
+			and a.real = true
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+			and a.course_enrollment_id = #{course_enrollment_id}
+		<if test="date != null and date !='' ">			
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		</if>
+		<if test="book != null and book !='' ">			
+			and c.book = #{book}
+		</if>				
+		<if test="volume != null and volume !='' ">			
+			and c.volume = #{volume}
+		</if>				
+		<if test="group != null and group !='' ">			
+			and c.group = #{group}
+		</if>				
+		<if test="article != null and article !='' ">			
+			and c.article = #{article}
+		</if>				
+		<if test="end_paragraph > 0">			
+			and b.end_paragraph = #{end_paragraph}
+		</if>				
+		order by a.id desc
+	</select>	
+	<select id="getPracticeResultMockTestCount" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select count(*) as total_count
+		from 
+			practices_practiceresult a
+			join practices_practiceschedule b on a.practice_schedule_id = b.id and b.status = 'ACTIVE'
+			join practices_practiceproblem c on a.practice_problem_id = c.id
+			left join internal_exams_speaking d 
+				on c.section = d.section
+				and c.book = d.book
+				and c.volume = d.volume
+				and c."group" = d."group"
+				and c.article = d.article
+			left join internal_exams_writing e 
+				on c.section = e.section
+				and c.book = e.book
+				and c.volume = e.volume
+				and c."group" = e."group"
+				and c.article = e.article
+			join enrollments_courseenrollment f on a.course_enrollment_id = f.id
+			join enrollments_semesterenrollment g on f.semester_enrollment_id = g.id
+			join students_student h on g.student_id = h.id
+			join auth_user i on h.user_id = i.id
+		where 
+			a.status = 'ACTIVE'
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+		<if test="book != null and book !='' ">
+			and c.book = #{book}
+		</if>			
+		<if test="student_pen_yn != null and student_pen_yn !='' ">
+			and a.student_pen_yn = #{book}
+		</if>			
+		<if test="answer_rublic_yn != null and answer_rublic_yn !='' ">
+			and a.answer_rublic_yn = #{answer_rublic_yn}
+		</if>			
+		<if test="answer_pen_yn != null and answer_pen_yn !='' ">
+			and a.answer_pen_yn = #{answer_pen_yn}
+		</if>			
+		<if test="answer_spk_yn != null and answer_spk_yn !='' ">
+			and a.answer_spk_yn = #{answer_spk_yn}
+		</if>	
+		<if test="course_id > 0 ">
+			and f.course_id = #{course_id}
+		</if>					
+	</select>
+	<select id="getPracticeResultMockTestList" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.id,
+			a.section,	
+			a.practice_type,
+			a.course_enrollment_id,
+			to_char(a.date,'mm.dd') as date,
+			c.book,
+			c.volume,
+			c.group,
+			c.article,
+			a.score,
+			a.score1,
+			a.score2,
+			a.total_score,
+			a.total_score1,
+			a.total_score2,
+			a.pass_result,
+			coalesce(a.student_pen_yn,'N') as student_pen_yn,
+			coalesce(a.answer_rublic_yn,'N') as answer_rublic_yn,
+			coalesce(a.answer_pen_yn,'N') as answer_pen_yn,
+			coalesce(a.answer_spk_yn,'N') as answer_spk_yn,
+			coalesce(a.student_note_yn,'N') as student_note_yn,
+			coalesce(coalesce(d.question, e.question),'') as question,
+			concat(i.last_name, i.first_name) as student_name
+		from 
+			practices_practiceresult a
+			join practices_practiceschedule b on a.practice_schedule_id = b.id and b.status = 'ACTIVE'
+			join practices_practiceproblem c on a.practice_problem_id = c.id
+			left join internal_exams_speaking d 
+				on c.section = d.section
+				and c.book = d.book
+				and c.volume = d.volume
+				and c."group" = d."group"
+				and c.article = d.article
+			left join internal_exams_writing e 
+				on c.section = e.section
+				and c.book = e.book
+				and c.volume = e.volume
+				and c."group" = e."group"
+				and c.article = e.article
+			join enrollments_courseenrollment f on a.course_enrollment_id = f.id
+			join enrollments_semesterenrollment g on f.semester_enrollment_id = g.id
+			join students_student h on g.student_id = h.id
+			join auth_user i on h.user_id = i.id
+		where 
+			a.status = 'ACTIVE'
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+		<if test="book != null and book !='' ">
+			and c.book = #{book}
+		</if>			
+		<if test="student_pen_yn != null and student_pen_yn !='' ">
+			and a.student_pen_yn = #{book}
+		</if>			
+		<if test="answer_rublic_yn != null and answer_rublic_yn !='' ">
+			and a.answer_rublic_yn = #{answer_rublic_yn}
+		</if>			
+		<if test="answer_pen_yn != null and answer_pen_yn !='' ">
+			and a.answer_pen_yn = #{answer_pen_yn}
+		</if>			
+		<if test="answer_spk_yn != null and answer_spk_yn !='' ">
+			and a.answer_spk_yn = #{answer_spk_yn}
+		</if>			
+		<if test="course_id > 0 ">
+			and f.course_id = #{course_id}
+		</if>					
+		order by a.id desc
+		limit #{row_num} offset #{first_num}
+	</select>		
+	<select id="getPracticeResultListAsVoca" parameterType="com.usher.dto.PracticesPracticeresultDto" resultType="com.usher.dto.PracticesPracticeresultDto">
+		select
+			a.id,
+			a.section,	
+			a.practice_type,
+			a.course_enrollment_id,
+			to_char(a.date,'yyyy-mm-dd hh24:mi') as date,
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			a.score,
+			a.score1,
+			a.score2,
+			a.total_score,
+			a.total_score1,
+			a.total_score2,
+			a.pass_result			
+		from
+			(
+				select
+					a.id,
+					a.section,
+					a.practice_type,
+					b.id as course_enrollment_id,
+					a.date,
+					a.practice_problem_id,
+					a.score,
+					a.score1,
+					a.score2,
+					a.total_score,
+					a.total_score1,
+					a.total_score2,
+					a.pass_result,
+					to_char(a.date,'yyyy-mm-dd') as start_date,
+					to_char(a.date + interval '8 day','yyyy-mm-dd') as end_date,
+					to_char(d.date,'yyyy-mm-dd') as schedule_date
+				from 
+					practices_practiceresult a
+					join enrollments_courseenrollment b on b.id = a.course_enrollment_id
+					join enrollments_semesterenrollment c on c.id = b.semester_enrollment_id	
+					join practices_practiceschedule d on a.practice_problem_id = d.practice_problem_id and d.practice_type = 'VOCA' and d.status='ACTIVE' and d.course_id = #{course_id}
+				where
+					a.section = 'VOCA'
+					and a.practice_type = 'SPEECH'
+					and a.course_enrollment_id in  (
+						select
+							b.id
+						from
+							enrollments_semesterenrollment a
+							join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+						where
+							a.student_id in (
+								select
+									a.student_id 
+								from
+									enrollments_semesterenrollment a
+									join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+								where
+									b.id = #{course_enrollment_id}		
+							)
+					)
+			) a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where
+			a.schedule_date between a.start_date and a.end_date
+			and a.schedule_date = #{date}
+		order by a.id desc
+	</select>	
+	<update id="updatePracticeResultAnswerRublic" parameterType="com.usher.dto.PracticesPracticeresultDto" useGeneratedKeys="true" keyProperty="id" >
+		update practices_practiceresult set 
+			score = #{score},
+			total_score = #{total_score},
+			answer_rublic_yn = 'Y'
+		where
+			id = #{id}
+	</update>	
+	<update id="updatePracticeResultAnswerPen" parameterType="com.usher.dto.PracticesPracticeresultDto" useGeneratedKeys="true" keyProperty="id" >
+		update practices_practiceresult set 
+			answer_pen_yn = 'Y'
+		where
+			id = #{id}
+	</update>	
+	<update id="updatePracticeResultAnswerSpk" parameterType="com.usher.dto.PracticesPracticeresultDto" useGeneratedKeys="true" keyProperty="id" >
+		update practices_practiceresult set 
+			answer_spk_yn = 'Y'
+		where
+			id = #{id}
+	</update>	
+</mapper>

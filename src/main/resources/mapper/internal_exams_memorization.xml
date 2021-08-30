@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsMemorizationDao">
+	<select id="getInternalExamsMemorizationCount" resultType="com.usher.dto.InternalExamsMemorizationDto" parameterType="com.usher.dto.InternalExamsMemorizationDto">
+		select count(*) as total_count
+		from 
+			internal_exams_memorization 
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		<if test="practice_type != null and practice_type !='' ">			
+			and practice_type = #{practice_type}
+		</if>
+		<if test="book != null and book !='' ">			
+			and book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and volume = #{volume}
+		</if>						
+	</select>
+	
+	<select id="getInternalExamsMemorizationList" resultType="com.usher.dto.InternalExamsMemorizationDto" parameterType="com.usher.dto.InternalExamsMemorizationDto">
+		select
+			a.id,
+			a.section,
+			a.practice_type,
+			b.practice_name,
+			a.book,
+			a.volume,
+			a.group,
+			a.article,
+			a.contents,
+			a.easy_mode_time,
+			a.hard_mode_time,
+			d.short_title
+		from
+			internal_exams_memorization a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join (
+				select
+					a.section,
+					a.section_order,
+					b.book,
+					b.book_order,
+					coalesce(c.volume,'') as volume,
+					coalesce(c.volume_order,0) as volume_order,
+					coalesce(d.group,'') as group,
+					coalesce(d.group_order,0) as group_order
+				from
+					practices_practicesection a
+					join practices_practicebook b on a.id = b.practice_section_id
+					left join practices_practicevolume c on b.practice_section_id = c.practice_section_id and b.id = c.practice_book_id
+					left join practices_practicegroup d on c.practice_section_id = d.practice_section_id and c.practice_book_id = d.practice_book_id and c.id = d.practice_volume_id				
+			) c on a.section = c.section and a.book = c.book and a.volume = c.volume and a.group = c.group
+			join practices_practiceproblem d  on a.section = d.section and a.book = d.book and a.volume = d.volume and a.group = d.group and a.article = d.article
+		where 1=1
+			<if test="section != null and section !='' ">			
+				and a.section = #{section}
+			</if>
+			<if test="practice_type != null and practice_type !='' ">			
+				and a.practice_type = #{practice_type}
+			</if>
+			<if test="book != null and book !='' ">			
+				and a.book = #{book}
+			</if>
+			<if test="volume != null and volume !='' ">			
+				and a.volume = #{volume}
+			</if>	
+		order by coalesce(c.section_order,0), a.section, coalesce(b.type_order,0), a.practice_type, coalesce(c.book_order,0), a.book, coalesce(c.volume_order,0), a.volume, coalesce(c.group_order,0), a.group, a.article			
+		limit #{row_num} offset #{first_num}
+	</select>
+
+	<select id="getInternalExamsMemorizationExamList" resultType="com.usher.dto.InternalExamsMemorizationDto" parameterType="com.usher.dto.InternalExamsMemorizationDto">
+		select
+			a.id,
+			a.section,
+			a.practice_type,
+			b.practice_name,
+			a.book,
+			a.volume,
+			a.group,
+			a.article,
+			a.contents,
+			a.easy_mode_time,
+			a.hard_mode_time,
+			d.short_title
+		from
+			internal_exams_memorization a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join (
+				select
+					a.section,
+					a.section_order,
+					b.book,
+					b.book_order,
+					coalesce(c.volume,'') as volume,
+					coalesce(c.volume_order,0) as volume_order,
+					coalesce(d.group,'') as group,
+					coalesce(d.group_order,0) as group_order
+				from
+					practices_practicesection a
+					join practices_practicebook b on a.id = b.practice_section_id
+					left join practices_practicevolume c on b.practice_section_id = c.practice_section_id and b.id = c.practice_book_id
+					left join practices_practicegroup d on c.practice_section_id = d.practice_section_id and c.practice_book_id = d.practice_book_id and c.id = d.practice_volume_id				
+			) c on a.section = c.section and a.book = c.book and a.volume = c.volume and a.group = c.group
+			join practices_practiceproblem d  on a.section = d.section and a.book = d.book and a.volume = d.volume and a.group = d.group and a.article = d.article
+		where 1=1
+			<if test="section != null and section !='' ">			
+				and a.section = #{section}
+			</if>
+			<if test="practice_type != null and practice_type !='' ">			
+				and a.practice_type = #{practice_type}
+			</if>
+			<if test="book != null and book !='' ">			
+				and a.book = #{book}
+			</if>
+			<if test="volume != null and volume !='' ">			
+				and a.volume = #{volume}
+			</if>	
+		order by coalesce(c.section_order,0), a.section, coalesce(b.type_order,0), a.practice_type, coalesce(c.book_order,0), a.book, coalesce(c.volume_order,0), a.volume, coalesce(c.group_order,0), a.group, a.article			
+	</select>
+	
+	<select id="getInternalExamsMemorization" resultType="com.usher.dto.InternalExamsMemorizationDto" parameterType="com.usher.dto.InternalExamsMemorizationDto">
+		select
+			a.section,
+			a.practice_type,
+			b.practice_name,
+			a.book,
+			a.volume,
+			a.group,
+			a.article,
+			a.contents,
+			a.easy_mode_time,
+			a.hard_mode_time,
+			d.short_title
+		from
+			internal_exams_memorization a
+			join practices_practicetype b on a.practice_type = b.practice_type
+			join practices_practiceproblem d  on a.section = d.section and a.book = d.book and a.volume = d.volume and a.group = d.group and a.article = d.article
+		where
+			a.id = #{id}
+	</select>
+
+	<insert id="insertInternalExamsMemorization" parameterType="com.usher.dto.InternalExamsMemorizationDto"  useGeneratedKeys="true" keyProperty="id">
+		insert into internal_exams_memorization (
+			created,
+			modified,
+			section,
+			practice_type,
+			book,
+			volume,
+			"group",
+			article,
+			easy_mode_time,
+			hard_mode_time
+		) values (
+			now(),
+			now(),
+			#{section},
+			#{practice_type},
+			#{book},
+			#{volume},
+			#{group},
+			#{article},
+			10,
+			10
+		)
+	</insert>
+	
+	<update id="updateInternalExamsMemorization" parameterType="com.usher.dto.InternalExamsMemorizationDto">
+		update internal_exams_memorization set
+			modified = now(),
+			contents = #{contents},
+			easy_mode_time = #{easy_mode_time},
+			hard_mode_time = #{hard_mode_time}
+		where
+			id = #{id}	
+	</update>
+	
+	<delete id="deleteInternalExamsMemorization" parameterType="com.usher.dto.InternalExamsMemorizationDto">
+		delete from internal_exams_memorization
+		where
+			id = #{id}	
+	</delete>
+	<delete id="deleteInternalExamsMemorizationQuestionAll" parameterType="com.usher.dto.InternalExamsMemorizationDto">
+		delete from internal_exams_memorization_question
+		where
+			memorization_id = #{id}	
+	</delete>
+</mapper>

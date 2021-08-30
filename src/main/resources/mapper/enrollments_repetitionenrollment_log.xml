@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.EnrollmentsRepetitionenrollmentLogDao">
+	<insert id="insertRepetitaionGoalScoreLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'goal_score' as log_type,
+			goal_score,
+			goal_score_id,
+			goal_score_name,
+			goal_score_date	
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(goal_score_id) > 0
+	</insert>
+	<insert id="insertRepetitaionAttendStartDateLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'attend_start_date' as log_type,
+			attend_start_date,
+			attend_start_date_id,
+			attend_start_date_name,
+			attend_start_date_date
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(attend_start_date_id) > 0
+	</insert>
+	<insert id="insertRepetitaionNeedDateLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'need_date' as log_type,
+			need_date,
+			need_date_id,
+			need_date_name,
+			need_date_date
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(need_date_id) > 0
+	</insert>
+	
+	<insert id="insertRepetitaionAttendDateLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'attend_date' as log_type,
+			attend_date,
+			attend_date_id,
+			attend_date_name,
+			attend_date_date			
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(attend_date_id) > 0
+	</insert>		
+	
+	<insert id="insertRepetitaionGoalRepetitionAdviseLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'goal_repetition_advise' as log_type,
+			goal_repetition_advise,
+			goal_repetition_advise_id,
+			goal_repetition_advise_name,
+			goal_repetition_advise_date
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(goal_repetition_advise_id) > 0
+	</insert>	
+	
+	<insert id="insertRepetitaionFirstRepetitionResultLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'first_repetition_result' as log_type,
+			first_repetition_result,
+			first_repetition_result_id,
+			first_repetition_result_name,
+			first_repetition_result_date
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(first_repetition_result_id) > 0
+	</insert>	
+	<insert id="insertRepetitaionFirstRepetitionAdviseLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'first_repetition_advise' as log_type,
+			first_repetition_advise,
+			first_repetition_advise_id,
+			first_repetition_advise_name,
+			first_repetition_advise_date
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(first_repetition_advise_id) > 0
+	</insert>
+	<insert id="insertRepetitaionSecondRepetitionResultLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'second_repetition_result' as log_type,
+			second_repetition_result,
+			second_repetition_result_id,
+			second_repetition_result_name,
+			second_repetition_result_date
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(second_repetition_result_id) > 0
+	</insert>	
+	
+	<insert id="insertRepetitaionSecondRepetitionAdviseLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'second_repetition_advise' as log_type,
+			second_repetition_advise,
+			second_repetition_advise_id,
+			second_repetition_advise_name,
+			second_repetition_advise_date
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(second_repetition_advise_id) > 0
+	</insert>	
+	
+	<insert id="insertRepetitaionThirdRepetitionResultLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'third_repetition_result' as log_type,
+			third_repetition_result,
+			third_repetition_result_id,
+			third_repetition_result_name,
+			third_repetition_result_date
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(third_repetition_result_id) > 0
+	</insert>							
+
+	<insert id="insertRepetitaionThirdRepetitionAdviseLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'third_repetition_advise' as log_type,
+			third_repetition_advise,
+			third_repetition_advise_id,
+			third_repetition_advise_name,
+			third_repetition_advise_date
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(third_repetition_advise_id) > 0
+	</insert>	
+	
+	<insert id="insertRepetitaionUnregisteredReasonLog" parameterType="com.usher.dto.EnrollmentsRepetitionenrollmentLogDto">
+		insert into enrollments_repetitionenrollment_log(
+		    created,
+		    modified,
+		    course_enrollment_id,
+		    log_type,
+		    log_value,
+		    log_create_id,
+		    log_create_name,
+		    log_create_date
+		)
+		select
+			now() as created,
+			now() as modified,
+			course_enrollment_id,
+			'unregistered_reason' as log_type,
+			unregistered_reason,
+			unregistered_reason_id,
+			unregistered_reason_name,
+			unregistered_reason_date
+		from
+			enrollments_repetitionenrollment
+		where
+			course_enrollment_id = #{course_enrollment_id}
+			and coalesce(unregistered_reason_id) > 0
+	</insert>	
+							
+</mapper>

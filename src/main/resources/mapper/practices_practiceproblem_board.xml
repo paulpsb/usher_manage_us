@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticeproblemBoardDao">
+	<select id="getPracticeProblemBoard" resultType="com.usher.dto.PracticesPracticeproblemBoardDto" parameterType="com.usher.dto.PracticesPracticeproblemBoardDto">
+		select 
+			id,
+			board,
+			practice_problem_id
+		from
+			practices_practiceproblem_board
+		where
+			practice_problem_id = #{practice_problem_id}
+		order by id
+		limit 1
+	</select>
+				
+	<insert id="insertPracticeProblemBoard" parameterType="com.usher.dto.PracticesPracticeproblemBoardDto">
+		insert into practices_practiceproblem_board (
+			created,
+			modified,
+			board,
+			practice_problem_id
+		) values (
+			now(),
+			now(),
+			#{board},
+			#{practice_problem_id}
+		)
+	</insert>
+	
+	<update id="updatePracticeProblemBoard" parameterType="com.usher.dto.PracticesPracticeproblemBoardDto">
+		update practices_practiceproblem_board set
+			modified = now(),
+			board = #{board}
+		where
+			practice_problem_id = #{practice_problem_id}	
+	</update>
+	
+	<delete id="deletePracticeProblemBoard" parameterType="com.usher.dto.PracticesPracticeproblemBoardDto">
+		delete from practices_practiceproblem_board
+		where
+			practice_problem_id = #{practice_problem_id}	
+	</delete>
+	
+</mapper>

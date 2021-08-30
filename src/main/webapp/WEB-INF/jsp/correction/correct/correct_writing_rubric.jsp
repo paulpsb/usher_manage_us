@@ -1,0 +1,73 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="euc-kr">
+		<title>Writing 첨삭</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+	    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+		<link rel="stylesheet" href="/common/exam/css/exam.css" />
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet" type="text/css">
+	    <script src="//code.jquery.com/jquery.min.js"></script>
+	    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+	    <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
+	    <script type="text/javascript" src="/assets/js/common.js"></script>
+	    <script type="text/javascript" src="/ui/correction/correct/correct_writing_rubric.js"></script>
+	</head>
+	<body class="toefl">
+		<input type="hidden" id="correction_exams_answer_id" value="${resultInfo.id}">
+		<div class="container-fluid header-bar">
+			<div class="container ">
+				<header>
+					<div class="navbar navbar-ipt navbar-default">
+						<div class="navbar-header">
+							<div class="">
+								<div class="logos">
+									<div class="logo">
+										<img src="/common/exam/images/logo.png" style="height:35px;">
+									</div>
+								</div>
+							</div>
+						</div>
+						<nav role="navigation" aria-label="Top Level Lavigation">
+							<ul class="nav">
+								<li class="nav-item">
+									<button class="btn btn-primary" id="btn_next" onclick="save_rubric()">Rubric 저장</button>
+								</li>
+							</ul>
+						</nav>
+					</div>
+				</header>
+			</div>
+		</div>	
+		<div class="brand-bar"></div>
+		<div class="container-fluid toolbar">
+			<div class="container">
+				<div class="row container-ipt" id="secondlevelnav" role="navigation" aria-label="Second Level Navigation">
+				</div>
+			</div>
+		</div>
+		<div class="container-fluid" id="div_container" style="overflow-y:auto;">
+			<div style="">
+				<div style="width:1450px;padding:0px;background:#e7e2e2;color:#000000">
+					<p style="margin:0;padding:0;width:100%;padding:10px;background:#a52626;color:#ffffff;" id="writing_question"></p>
+					<p style="width:50%;float:left;padding-left:30px;" id="reg_date"></p>
+					<p style="width:50%;float:left;padding-right:30px;text-align:right;"  id="writing_exam_time"></p>
+					<p style="margin-top:20px;padding:30px;" id="writing_answer"></p>
+				</div>	
+				<div style="float:left;width:800px;padding:0px;background:#e7e2e2;color:#000000">
+					<p style="margin:0;padding:0;width:100%;padding:10px;background:#a52626;color:#ffffff;"><b>Rubric</b></p>
+					<p style="width:50%;float:left;padding-left:30px;" id="rubric_date"></p>
+					<p style="width:50%;float:left;padding-right:30px;text-align:right;"  id="rubric_writer"></p>
+					<p style="margin-top:20px;padding:30px;" id="rubric_data"></p>
+				</div>	
+				<div style="float:left;width:640px;margin-left:10px;padding:0px;background:#e7e2e2;color:#000000">
+					<p style="margin:0;padding:0;width:100%;padding:10px;background:#a52626;color:#ffffff;">루브릭 채점 기준</p>
+					<div id="rubric_standard" style="padding:10px;padding-top:25px;"></div>
+				</div>	
+			</div>	
+		</div>
+	</body>
+</html>

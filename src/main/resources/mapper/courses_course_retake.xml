@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CoursesCourseRetakeDao">
+	<select id="getCoursesCourseRetakeNextSemester" parameterType="com.usher.dto.CoursesCourseRetakeDto" resultType="com.usher.dto.CoursesCourseRetakeDto">
+		select
+			to_char(a.date,'yyyy-mm') as semester_date
+		from
+			courses_semester a
+		where
+			to_char(a.date,'yyyy-mm') > #{semester_date}
+		order by a.id asc
+		limit 1	
+	</select>
+	<select id="getCoursesCourseRetakeCourseGroupList" parameterType="com.usher.dto.CoursesCourseRetakeDto" resultType="com.usher.dto.CoursesCourseRetakeDto">
+		select
+			b.id as course_group_id,
+			b.test_type, 
+			b.student_type, 
+			b.lecture_type, 
+			b.days,
+			to_char(b.start_date,'yyyy-mm-dd') as start_date,
+			to_char(b.end_date,'yyyy-mm-dd') as end_date,
+			b.name as course_group_name
+		from
+			courses_semester a
+			join courses_coursegroup b on a.id = b.semester_id
+		where
+			to_char(a.date,'yyyy-mm') = #{semester_date}
+		order by b.test_type, b.student_type, b.lecture_type, b.days	
+	</select>
+	<select id="getCoursesCourseRetakeCourseList" parameterType="com.usher.dto.CoursesCourseRetakeDto" resultType="com.usher.dto.CoursesCourseRetakeDto">
+		select
+			b.id as course_group_id,
+			c.id as course_id,
+			b.test_type, 
+			b.student_type, 
+			b.lecture_type, 
+			b.days,
+			b.name as course_group_name,
+			c.name as course_name,
+			c.difficulty,
+			c.inner_difficulty,
+			concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as instructor_name,
+			concat(coalesce(e.last_name,''),coalesce(e.first_name,'')) as manager_name
+		from
+			courses_semester a
+			join courses_coursegroup b on a.id = b.semester_id
+			join courses_course c on b.id = c.course_group_id
+			left join auth_user d on c.instructor_id = d.id
+			left join auth_user e on c.manager_id = e.id
+		where
+			to_char(a.date,'yyyy-mm') = #{semester_date}
+		order by b.test_type, b.student_type, b.lecture_type, b.days, c.difficulty, c.inner_difficulty
+	</select>	
+	<select id="getCoursesCourseRetakeList" parameterType="com.usher.dto.CoursesCourseRetakeDto" resultType="com.usher.dto.CoursesCourseRetakeDto">
+		select
+			to_char(a.date,'yyyy년 mm월') as semester_date,
+			b.id as course_group_id,
+			c.id as course_id,
+			b.test_type, 
+			b.student_type, 
+			b.lecture_type, 
+			h.id as user_id,
+			e.id as course_enrollment_id,
+			e.status,
+			b.name as course_group_name,
+			c.name as course_name,
+			to_char(b.start_date,'yyyy-mm-dd') as start_date,
+			to_char(b.end_date,'yyyy-mm-dd') as end_date,
+			b.days,
+			c.difficulty,
+			c.inner_difficulty,
+			h.last_name,
+			h.first_name,
+			coalesce(f.third_repetition_result,'N') as repetition_result,
+			coalesce(f.third_repetition_advise,'') as repetition_desc,
+			coalesce(f.third_repetition_result_due_date	,'') as repetition_date,
+			e.refund_status,
+			e.refund_reason
+		from
+			courses_semester a
+			join courses_coursegroup b on a.id = b.semester_id
+			join courses_course c on b.id = c.course_group_id
+			join enrollments_semesterenrollment d on a.id = d.semester_id
+			join enrollments_courseenrollment e on c.id = e.course_id and d.id = e.semester_enrollment_id
+			left join enrollments_repetitionenrollment f on e.id = f.course_enrollment_id
+			join students_student g on d.student_id = g.id
+			join auth_user h on g.user_id  = h.id
+		where
+			to_char(a.date,'yyyy-mm') = #{semester_date}
+			and e.status != 'CANCEL_COMPLETED'
+			and e.status != 'REGISTERED'
+			and coalesce(e.refund_status,'') != 'FULL_REFUND'
+			and h.username != 'test6' and h.username != 'test5'
+		order by b.test_type, b.student_type, b.lecture_type, b.days, c.difficulty, c.inner_difficulty, e.status, h.last_name, h.first_name
+	</select>
+	<select id="getCoursesCourseRetakeDueList" parameterType="com.usher.dto.CoursesCourseRetakeDto" resultType="com.usher.dto.CoursesCourseRetakeDto">
+		select
+			to_char(a.date,'yyyy년 mm월') as semester_date,
+			b.id as course_group_id,
+			c.id as course_id,
+			b.test_type, 
+			b.student_type, 
+			b.lecture_type, 
+			h.id as user_id,
+			e.id as course_enrollment_id,
+			e.status,
+			b.name as course_group_name,
+			c.name as course_name,
+			to_char(b.start_date,'yyyy-mm-dd') as start_date,
+			to_char(b.end_date,'yyyy-mm-dd') as end_date,
+			b.days,
+			c.difficulty,
+			c.inner_difficulty,
+			h.last_name,
+			h.first_name,
+			coalesce(f.third_repetition_result,'N') as repetition_result,
+			coalesce(f.third_repetition_advise,'') as repetition_desc,
+			coalesce(f.third_repetition_result_due_date	,'') as repetition_date,
+			e.refund_status,
+			e.refund_reason,
+			concat(coalesce(i.last_name,''),coalesce(i.first_name,'')) as instructor_name,
+			concat(coalesce(j.last_name,''),coalesce(j.first_name,'')) as manager_name
+		from
+			courses_semester a
+			join courses_coursegroup b on a.id = b.semester_id
+			join courses_course c on b.id = c.course_group_id
+			join enrollments_semesterenrollment d on a.id = d.semester_id
+			join enrollments_courseenrollment e on c.id = e.course_id and d.id = e.semester_enrollment_id
+			left join enrollments_repetitionenrollment f on e.id = f.course_enrollment_id
+			join students_student g on d.student_id = g.id
+			join auth_user h on g.user_id  = h.id
+			left join auth_user i on c.instructor_id = i.id
+			left join auth_user j on c.manager_id = j.id
+		where
+			coalesce(f.third_repetition_result_due_date	,'') = #{semester_date}
+			and e.status != 'CANCEL_COMPLETED'
+			and e.status != 'REGISTERED'
+			and coalesce(e.refund_status,'') != 'FULL_REFUND'
+			and h.username != 'test6' and h.username != 'test5'
+		order by b.test_type, b.student_type, b.lecture_type, b.days, c.difficulty, c.inner_difficulty, e.status, h.last_name, h.first_name	
+	</select>
+	
+</mapper>

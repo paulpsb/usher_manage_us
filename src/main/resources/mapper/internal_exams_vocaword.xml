@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsVocawordDao">
+	<select id="getVocaWordBookList" resultType="com.usher.dto.InternalExamsVocawordDto">
+		select book
+		from 
+			internal_exams_vocaword 
+		group by book
+	</select>
+	<select id="getVocaWordDayList" parameterType="com.usher.dto.InternalExamsVocawordDto" resultType="com.usher.dto.InternalExamsVocawordDto">
+		select day
+		from 
+			internal_exams_vocaword 
+		where
+			book = #{book}
+		group by day
+		order by day
+	</select>	
+	<select id="getVocaWordCount" parameterType="com.usher.dto.InternalExamsVocawordDto" resultType="com.usher.dto.InternalExamsVocawordDto">
+		select count(*) as total_count
+		from 
+			internal_exams_vocaword 
+		where
+			book = #{book}
+			and day = #{day}
+	</select>	
+	
+	<select id="getVocaWordSpeechPartCount" parameterType="com.usher.dto.InternalExamsVocawordDto" resultType="com.usher.dto.InternalExamsVocawordDto">
+		select count(*) as speech_part_count
+		from 
+			internal_exams_vocaspeechpart 
+		where
+			voca_word_id = #{id}
+	</select>	
+		
+	<select id="getVocaWordList" parameterType="com.usher.dto.InternalExamsVocawordDto" resultType="com.usher.dto.InternalExamsVocawordDto">
+		select
+			id,
+			book,
+			day,
+			spell,
+			importance,
+			speech_part_count,
+			phonetic_alphabet,
+			example,
+			example_ko,
+			audio_file_name,
+			speech_difficulty,
+			speech_exception
+		from 
+			internal_exams_vocaword 
+		where
+			book = #{book}
+			and day = #{day}
+		order by id
+		limit #{row_num} offset #{first_num}
+	</select>	
+
+	<select id="getVocaWord" parameterType="com.usher.dto.InternalExamsVocawordDto" resultType="com.usher.dto.InternalExamsVocawordDto">
+		select
+			id,
+			book,
+			day,
+			spell,
+			importance,
+			speech_part_count,
+			phonetic_alphabet,
+			example,
+			example_ko,
+			audio_file_name,
+			speech_difficulty,
+			speech_exception
+		from 
+			internal_exams_vocaword 
+		where
+			id = #{id}
+	</select>
+	
+	<update id="updateVocaWord" parameterType="com.usher.dto.InternalExamsVocawordDto">
+		update internal_exams_vocaword set
+			phonetic_alphabet = #{phonetic_alphabet},
+			speech_part_count = #{speech_part_count}
+		where
+			id = #{id}
+	</update>	
+		
+	<update id="updateVocaWordSpeechDifficulty" parameterType="com.usher.dto.InternalExamsVocawordDto">
+		update internal_exams_vocaword set
+			speech_difficulty = #{speech_difficulty}
+		where
+			id = #{id}
+	</update>		
+	
+	<update id="updateVocaWordSpeechException" parameterType="com.usher.dto.InternalExamsVocawordDto">
+		update internal_exams_vocaword set
+			speech_exception = #{speech_exception}
+		where
+			id = #{id}
+	</update>	
+</mapper>

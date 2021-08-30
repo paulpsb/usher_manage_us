@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesScheduleDao">
+	<select id="getNoticesScheduleUserList" resultType="com.usher.dto.NoticesScheduleDto" parameterType="com.usher.dto.NoticesScheduleDto">
+		select
+			id,
+			schedule_category,
+			schedule_date,
+			schedule_time,
+			schedule_title,
+			schedule_target_id,
+			schedule_reference_id,
+			schedule_work_count,
+			schedule_success_count,
+			schedule_ignore_count,
+			schedule_problem_count,
+			routine_id,
+			course_group_id,
+			course_id,
+			course_name,
+			course_group_name
+		from
+			notices_schedule
+		where
+			to_char(schedule_date,'yyyy-mm-dd') = #{schedule_date}
+			and ( schedule_target_id = #{schedule_user_id} or schedule_reference_id = #{schedule_user_id} )
+		order by schedule_category, schedule_time, id		
+	</select>
+	<select id="getNoticesScheduleUserMonthlyUncompleteList" resultType="com.usher.dto.NoticesScheduleDto" parameterType="com.usher.dto.NoticesScheduleDto">
+		select
+			id,
+			schedule_category,
+			schedule_date,
+			schedule_time,
+			schedule_title,
+			schedule_target_id,
+			schedule_reference_id,
+			schedule_work_count,
+			schedule_success_count,
+			schedule_ignore_count,
+			schedule_problem_count,
+			routine_id,
+			course_group_id,
+			course_id,
+			course_name,
+			course_group_name
+		from
+			notices_schedule
+		where
+			to_char(schedule_date,'yyyy-mm') = substr(#{schedule_date},1,7)
+			and #{schedule_date} > to_char(schedule_date,'yyyy-mm-dd')
+			and schedule_category = 'MONTHLY'
+			and schedule_work_count > (schedule_success_count+schedule_ignore_count+schedule_problem_count)
+			and ( schedule_target_id = #{schedule_user_id} or schedule_reference_id = #{schedule_user_id} )
+		order by schedule_category, schedule_time, id			
+	</select>	
+	<select id="getNoticesSchedule" resultType="com.usher.dto.NoticesScheduleDto" parameterType="com.usher.dto.NoticesScheduleDto">
+		select
+			id,
+			schedule_category,
+			to_char(schedule_date,'yyyy-mm-dd') as schedule_date,
+			schedule_time,
+			schedule_title,
+			schedule_target_id,
+			schedule_reference_id,
+			schedule_work_count,
+			schedule_success_count,
+			schedule_ignore_count,
+			schedule_problem_count,
+			routine_id,
+			course_group_id,
+			course_id,
+			course_name,
+			course_group_name
+		from
+			notices_schedule
+		where
+			id = #{id}
+	</select>	
+	<update id="updateNoticesScheduleUser" parameterType="com.usher.dto.NoticesScheduleDto">
+		update notices_schedule set 
+			modified = now(),
+			schedule_success_count = #{schedule_success_count},
+			schedule_ignore_count = #{schedule_ignore_count},
+			schedule_problem_count = #{schedule_problem_count}			
+		where
+			id = #{id}
+	</update>
+</mapper>

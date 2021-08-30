@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.AuthUserDao">
+	<select id="getUser" parameterType="com.usher.dto.AuthUserDto" resultType="com.usher.dto.AuthUserDto">
+		select
+			a.id as user_id,
+			b.group_id,
+			a.username,
+			a.password,
+			c.name as group_name,
+			a.first_name,
+			a.last_name,
+			a.email,
+			a.last_login,
+			a.is_superuser,
+			a.is_staff,
+			a.is_active,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			a.user_color,
+			a.start_time,
+			a.end_time
+		from
+			auth_user a
+			join auth_user_groups b on a.id = b.user_id
+			join auth_group c on b.group_id = c.id
+		where
+			a.is_active = true 
+			and a.username=#{username}
+	</select>
+	<select id="getUserAsID" parameterType="com.usher.dto.AuthUserDto" resultType="com.usher.dto.AuthUserDto">
+		select
+			a.id as user_id,
+			b.id as group_id,
+			a.username,
+			a.password,
+			c.name as group_name,
+			a.first_name,
+			a.last_name,
+			a.email,
+			a.last_login,
+			a.is_superuser,
+			a.is_staff,
+			a.is_active,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			a.user_color,
+			a.start_time,
+			a.end_time
+		from
+			auth_user a
+			join auth_user_groups b on a.id = b.user_id
+			join auth_group c on b.group_id = c.id
+		where
+			a.is_active = true 
+			and a.id = #{user_id}
+	</select>	
+	<select id="getUserList" parameterType="com.usher.dto.AuthUserDto" resultType="com.usher.dto.AuthUserDto">
+		select
+			a.id as user_id,
+			b.group_id,
+			a.username,
+			a.password,
+			c.name as group_name,
+			a.first_name,
+			a.last_name,
+			a.email,
+			a.last_login,
+			a.is_superuser,
+			a.is_staff,
+			a.is_active,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			d.gender,
+			d.mobile_no,
+			to_char(d.birthday,'yyyy-mm-dd') as birthday,
+			a.user_color,
+			a.start_time,
+			a.end_time
+		from
+			auth_user a
+			join auth_user_groups b on a.id = b.user_id
+			join auth_group c on b.group_id = c.id
+			join users_personalinfo d on a.id = d.user_id
+		where 
+			a.is_active=#{is_active}
+			and b.group_id=#{group_id}
+		<if test="username != null and username !='' ">			
+			and ( username like concat('%',#{username},'%') or concat(a.last_name,a.first_name) like concat('%',#{username},'%') )
+		</if>
+		order by concat(a.last_name,a.first_name)
+		limit #{row_num} offset #{first_num}
+	</select>	
+	<select id="getUserCount" parameterType="com.usher.dto.AuthUserDto" resultType="com.usher.dto.AuthUserDto">
+		select
+			count(*) as total_count		
+		from
+			auth_user a
+			join auth_user_groups b on a.id = b.user_id
+			join auth_group c on b.group_id = c.id
+			join users_personalinfo d on a.id = d.user_id
+		where 
+			a.is_active=#{is_active}
+			and b.group_id=#{group_id}
+		<if test="username != null and username !='' ">			
+			and ( username like concat('%',#{username},'%') or concat(a.last_name,a.first_name) like concat('%',#{username},'%') )
+		</if>
+	</select>	
+	<select id="getUserSearchEmployeeList" parameterType="com.usher.dto.AuthUserDto" resultType="com.usher.dto.AuthUserDto">
+		select
+			a.id as user_id,
+			b.group_id,
+			a.username,
+			a.password,
+			c.name as group_name,
+			a.first_name,
+			a.last_name,
+			a.email,
+			a.last_login,
+			a.is_superuser,
+			a.is_staff,
+			a.is_active,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			a.user_color,
+			a.start_time,
+			a.end_time
+		from
+			auth_user a
+			join auth_user_groups b on a.id = b.user_id
+			join auth_group c on b.group_id = c.id
+		where 
+			b.group_id != 1
+		<if test="username != null and username !='' ">			
+			and ( username like concat('%',#{username},'%') or concat(a.last_name,a.first_name) like concat('%',#{username},'%') )
+		</if>		
+		order by concat(a.last_name,a.first_name)
+	</select>
+	<select id="getUserSearchList" parameterType="com.usher.dto.AuthUserDto" resultType="com.usher.dto.AuthUserDto">
+		select
+			a.id as user_id,
+			b.group_id,
+			a.username,
+			a.password,
+			c.name as group_name,
+			a.first_name,
+			a.last_name,
+			a.email,
+			a.last_login,
+			a.is_superuser,
+			a.is_staff,
+			a.is_active,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			d.gender,
+			d.mobile_no,
+			to_char(d.birthday,'yyyy-mm-dd') as birthday,
+			a.user_color,
+			a.start_time,
+			a.end_time
+		from
+			auth_user a
+			join auth_user_groups b on a.id = b.user_id
+			join auth_group c on b.group_id = c.id
+			join users_personalinfo d on a.id = d.user_id
+		where 
+			b.group_id = #{group_id}
+			and a.is_active=true
+		<if test="username != null and username !='' ">			
+			and ( username like concat('%',#{username},'%') or concat(a.last_name,a.first_name) like concat('%',#{username},'%') )
+		</if>		
+		order by concat(a.last_name,a.first_name)
+	</select>	
+	<select id="getUserSearchAllList" parameterType="com.usher.dto.AuthUserDto" resultType="com.usher.dto.AuthUserDto">
+		select
+			a.id as user_id,
+			b.group_id,
+			a.username,
+			a.password,
+			c.name as group_name,
+			a.first_name,
+			a.last_name,
+			a.email,
+			a.last_login,
+			a.is_superuser,
+			a.is_staff,
+			a.is_active,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			a.user_color,
+			a.start_time,
+			a.end_time
+		from
+			auth_user a
+			join auth_user_groups b on a.id = b.user_id
+			join auth_group c on b.group_id = c.id
+		where 
+			1 = 1
+		<if test="username != null and username !='' ">			
+			and ( username like concat('%',#{username},'%') or concat(a.last_name,a.first_name) like concat('%',#{username},'%') )
+		</if>		
+		order by concat(a.last_name,a.first_name)
+	</select>		
+	<update id="updateUser" parameterType="com.usher.dto.AuthUserDto">
+		update auth_user set
+			is_active = #{is_active},
+			is_voca = #{is_voca},
+			is_grammar = #{is_grammar},
+			is_reading = #{is_reading},
+			is_listening = #{is_listening},
+			is_speaking = #{is_speaking},
+			is_writing = #{is_writing},
+			user_color = #{user_color},
+			start_time = #{start_time},
+			end_time = #{end_time}	
+		where
+			id = #{user_id}
+	</update>		
+	<update id="updateUserGroup" parameterType="com.usher.dto.AuthUserDto">
+		update auth_user_groups set
+			group_id = #{group_id}
+		where
+			user_id = #{user_id}
+	</update>	
+	<select id="getUserSchool" parameterType="com.usher.dto.AuthUserDto" resultType="com.usher.dto.AuthUserDto">
+		select
+			user_id,
+		    school_gubun,
+		    school_foreign_gubun,
+		    school_area1,
+		    school_area2,
+		    school_name,
+		    school_major,
+		    school_grade,
+		    school_state,
+		    school_check		
+		from
+			users_school
+		where
+			user_id = #{user_id}	
+	</select>
+	<insert id="insertUserSchool" parameterType="com.usher.dto.AuthUserDto">
+		insert into users_school (
+			user_id,
+		    school_gubun,
+		    school_foreign_gubun,
+		    school_area1,
+		    school_area2,
+		    school_name,
+		    school_major,
+		    school_grade,
+		    school_state,
+		    school_check
+		)values(
+			#{user_id},
+		    #{school_gubun},
+		    #{school_foreign_gubun},
+		    #{school_area1},
+		    #{school_area2},
+		    #{school_name},
+		    #{school_major},
+		    #{school_grade},
+		    #{school_state},
+		    #{school_check}
+		)
+	</insert>
+	
+	<update id="updateUserSchool" parameterType="com.usher.dto.AuthUserDto">
+		update users_school set
+			school_gubun = #{school_gubun},
+		    school_foreign_gubun = #{school_foreign_gubun},
+		    school_area1 = #{school_area1},
+		    school_area2 = #{school_area2},
+		    school_name = #{school_name},
+		    school_major = #{school_major},
+		    school_grade = #{school_grade},
+		    school_state = #{school_state},
+		    school_check = #{school_check}
+		where
+			user_id = #{user_id}		
+	</update>	
+</mapper>

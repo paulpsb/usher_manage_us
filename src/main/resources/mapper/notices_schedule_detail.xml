@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesScheduleDetailDao">
+	<select id="getNoticesScheduleDetailList" resultType="com.usher.dto.NoticesScheduleDetailDto" parameterType="com.usher.dto.NoticesScheduleDetailDto">
+		select
+			id,
+			to_char(modified,'hh24:mi') as modified,
+			schedule_detail_reference_title,
+			schedule_detail_reference_content,
+			schedule_detail_reference_image,
+			schedule_detail_reference_image_name,
+			schedule_detail_reference_url,
+			schedule_detail_reference_file,
+			schedule_detail_reference_file_name,
+			schedule_detail_use_report_image,
+			schedule_detail_use_report_url,
+			schedule_detail_use_report_ox,
+			schedule_detail_use_report_file,
+			schedule_detail_content,
+			schedule_detail_is_report_image,
+			schedule_detail_is_report_url,
+			schedule_detail_is_report_ox,
+			schedule_detail_is_report_file,
+			schedule_detail_image,
+			schedule_detail_image_name,
+			schedule_detail_url,
+			schedule_detail_ox,
+			schedule_detail_file,
+			schedule_detail_file_name,
+			routin_detail_id,
+			schedule_id,
+			schedule_detail_is_success,
+			schedule_detail_is_ignore,
+			schedule_detail_is_problem
+		from
+			notices_schedule_detail
+		where
+			schedule_id = #{schedule_id}
+		order by id	
+	</select>
+	<select id="getNoticesScheduleDetail" resultType="com.usher.dto.NoticesScheduleDetailDto" parameterType="com.usher.dto.NoticesScheduleDetailDto">
+		select
+			id,
+			to_char(modified,'hh24:mi') as modified,
+			schedule_detail_reference_title,
+			schedule_detail_reference_content,
+			schedule_detail_reference_image,
+			schedule_detail_reference_image_name,
+			schedule_detail_reference_url,
+			schedule_detail_reference_file,
+			schedule_detail_reference_file_name,
+			schedule_detail_use_report_image,
+			schedule_detail_use_report_url,
+			schedule_detail_use_report_ox,
+			schedule_detail_use_report_file,
+			schedule_detail_content,
+			schedule_detail_is_report_image,
+			schedule_detail_is_report_url,
+			schedule_detail_is_report_ox,
+			schedule_detail_is_report_file,
+			schedule_detail_image,
+			schedule_detail_image_name,
+			schedule_detail_url,
+			schedule_detail_ox,
+			schedule_detail_file,
+			schedule_detail_file_name,
+			routin_detail_id,
+			schedule_id,
+			schedule_detail_is_success,
+			schedule_detail_is_ignore,
+			schedule_detail_is_problem
+		from
+			notices_schedule_detail
+		where
+			id = #{id}
+	</select>
+	<update id="updateNoticesScheduleDetail" parameterType="com.usher.dto.NoticesScheduleDetailDto">
+		update notices_schedule_detail set 
+			modified = now(),
+			schedule_detail_content = #{schedule_detail_content},
+			schedule_detail_is_report_image = #{schedule_detail_is_report_image},
+			schedule_detail_is_report_url = #{schedule_detail_is_report_url},
+			schedule_detail_is_report_ox = #{schedule_detail_is_report_ox},
+			schedule_detail_is_report_file = #{schedule_detail_is_report_file},
+			schedule_detail_image = #{schedule_detail_image},
+			schedule_detail_image_name = #{schedule_detail_image_name},
+			schedule_detail_url = #{schedule_detail_url},
+			schedule_detail_ox = #{schedule_detail_ox},
+			schedule_detail_file = #{schedule_detail_file},
+			schedule_detail_file_name = #{schedule_detail_file_name},
+			schedule_detail_is_success = #{schedule_detail_is_success},
+			schedule_detail_is_ignore = #{schedule_detail_is_ignore},
+			schedule_detail_is_problem = #{schedule_detail_is_problem}
+		where
+			id = #{id}
+	</update>
+</mapper>

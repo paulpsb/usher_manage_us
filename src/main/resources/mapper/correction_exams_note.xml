@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CorrectionExamsNoteDao">
+	<select id="getCorrectionExamsNote" parameterType="com.usher.dto.CorrectionExamsNoteDto" resultType="com.usher.dto.CorrectionExamsNoteDto">
+		select
+			id,
+			to_char(created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			note_comment,
+			arrange_comment,
+			correction_exams_answer_id
+		from
+			correction_exams_note	
+		where
+			correction_exams_answer_id = #{correction_exams_answer_id}
+	</select>
+</mapper>

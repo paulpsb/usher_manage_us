@@ -1,0 +1,1225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.EnrollmentsCourseenrollmentDao">
+	<select id="getCourseenrollmentList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			b.semester_id,
+			a.course_id,
+			a.id as course_enrollment_id,
+			b.id as semester_enrollment_id,
+			d.user_id as user_id,
+			b.student_id,
+			a.status,
+			a.schedule,
+			a.refund_status,
+			a.refund_reason,
+			coalesce(c.registration_type,'NEW') as registration_type,
+			e.username,
+			e.first_name,
+			e.last_name,
+			e.email,
+			f.mobile_no,
+			e.is_staff,
+			e.is_active,
+			a.chamgang_yn,
+			a.bag_no,
+			a.bag_sub_no,
+			coalesce(a.program_not_use,'N') as program_not_use,
+			f.gender,
+			f.birthday,
+			f.purpose_detail,
+			f.goal_score,
+			f.attend_start_date,
+			f.attend_date,
+			f.need_date,
+			f.mobile_no,
+			f.tel_emergency_number,
+			g.school_gubun,
+			g.school_foreign_gubun,
+			g.school_area1,
+			g.school_area2,
+			g.school_name,
+			g.school_grade,
+			h.batch_grammar_score1, 
+			h.batch_grammar_score2,
+			h.batch_reading_score,
+			j.batch_grammar_score1 as batch_max_grammar_score1, 
+			j.batch_grammar_score2 as batch_max_grammar_score2,
+			j.batch_reading_score as batch_max_reading_score,
+			h.batch_user_level,
+			i.teps_total_score,
+			i.teps_rc_score,
+			i.teps_lc_score,
+			i.teps_grammar_score,
+			i.teps_voca_score,
+			i.sat_total_score,
+			i.sat_rc_score,
+			i.sat_wr_score,
+			i.sat_math_score,
+			i.toeic_total_score,
+			i.toeic_rc_score,
+			i.toeic_lc_score,
+			i.ielts_total_score,
+			i.ielts_rc_score,
+			i.ielts_lc_score,
+			i.ielts_sp_score,
+			i.ielts_wr_score,
+			i.ibt_total_score,
+			i.ibt_rc_score,
+			i.ibt_lc_score,
+			i.ibt_sp_score,
+			i.ibt_wr_score,
+			i.ets_total_score,
+			i.ets_rc_score,
+			i.ets_lc_score,
+			i.ets_sp_score,
+			i.ets_wr_score,
+			i.pbt_total_score,
+			i.pbt_gr_score,
+			i.pbt_rc_score,
+			i.pbt_lc_score,
+			i.scholastic_grade,
+			e.username,
+			h.batch_adviser_advice					
+		from 
+			enrollments_courseenrollment a
+			join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+			left join courses_allocation c on a.id = c.course_enrollment_id and a.course_id = c.current_course_id 
+			join students_student d on b.student_id = d.id
+			join auth_user e on d.user_id = e.id
+			join users_personalinfo f on d.user_id = f.user_id
+			left join users_school g on d.user_id = g.user_id
+			left join (
+				select a.*
+				from
+					batch_result a
+					join (
+						select max(id) as id, user_id from batch_result where course_id = 0 group by user_id
+					) b on a.id = b.id			
+			) h  on d.user_id = h.user_id
+			left join users_score i on d.user_id = i.user_id
+			left join (
+				select
+					user_id,
+					max(coalesce(batch_grammar_score1,0)) as batch_grammar_score1, 
+					max(coalesce(batch_grammar_score2,0)) as batch_grammar_score2,
+					max(coalesce(batch_reading_score,0)) as batch_reading_score
+				from
+					batch_result
+				group by user_id			
+			) j on 	d.user_id = j.user_id
+		where
+			a.course_id = #{course_id}
+			and a.status = 'PAID'
+			and e.username != 'test6' and e.username != 'test5'
+		order by a.schedule, e.last_name, e.first_name
+	</select>
+	<select id="getCourseenrollment" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			b.semester_id,
+			a.course_id,
+			a.id as course_enrollment_id,
+			b.id as semester_enrollment_id,
+			d.user_id as user_id,
+			b.student_id,
+			a.status,
+			a.schedule,
+			a.refund_status,
+			a.refund_reason,
+			coalesce(c.registration_type,'NEW') as registration_type,
+			e.username,
+			e.first_name,
+			e.last_name,
+			e.email,
+			f.mobile_no,
+			e.is_staff,
+			e.is_active,
+			a.chamgang_yn,
+			a.bag_no,
+			a.bag_sub_no,
+			coalesce(a.program_not_use,'N') as program_not_use,
+			f.gender,
+			f.birthday,
+			f.purpose_detail,
+			f.goal_score,
+			f.attend_start_date,
+			f.attend_date,
+			f.need_date,
+			f.mobile_no,
+			f.tel_emergency_number,
+			g.school_gubun,
+			g.school_foreign_gubun,
+			g.school_area1,
+			g.school_area2,
+			g.school_name,
+			g.school_grade,
+			h.batch_grammar_score1, 
+			h.batch_grammar_score2,
+			h.batch_reading_score,
+			j.batch_grammar_score1 as batch_max_grammar_score1, 
+			j.batch_grammar_score2 as batch_max_grammar_score2,
+			j.batch_reading_score as batch_max_reading_score,
+			h.batch_user_level,
+			i.teps_total_score,
+			i.teps_rc_score,
+			i.teps_lc_score,
+			i.teps_grammar_score,
+			i.teps_voca_score,
+			i.sat_total_score,
+			i.sat_rc_score,
+			i.sat_wr_score,
+			i.sat_math_score,
+			i.toeic_total_score,
+			i.toeic_rc_score,
+			i.toeic_lc_score,
+			i.ielts_total_score,
+			i.ielts_rc_score,
+			i.ielts_lc_score,
+			i.ielts_sp_score,
+			i.ielts_wr_score,
+			i.ibt_total_score,
+			i.ibt_rc_score,
+			i.ibt_lc_score,
+			i.ibt_sp_score,
+			i.ibt_wr_score,
+			i.ets_total_score,
+			i.ets_rc_score,
+			i.ets_lc_score,
+			i.ets_sp_score,
+			i.ets_wr_score,
+			i.pbt_total_score,
+			i.pbt_gr_score,
+			i.pbt_rc_score,
+			i.pbt_lc_score,
+			i.scholastic_grade,
+			e.username,
+			h.batch_adviser_advice					
+		from 
+			enrollments_courseenrollment a
+			join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+			left join courses_allocation c on a.id = c.course_enrollment_id and a.course_id = c.current_course_id 
+			join students_student d on b.student_id = d.id
+			join auth_user e on d.user_id = e.id
+			join users_personalinfo f on d.user_id = f.user_id
+			left join users_school g on d.user_id = g.user_id
+			left join (
+				select a.*
+				from
+					batch_result a
+					join (
+						select max(id) as id, user_id from batch_result where course_id = 0 group by user_id
+					) b on a.id = b.id			
+			) h  on d.user_id = h.user_id
+			left join users_score i on d.user_id = i.user_id
+			left join (
+				select
+					user_id,
+					max(coalesce(batch_grammar_score1,0)) as batch_grammar_score1, 
+					max(coalesce(batch_grammar_score2,0)) as batch_grammar_score2,
+					max(coalesce(batch_reading_score,0)) as batch_reading_score
+				from
+					batch_result
+				group by user_id			
+			) j on 	d.user_id = j.user_id
+		where
+			a.id = #{course_enrollment_id}
+	</select>
+	<select id="getCourseenrollmentPaidList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			a.semester_id,
+			a.course_id,
+			a.course_enrollment_id,
+			a.semester_enrollment_id,
+			a.user_id,
+			a.student_id,
+			a.status,
+			a.schedule,
+			a.refund_status,
+			a.refund_reason,
+			a.registration_type,
+			a.username,
+			a.first_name,
+			a.last_name,
+			a.email,
+			a.is_staff,
+			a.is_active,
+			a.chamgang_yn,
+			a.bag_no,
+			a.bag_sub_no,
+			a.user_first_date,
+			a.user_end_date,
+			a.course_end_date,
+			a.move_date
+		from
+			(
+				select
+					b.semester_id,
+					a.course_id,
+					a.id as course_enrollment_id,
+					b.id as semester_enrollment_id,
+					d.user_id as user_id,
+					b.student_id,
+					a.status,
+					a.schedule,
+					case when c.first_course_id != c.current_course_id then case when split_part(g.schedule, ',', 1) = to_char(c.modified,'yyyy-mm-dd') then '' else to_char(c.modified,'yyyy-mm-dd') end else '' end as move_date,
+					split_part(a.schedule, ',', 1) as user_first_date,
+					reverse(split_part(reverse(a.schedule), ',', 1)) as user_end_date,
+					split_part(g.schedule, ',', 1) as course_first_date,
+					reverse(split_part(reverse(g.schedule), ',', 1)) as course_end_date,
+					a.refund_status,
+					a.refund_reason,
+					coalesce(c.registration_type,'NEW') as registration_type,
+					e.username,
+					e.first_name,
+					e.last_name,
+					e.email,
+					e.is_staff,
+					e.is_active,
+					a.chamgang_yn,
+					a.bag_no,
+					a.bag_sub_no					
+				from 
+					enrollments_courseenrollment a
+					join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+					left join courses_allocation c on a.id = c.course_enrollment_id and a.course_id = c.current_course_id 
+					join students_student d on b.student_id = d.id
+					join auth_user e on d.user_id = e.id
+					join courses_course f on a.course_id = f.id
+					join courses_coursegroup g on f.course_group_id = g.id
+				where
+					a.course_id = #{course_id}
+					and a.status = 'PAID'
+					and e.username != 'test6' and e.username != 'test5'
+			) a
+		order by a.move_date, a.schedule, a.last_name, a.first_name	
+	</select>
+	<select id="getCourseenrollmentMoveList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			a.semester_id,
+			a.course_id,
+			a.course_enrollment_id,
+			a.semester_enrollment_id,
+			a.user_id,
+			a.student_id,
+			a.status,
+			a.schedule,
+			a.refund_status,
+			a.refund_reason,
+			a.registration_type,
+			a.username,
+			a.first_name,
+			a.last_name,
+			a.email,
+			a.is_staff,
+			a.is_active,
+			a.chamgang_yn,
+			a.bag_no,
+			a.bag_sub_no,
+			a.user_first_date,
+			a.user_end_date,
+			a.course_end_date,
+			a.move_date
+		from
+			(
+				select
+					b.semester_id,
+					a.course_id,
+					a.id as course_enrollment_id,
+					b.id as semester_enrollment_id,
+					d.user_id as user_id,
+					b.student_id,
+					a.status,
+					a.schedule,
+					case when c.first_course_id != c.current_course_id then case when split_part(g.schedule, ',', 1) = to_char(c.modified,'yyyy-mm-dd') then '' else to_char(c.modified,'yyyy-mm-dd') end else '' end as move_date,
+					split_part(a.schedule, ',', 1) as user_first_date,
+					reverse(split_part(reverse(a.schedule), ',', 1)) as user_end_date,
+					split_part(g.schedule, ',', 1) as course_first_date,
+					reverse(split_part(reverse(g.schedule), ',', 1)) as course_end_date,
+					a.refund_status,
+					a.refund_reason,
+					coalesce(c.registration_type,'NEW') as registration_type,
+					e.username,
+					e.first_name,
+					e.last_name,
+					e.email,
+					e.is_staff,
+					e.is_active,
+					a.chamgang_yn,
+					a.bag_no,
+					a.bag_sub_no					
+				from 
+					enrollments_courseenrollment a
+					join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+					left join courses_allocation c on a.id = c.course_enrollment_id and a.course_id = c.current_course_id 
+					join students_student d on b.student_id = d.id
+					join auth_user e on d.user_id = e.id
+					join courses_course f on a.course_id = f.id
+					join courses_coursegroup g on f.course_group_id = g.id
+				where
+					c.first_course_id = #{course_id}
+					and c.first_course_id != c.current_course_id
+					and split_part(g.schedule, ',', 1) != to_char(c.modified,'yyyy-mm-dd')
+					and a.status = 'PAID'
+					and e.username != 'test6' and e.username != 'test5'
+			) a
+		order by a.user_first_date, a.schedule, a.last_name, a.first_name	
+	</select>
+	<select id="getCourseenrollmentRefundList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			a.semester_id,
+			a.course_id,
+			a.course_enrollment_id,
+			a.semester_enrollment_id,
+			a.user_id,
+			a.student_id,
+			a.status,
+			a.schedule,
+			a.refund_status,
+			a.refund_reason,
+			a.registration_type,
+			a.username,
+			a.first_name,
+			a.last_name,
+			a.email,
+			a.is_staff,
+			a.is_active,
+			a.chamgang_yn,
+			a.bag_no,
+			a.bag_sub_no,
+			a.user_first_date,
+			a.user_end_date,
+			a.course_end_date,
+			a.move_date
+		from
+			(
+				select
+					b.semester_id,
+					a.course_id,
+					a.id as course_enrollment_id,
+					b.id as semester_enrollment_id,
+					d.user_id as user_id,
+					b.student_id,
+					a.status,
+					a.schedule,
+					to_char(a.modified,'yyyy-mm-dd') as move_date,
+					split_part(a.schedule, ',', 1) as user_first_date,
+					reverse(split_part(reverse(a.schedule), ',', 1)) as user_end_date,
+					split_part(g.schedule, ',', 1) as course_first_date,
+					reverse(split_part(reverse(g.schedule), ',', 1)) as course_end_date,
+					a.refund_status,
+					a.refund_reason,
+					coalesce(c.registration_type,'NEW') as registration_type,
+					e.username,
+					e.first_name,
+					e.last_name,
+					e.email,
+					e.is_staff,
+					e.is_active,
+					a.chamgang_yn,
+					a.bag_no,
+					a.bag_sub_no					
+				from 
+					enrollments_courseenrollment a
+					join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+					left join courses_allocation c on a.id = c.course_enrollment_id and a.course_id = c.current_course_id 
+					join students_student d on b.student_id = d.id
+					join auth_user e on d.user_id = e.id
+					join courses_course f on a.course_id = f.id
+					join courses_coursegroup g on f.course_group_id = g.id
+				where
+					a.course_id = #{course_id}
+					and a.refund_status = 'PARTIAL_REFUND'
+					and e.username != 'test6' and e.username != 'test5'
+			) a
+		order by a.move_date, a.schedule, a.last_name, a.first_name	
+	</select>
+
+	<select id="getCourseenrollmentHandphoneBagList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			concat(a.bag_no,'_',a.bag_sub_no) as handphone_bag,
+			coalesce(b.student_name,'') as student_name
+		from
+			(
+				select
+					a.bag_no,
+					b.bag_sub_no
+				from
+					(select level as bag_no from generate_series(1, 2) level) a,
+					(select level as bag_sub_no from generate_series(1,30) level) b
+			) a
+			left join (
+				select
+					concat(e.last_name,e.first_name) as student_name,
+					a.bag_no,
+					a.bag_sub_no	
+				from 
+					enrollments_courseenrollment a
+					join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+					left join courses_allocation c on a.id = c.course_enrollment_id and a.course_id = c.current_course_id 
+					join students_student d on b.student_id = d.id
+					join auth_user e on d.user_id = e.id
+					join users_personalinfo f on d.user_id = f.user_id
+				where
+					a.course_id = #{course_id}
+					and a.status = 'PAID'
+					and e.username != 'test6' and e.username != 'test5'
+				order by e.last_name, e.first_name	
+			) b on a.bag_no = b.bag_no and a.bag_sub_no = b.bag_sub_no
+		order by a.bag_no, a.bag_sub_no	
+	</select>	
+
+	<select id="getCourseenrollmentAchieveList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		<![CDATA[
+		select
+			case when a.current_course_id != #{course_id} then '반이동' else
+				case when b.status != 'PAID' then '환불' else 
+					case when position(to_char(current_date,'yyyy-mm-dd') in b.schedule ) > 0 then '' else '&nbsp;세션(완)/지정(결)' end end end as class_gubun,
+			case when a.current_course_id != #{course_id} then 3 else
+				case when b.status != 'PAID' then 4 else 
+					case when position(to_char(current_date,'yyyy-mm-dd') in b.schedule ) > 0 then 1 else 2 end end end as sort_seq,					
+			b.id as course_enrollment_id,
+			d.id as student_id,
+			e.id as user_id,
+			e.last_name,
+			e.first_name,
+			b.chamgang_yn,
+			b.status,
+			a.registration_type,
+			b.schedule,
+			to_char(current_date,'yyyy-mm-dd') as cur_date,
+			split_part(b.schedule, ',', 1) as user_first_date,
+			to_char(a.modified,'yyyy-mm-dd') as move_date,
+			f.gender,
+			f.birthday,
+			f.purpose_detail,
+			f.goal_score,
+			f.attend_start_date,
+			f.attend_date,
+			f.need_date,
+			f.mobile_no,
+			f.tel_emergency_number,
+			g.school_gubun,
+			g.school_foreign_gubun,
+			g.school_area1,
+			g.school_area2,			
+			g.school_name,
+			g.school_grade,
+			h.batch_grammar_score1, 
+			h.batch_grammar_score2,
+			h.batch_reading_score,
+			j.batch_grammar_score1 as batch_max_grammar_score1, 
+			j.batch_grammar_score2 as batch_max_grammar_score2,
+			j.batch_reading_score as batch_max_reading_score,
+			h.batch_user_level,
+			i.teps_total_score,
+			i.teps_rc_score,
+			i.teps_lc_score,
+			i.teps_grammar_score,
+			i.teps_voca_score,
+			i.sat_total_score,
+			i.sat_rc_score,
+			i.sat_wr_score,
+			i.sat_math_score,
+			i.toeic_total_score,
+			i.toeic_rc_score,
+			i.toeic_lc_score,
+			i.ielts_total_score,
+			i.ielts_rc_score,
+			i.ielts_lc_score,
+			i.ielts_sp_score,
+			i.ielts_wr_score,
+			i.ibt_total_score,
+			i.ibt_rc_score,
+			i.ibt_lc_score,
+			i.ibt_sp_score,
+			i.ibt_wr_score,
+			i.ets_total_score,
+			i.ets_rc_score,
+			i.ets_lc_score,
+			i.ets_sp_score,
+			i.ets_wr_score,
+			i.pbt_total_score,
+			i.pbt_gr_score,
+			i.pbt_rc_score,
+			i.pbt_lc_score,
+			i.scholastic_grade,
+			e.username,
+			h.batch_adviser_advice,
+			to_char(b.modified,'yyyy-mm-dd') as refund_date,
+			f.photo
+		from
+			courses_allocation a
+			join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+			join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+			join students_student d on c.student_id = d.id
+			join auth_user e on d.user_id = e.id
+			join users_personalinfo f on d.user_id = f.user_id
+			left join users_school g on d.user_id = g.user_id
+			left join (
+				select a.*
+				from
+					batch_result a
+					join (
+						select max(id) as id, user_id from batch_result where course_id = 0 group by user_id
+					) b on a.id = b.id			
+			) h  on d.user_id = h.user_id
+			left join users_score i on d.user_id = i.user_id
+			left join (
+				select
+					user_id,
+					max(coalesce(batch_grammar_score1,0)) as batch_grammar_score1, 
+					max(coalesce(batch_grammar_score2,0)) as batch_grammar_score2,
+					max(coalesce(batch_reading_score,0)) as batch_reading_score
+				from
+					batch_result
+				group by user_id			
+			) j on 	d.user_id = j.user_id
+		where
+			( a.first_course_id = #{course_id} or a.current_course_id = #{course_id})
+			and COALESCE(b.status,'') != 'REGISTERED'
+			and COALESCE(b.status,'') != 'CANCEL_COMPLETED'
+			and e.username != 'test6' and e.username != 'test5'
+		order by 2, b.schedule, 5
+		]]>
+	</select>
+	<select id="getCourseenrollmentAchieveCourseGroupList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		<![CDATA[
+		select
+			case when position(to_char(current_date,'yyyy-mm-dd') in b.schedule ) > 0 then '' else '&nbsp;세션(완)/지정(결)' end as class_gubun,
+			j.difficulty as course_difficulty,
+			j.inner_difficulty as course_inner_difficulty,
+			j.name as course_name,
+			b.id as course_enrollment_id,
+			d.id as student_id,
+			e.id as user_id,
+			e.last_name,
+			e.first_name,
+			b.chamgang_yn,
+			b.status,
+			a.registration_type,
+			b.schedule,
+			to_char(current_date,'yyyy-mm-dd') as cur_date,
+			split_part(b.schedule, ',', 1) as user_first_date,
+			to_char(a.modified,'yyyy-mm-dd') as move_date,
+			f.gender,
+			f.birthday,
+			f.purpose_detail,
+			f.goal_score,
+			f.attend_start_date,
+			f.attend_date,
+			f.mobile_no,
+			f.tel_emergency_number,
+			g.school_gubun,
+			g.school_foreign_gubun,
+			g.school_area1,
+			g.school_area2,			
+			g.school_name,
+			g.school_grade,
+			h.batch_grammar_score1, 
+			h.batch_grammar_score2,
+			h.batch_reading_score,
+			h.batch_user_level,
+			i.teps_total_score,
+			i.teps_rc_score,
+			i.teps_lc_score,
+			i.teps_grammar_score,
+			i.teps_voca_score,
+			i.sat_total_score,
+			i.sat_rc_score,
+			i.sat_wr_score,
+			i.sat_math_score,
+			i.toeic_total_score,
+			i.toeic_rc_score,
+			i.toeic_lc_score,
+			i.ielts_total_score,
+			i.ielts_rc_score,
+			i.ielts_lc_score,
+			i.ielts_sp_score,
+			i.ielts_wr_score,
+			i.ibt_total_score,
+			i.ibt_rc_score,
+			i.ibt_lc_score,
+			i.ibt_sp_score,
+			i.ibt_wr_score,
+			i.ets_total_score,
+			i.ets_rc_score,
+			i.ets_lc_score,
+			i.ets_sp_score,
+			i.ets_wr_score,
+			i.pbt_total_score,
+			i.pbt_gr_score,
+			i.pbt_rc_score,
+			i.pbt_lc_score,
+			i.scholastic_grade,
+			e.username,
+			b.course_id	,
+			f.photo				
+		from
+			courses_allocation a
+			join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+			join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+			join students_student d on c.student_id = d.id
+			join auth_user e on d.user_id = e.id
+			join users_personalinfo f on d.user_id = f.user_id
+			left join users_school g on d.user_id = g.user_id
+			left join (
+				select a.*
+				from
+					batch_result a
+					join (
+						select max(id) as id, user_id from batch_result where course_id = 0 group by user_id
+					) b on a.id = b.id			
+			) h  on d.user_id = h.user_id
+			left join users_score i on d.user_id = i.user_id	
+			join courses_course j on b.course_id = j.id
+		where
+			j.course_group_id = #{course_group_id}
+			and COALESCE(b.status,'') = 'PAID'
+			and COALESCE(b.status,'') != 'CANCEL_COMPLETED'
+			and e.username != 'test6' and e.username != 'test5'
+		order by 1, 2, 3, b.schedule, e.last_name, e.first_name		
+		]]>
+	</select>
+	<select id="getCourseenrollmentRepetitionList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			case when a.status != 'PAID' then '환불' else '' end as class_gubun,
+			b.semester_id,
+			a.course_id,
+			a.id as course_enrollment_id,
+			b.id as semester_enrollment_id,
+			d.user_id as user_id,
+			b.student_id,
+			a.status,
+			a.schedule,
+			a.refund_status,
+			a.refund_reason,
+			coalesce(c.registration_type,'NEW') as registration_type,
+			e.username,
+			e.first_name,
+			e.last_name,
+			e.email,
+			f.mobile_no,
+			e.is_staff,
+			e.is_active,
+			a.chamgang_yn,
+			a.bag_no,
+			a.bag_sub_no,
+			coalesce(a.program_not_use,'N') as program_not_use,
+			f.gender,
+			f.birthday,
+			f.purpose_detail,
+			f.goal_score,
+			f.attend_start_date,
+			f.attend_date,
+			f.need_date,
+			f.mobile_no,
+			f.tel_emergency_number,
+			g.school_gubun,
+			g.school_foreign_gubun,
+			g.school_area1,
+			g.school_area2,
+			g.school_name,
+			g.school_grade,
+			h.batch_grammar_score1, 
+			h.batch_grammar_score2,
+			h.batch_reading_score,
+			j.batch_grammar_score1 as batch_max_grammar_score1, 
+			j.batch_grammar_score2 as batch_max_grammar_score2,
+			j.batch_reading_score as batch_max_reading_score,
+			h.batch_user_level,
+			i.teps_total_score,
+			i.teps_rc_score,
+			i.teps_lc_score,
+			i.teps_grammar_score,
+			i.teps_voca_score,
+			i.sat_total_score,
+			i.sat_rc_score,
+			i.sat_wr_score,
+			i.sat_math_score,
+			i.toeic_total_score,
+			i.toeic_rc_score,
+			i.toeic_lc_score,
+			i.ielts_total_score,
+			i.ielts_rc_score,
+			i.ielts_lc_score,
+			i.ielts_sp_score,
+			i.ielts_wr_score,
+			i.ibt_total_score,
+			i.ibt_rc_score,
+			i.ibt_lc_score,
+			i.ibt_sp_score,
+			i.ibt_wr_score,
+			i.ets_total_score,
+			i.ets_rc_score,
+			i.ets_lc_score,
+			i.ets_sp_score,
+			i.ets_wr_score,
+			i.pbt_total_score,
+			i.pbt_gr_score,
+			i.pbt_rc_score,
+			i.pbt_lc_score,
+			i.scholastic_grade,
+			e.username,
+			h.batch_adviser_advice,
+			right(a.schedule,10) as end_date,
+			case when k.legacy_id is not null then 'Y' else 'N' end as memoirs_yn					
+		from 
+			enrollments_courseenrollment a
+			join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+			left join courses_allocation c on a.id = c.course_enrollment_id and a.course_id = c.current_course_id 
+			join students_student d on b.student_id = d.id
+			join auth_user e on d.user_id = e.id
+			join users_personalinfo f on d.user_id = f.user_id
+			left join users_school g on d.user_id = g.user_id
+			left join (
+				select a.*
+				from
+					batch_result a
+					join (
+						select max(id) as id, user_id from batch_result where course_id = 0 group by user_id
+					) b on a.id = b.id			
+			) h  on d.user_id = h.user_id
+			left join users_score i on d.user_id = i.user_id
+			left join (
+				select
+					user_id,
+					max(coalesce(batch_grammar_score1,0)) as batch_grammar_score1, 
+					max(coalesce(batch_grammar_score2,0)) as batch_grammar_score2,
+					max(coalesce(batch_reading_score,0)) as batch_reading_score
+				from
+					batch_result
+				group by user_id			
+			) j on 	d.user_id = j.user_id
+			left join board_memoirs k on e.username = k.write_id
+		where
+			a.course_id = #{course_id}
+			and COALESCE(a.status,'') != 'REGISTERED'
+			and COALESCE(a.status,'') != 'CANCEL_COMPLETED'
+			and e.username != 'test6' and e.username != 'test5'
+		order by a.schedule, e.last_name, e.first_name
+	</select>
+	<select id="getCourseenrollmentRepetitionCourseGroupList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		<![CDATA[
+		select
+			case when b.status != 'PAID' then '환불' else '' end as class_gubun,
+			j.difficulty as course_difficulty,
+			j.inner_difficulty as course_inner_difficulty,
+			j.name as course_name,
+			b.id as course_enrollment_id,
+			d.id as student_id,
+			e.id as user_id,
+			e.last_name,
+			e.first_name,
+			b.chamgang_yn,
+			b.status,
+			b.refund_status,
+			e.username,
+			f.goal_score,
+			f.attend_start_date,
+			f.attend_date,
+			f.need_date,
+			b.course_id,
+			right(b.schedule,10) as end_date,
+			case when g.legacy_id is not null then 'Y' else 'N' end as memoirs_yn				
+		from
+			courses_allocation a
+			join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+			join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+			join students_student d on c.student_id = d.id
+			join auth_user e on d.user_id = e.id
+			join courses_course j on b.course_id = j.id
+			join users_personalinfo f on d.user_id = f.user_id
+			left join board_memoirs g on e.username = g.write_id
+		where
+			j.course_group_id = #{course_group_id}
+			and COALESCE(b.status,'') != 'REGISTERED'
+			and COALESCE(b.status,'') != 'CANCEL_COMPLETED'
+			and e.username != 'test6' and e.username != 'test5'
+		order by 1, 2, 3, b.schedule, e.last_name, e.first_name		
+		]]>
+	</select>
+	<select id="getCourseenrollmentRepetitionSemesterList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		<![CDATA[
+			select
+				c.user_id,
+				b.course_id,
+				c.id as student_id,
+				b.id as course_enrollment_id,
+				left(b.schedule,10) as start_date
+			from
+				enrollments_semesterenrollment a
+				join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+				join students_student c on a.student_id = c.id
+			where
+				a.semester_id in (${semester_in_data})
+				and ( b.status = 'PAID' or b.refund_status = 'PARTIAL_REFUND' )
+			order by 1, 5	
+		]]>
+	</select>		
+	<select id="getCourseenrollmentMonthlyCountList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			a.student_id,
+			a.student_type,
+			a.difficulty,
+			count(*) as class_count
+		from
+			(
+				select
+					b.student_id,
+					d.student_type,
+					c.difficulty,
+					a.schedule
+				from 
+					enrollments_courseenrollment a
+					join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+					join courses_course c on a.course_id = c.id
+					join courses_coursegroup d on c.course_group_id = d.id
+				where
+					b.student_id in (
+						select b.student_id 
+						from 
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+						where
+							a.course_id in ( select id from courses_course where course_group_id = ( select course_group_id from courses_course where id = #{course_id}))
+					)
+					and ( a.status = 'PAID' or a.status = 'REFUND_REQUESTED' or a.refund_status = 'PARTIAL_REFUND' )
+			) a
+		group by a.student_id, a.student_type, a.difficulty	
+		order by 1,2,3
+	</select>	
+	
+	<select id="getCourseenrollmentMonthlyCourseGroupCountList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			a.student_id,
+			a.student_type,
+			a.difficulty,
+			count(*) as class_count
+		from
+			(
+				select
+					b.student_id,
+					d.student_type,
+					c.difficulty,
+					a.schedule
+				from 
+					enrollments_courseenrollment a
+					join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+					join courses_course c on a.course_id = c.id
+					join courses_coursegroup d on c.course_group_id = d.id
+				where
+					b.student_id in (
+						select b.student_id 
+						from 
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+						where
+							a.course_id in ( select id from courses_course where course_group_id = #{course_group_id})
+					)
+					and ( a.status = 'PAID' or a.status = 'REFUND_REQUESTED' or a.refund_status = 'PARTIAL_REFUND' )
+			) a
+		group by a.student_id, a.student_type, a.difficulty	
+		order by 1,2,3
+	</select>	
+	
+	<select id="getCourseenrollmentDaillyCountList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		<![CDATA[
+		select
+			a.student_id,
+			a.student_type,
+			a.difficulty,
+			count(*) as class_count
+		from
+			(
+				select
+					a.student_id,
+					a.student_type,
+					a.difficulty,
+					a.schedule
+				from
+					(
+						select
+							a.student_id,
+							a.student_type,
+							case when a.schedule < a.change_date then first_difficulty else current_difficulty end as difficulty,
+							a.schedule,
+							case when a.status != 'PAID' and a.refund_date <= a.schedule then 'N' else 'Y' end study_yn
+						from
+							(
+								select
+									b.student_id,
+									d.student_type,
+									c.difficulty as current_difficulty,
+									f.difficulty as first_difficulty,
+									e.current_course_id,
+									e.first_course_id,
+									a.status,
+									to_char(a.modified,'yyyy-mm-dd') as refund_date,
+									to_char(e.modified,'yyyy-mm-dd') as change_date,
+									unnest(string_to_array(a.schedule, ',')) as schedule
+								from 
+									enrollments_courseenrollment a
+									join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+									join courses_course c on a.course_id = c.id
+									join courses_coursegroup d on c.course_group_id = d.id
+									join courses_allocation e on a.id = e.course_enrollment_id 
+									join courses_course f on e.first_course_id = f.id
+								where
+									b.student_id in (
+										select b.student_id 
+										from 
+											enrollments_courseenrollment a
+											join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+										where
+											a.course_id in ( select id from courses_course where course_group_id = ( select course_group_id from courses_course where id = #{course_id}))
+									)
+									and ( a.status = 'PAID' or a.status = 'REFUND_REQUESTED' or a.refund_status = 'PARTIAL_REFUND' )
+							) a
+					) a
+				where
+					a.study_yn = 'Y'
+			) a
+		where
+			a.schedule <= to_char(now(),'yyyy-mm-dd')
+		group by a.student_id, a.student_type, a.difficulty	
+		order by 1,2,3				
+		]]>
+	</select>
+		
+	<select id="getCourseenrollmentDaillyCourseGroupCountList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		<![CDATA[
+		select
+			a.student_id,
+			a.student_type,
+			a.difficulty,
+			count(*) as class_count
+		from
+			(
+				select
+					a.student_id,
+					a.student_type,
+					case when a.schedule < a.change_date then first_difficulty else current_difficulty end as difficulty,
+					a.schedule
+				from
+					(
+						select
+							b.student_id,
+							d.student_type,
+							c.difficulty as current_difficulty,
+							f.difficulty as first_difficulty,
+							e.current_course_id,
+							e.first_course_id,
+							to_char(e.modified,'yyyy-mm-dd') as change_date,
+							unnest(string_to_array(a.schedule, ',')) as schedule
+						from 
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+							join courses_course c on a.course_id = c.id
+							join courses_coursegroup d on c.course_group_id = d.id
+							join courses_allocation e on a.id = e.course_enrollment_id 
+							join courses_course f on e.first_course_id = f.id
+						where
+							b.student_id in (
+								select b.student_id 
+								from 
+									enrollments_courseenrollment a
+									join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+								where
+									a.course_id in ( select id from courses_course where course_group_id = #{course_group_id})
+							)
+							and ( a.status = 'PAID' or a.status = 'REFUND_REQUESTED' or a.refund_status = 'PARTIAL_REFUND' )
+					) a
+
+			) a
+		where
+			a.schedule <= to_char(now(),'yyyy-mm-dd')
+		group by a.student_id, a.student_type, a.difficulty	
+		order by 1,2,3
+		]]>
+	</select>
+	<select id="getCourseenrollmentExamList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			b.id as semester_enrollment_id,
+			a.id as course_enrollment_id,
+			a.course_id,
+			e.name as course_name,
+			d.first_name,
+			d.last_name,
+			case when f.course_enrollment_id is not null then 'Y' else 'N' end as practice_exception_yn,
+			coalesce(f.reason,'') as practice_exception_reason,
+			coalesce(a.chamgang_yn,'N') as chamgang_yn
+		from
+			enrollments_courseenrollment a
+			join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+			join students_student c on b.student_id = c.id
+			join auth_user d on c.user_id = d.id 
+			join courses_course e on a.course_id = e.id
+			left join practices_practiceexception f on 
+			a.id = f.course_enrollment_id 
+		<if test="date != null and date !='' ">
+			and to_char(f.date,'yyyy-mm-dd') = #{date}
+		</if>
+		<if test="date == null or date =='' ">
+			and f.date = current_date
+		</if>		
+			and f.section = #{section}
+			and f.practice_type = #{practice_type}
+		where
+			COALESCE(a.status,'') = 'PAID'
+			and d.username != 'test6' and d.username != 'test5'
+			and a.course_id = #{course_id}
+		order by case when f.course_enrollment_id is not null then 'Y' else 'N' end, e.difficulty, e.inner_difficulty, d.last_name, d.first_name 	
+	</select>	
+	<select id="getCourseenrollmentExamCourseGroupList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			b.id as semester_enrollment_id,
+			a.id as course_enrollment_id,
+			a.course_id,
+			e.name as course_name,
+			d.first_name,
+			d.last_name,
+			case when f.course_enrollment_id is not null then 'Y' else 'N' end as practice_exception_yn,
+			coalesce(f.reason,'') as practice_exception_reason,
+			coalesce(a.chamgang_yn,'N') as chamgang_yn
+		from
+			enrollments_courseenrollment a
+			join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+			join students_student c on b.student_id = c.id
+			join auth_user d on c.user_id = d.id 
+			join courses_course e on a.course_id = e.id
+			left join practices_practiceexception f on 
+			a.id = f.course_enrollment_id 
+		<if test="date != null and date !='' ">
+			and to_char(f.date,'yyyy-mm-dd') = #{date}
+		</if>
+		<if test="date == null or date =='' ">
+			and f.date = current_date
+		</if>		
+			and f.section = #{section}
+			and f.practice_type = #{practice_type}
+		where
+			COALESCE(a.status,'') = 'PAID'
+			and d.username != 'test6' and d.username != 'test5'
+			and e.course_group_id = #{course_group_id}
+		order by case when f.course_enrollment_id is not null then 'Y' else 'N' end, e.difficulty, e.inner_difficulty, d.last_name, d.first_name 	
+	</select>	
+	<select id="getCourseenrollmentSemesterList" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			a.course_id,
+			a.id as course_enrollment_id,
+			c.id as student_id,
+			d.id as user_id,
+			d.last_name,
+			d.first_name,
+			a.chamgang_yn,
+			a.status
+		from 
+			enrollments_courseenrollment a
+			join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+			join students_student c on b.student_id = c.id
+			join auth_user d on c.user_id = d.id
+		where
+			b.semester_id = #{semester_id}
+			and coalesce(a.status,'') != 'REGISTERED'
+			and coalesce(a.status,'') != 'CANCEL_COMPLETED'
+			and d.username != 'test6' and d.username != 'test5'
+		order by a.course_id, a.status, d.last_name, d.first_name	
+	</select>		
+	<update id="updateCourseenrollmentList" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		update enrollments_courseenrollment set
+			chamgang_yn = #{chamgang_yn},
+			bag_no = #{bag_no},
+			bag_sub_no = #{bag_sub_no}
+		where
+			id = #{id}
+	</update>	
+	
+	<update id="updateCourseenrollmentCourse" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		update enrollments_courseenrollment set
+			modified = now(),
+			course_id = #{course_id}
+		where
+			id = #{course_enrollment_id}
+	</update>
+	
+	<update id="updateCourseenrollmentProgramUse" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		update enrollments_courseenrollment set
+			modified = now(),
+			program_not_use = #{program_not_use}
+		where
+			id = #{course_enrollment_id}
+	</update>
+	
+	<select id="getCourseenrollmentAllocation" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			id,
+			registration_type,
+			course_enrollment_id,
+			course_group_id,
+			current_course_id,
+			first_course_id,
+			last_month_course_enrollment_id
+		from 
+			courses_allocation 
+		where course_enrollment_id = #{course_enrollment_id}
+	</select>
+	
+	<select id="getCourseenrollmentAttend" resultType="com.usher.dto.EnrollmentsCourseenrollmentDto" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		select
+			a.id as course_enrollment_id,
+			coalesce(b.status,'UNPERMITTED_ABSENT') as status
+		from
+			enrollments_courseenrollment a
+			left join attendances_attendance b on a.id = b.course_enrollment_id and to_char(b.date,'yyyy-mm-dd') = to_char(current_date,'yyyy-mm-dd')
+		where
+			a.id = #{course_enrollment_id}
+		limit 1
+	</select>
+	
+	<update id="updateCourseenrollmentAllocation" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		update courses_allocation set
+			modified = now(),
+			current_course_id = #{current_course_id}
+		where
+			id = #{allocation_id}
+	</update>	
+	<insert id="insertCourseenrollmentAllocationLog" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		insert into courses_allocation_moved_log(
+			allocation_id,
+			course_id,
+			sort_value
+		) values (
+			#{allocation_id},
+			#{current_course_id},
+			( select coalesce(max(sort_value),0)+1 as sort_value from courses_allocation_moved_log where allocation_id = #{allocation_id} )
+		)
+	</insert>	
+	
+	<update id="updateUserPersonGoalScore" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		update users_personalinfo set
+			goal_score = #{goal_score}
+		where
+			user_id = #{user_id}
+	</update>
+	
+	<update id="updateUserPersonAttendStartDate" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		update users_personalinfo set
+			attend_start_date = #{attend_start_date}
+		where
+			user_id = #{user_id}
+	</update>
+	
+	<update id="updateUserPersonNeedDate" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		update users_personalinfo set
+			need_date = #{need_date}
+		where
+			user_id = #{user_id}
+	</update>
+	
+	<update id="updateUserPersonAttendDate" parameterType="com.usher.dto.EnrollmentsCourseenrollmentDto">
+		update users_personalinfo set
+			attend_date = #{attend_date}
+		where
+			user_id = #{user_id}
+	</update>
+</mapper>

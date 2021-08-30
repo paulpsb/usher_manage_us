@@ -1,0 +1,32 @@
+package com.usher.dao;
+
+
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import com.usher.dto.PracticesPracticescheduleDto;
+
+@Repository
+public interface PracticesPracticescheduleDao{
+	public PracticesPracticescheduleDto getPracticeScheduleAsID(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleList(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeTodayScheduleList(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleOxList(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleOxPracticeTypeList(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleVocaIntervalPracticeTypeList(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleVocaIntervalCourseGroupPracticeTypeList1(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleVocaIntervalCourseGroupPracticeTypeList2(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleArchieveList(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleArchievePracticeTypeList(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleCourseVocaList(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleCoursePracticeTypeList(PracticesPracticescheduleDto dto) throws Exception;
+	public List<PracticesPracticescheduleDto> getPracticeScheduleCoursePracticeTypeMonthlyList(PracticesPracticescheduleDto dto) throws Exception;
+	public PracticesPracticescheduleDto getPracticeScheduleOxEnrollment(PracticesPracticescheduleDto dto) throws Exception;
+	
+	public void insertPracticeSchedule(PracticesPracticescheduleDto dto) throws Exception;
+	public void updatePracticeScheduleParagraph(PracticesPracticescheduleDto dto) throws Exception;
+	public void updatePracticeSchedule(PracticesPracticescheduleDto dto) throws Exception;
+	public void updatePracticeScheduleInterval(PracticesPracticescheduleDto dto) throws Exception;
+	public void updatePracticeScheduleIntervalCourseGroup(PracticesPracticescheduleDto dto) throws Exception;
+}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsMemorizationQuestionDao">
+	<select id="getInternalExamsMemorizationQuestionNum" resultType="com.usher.dto.InternalExamsMemorizationQuestionDto" parameterType="com.usher.dto.InternalExamsMemorizationQuestionDto">
+		select
+			coalesce(max(question_num),0) + 1 as question_num
+		from
+			internal_exams_memorization_question
+		where
+			memorization_id = #{memorization_id}
+	</select>
+	
+	<select id="getInternalExamsMemorizationQuestionList" resultType="com.usher.dto.InternalExamsMemorizationQuestionDto" parameterType="com.usher.dto.InternalExamsMemorizationQuestionDto">
+		select
+			memorization_id,
+			question_num,
+			question,
+			is_easy_mode,
+			is_hard_mod,
+			score_type,
+			score_weight
+		from
+			internal_exams_memorization_question
+		where
+			memorization_id = #{memorization_id}
+		order by question_num			
+	</select>
+
+	<insert id="insertInternalExamsMemorizationQuestion" parameterType="com.usher.dto.InternalExamsMemorizationQuestionDto">
+		insert into internal_exams_memorization_question (
+			created,
+			modified,
+			memorization_id,
+			question_num,
+			question,
+			is_easy_mode,
+			is_hard_mod,
+			score_type,
+			score_weight
+		) values (
+			now(),
+			now(),
+			#{memorization_id},
+			#{question_num},
+			#{question},
+			#{is_easy_mode},
+			#{is_hard_mod},
+			#{score_type},
+			#{score_weight}
+		)
+	</insert>
+</mapper>

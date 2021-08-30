@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticebookDao">
+	<select id="getPracticeBookPageCount" resultType="com.usher.dto.PracticesPracticebookDto" parameterType="com.usher.dto.PracticesPracticebookDto">
+		select
+			count(*) as total_count		
+		from
+			practices_practicebook a
+			join practices_practicesection b on a.practice_section_id = b.id
+		where
+			a.status = 'ACTIVE'
+			and b.status = 'ACTIVE'
+		<if test="practice_section_id > 0 ">
+			and a.practice_section_id = #{practice_section_id}
+		</if>
+		<if test="section != null and section !='' ">			
+			and b.section = #{section}
+		</if>
+	</select>
+	
+	<select id="getPracticeBookPageList" resultType="com.usher.dto.PracticesPracticebookDto" parameterType="com.usher.dto.PracticesPracticebookDto">
+		select
+			a.id,
+			a.status,
+			b.section,
+			a.book,
+			a.book_order,
+			a.practice_section_id
+		from
+			practices_practicebook a
+			join practices_practicesection b on a.practice_section_id = b.id
+		where
+			a.status = 'ACTIVE'
+			and b.status = 'ACTIVE'
+		<if test="practice_section_id > 0 ">
+			and a.practice_section_id = #{practice_section_id}
+		</if>
+		<if test="section != null and section !='' ">			
+			and b.section = #{section}
+		</if>		
+		order by b.section_order, b.id, a.book_order, a.id
+		limit #{row_num} offset #{first_num}
+	</select>
+	
+	<select id="getPracticeBookList" resultType="com.usher.dto.PracticesPracticebookDto" parameterType="com.usher.dto.PracticesPracticebookDto">
+		select
+			a.id,
+			a.status,
+			b.section,
+			a.book,
+			a.book_order,
+			a.practice_section_id
+		from
+			practices_practicebook a
+			join practices_practicesection b on a.practice_section_id = b.id
+		where
+			a.status = 'ACTIVE'
+			and b.status = 'ACTIVE'
+		<if test="practice_section_id > 0 ">
+			and a.practice_section_id = #{practice_section_id}
+		</if>
+		<if test="section != null and section !='' ">			
+			and b.section = #{section}
+		</if>
+		order by b.section_order, b.id, a.book_order, a.id
+	</select>
+	
+	<select id="getPracticeBook" resultType="com.usher.dto.PracticesPracticebookDto" parameterType="com.usher.dto.PracticesPracticebookDto">
+		select
+			a.id,
+			a.status,
+			b.section,
+			a.book,
+			a.book_order,
+			a.practice_section_id
+		from
+			practices_practicebook a
+			join practices_practicesection b on a.practice_section_id = b.id
+		where
+			a.id = #{id}
+	</select>
+	
+	<insert id="insertPracticeBook" parameterType="com.usher.dto.PracticesPracticebookDto">
+		insert into practices_practicebook (
+			created,
+			modified,
+			status,
+			book,
+			book_order,
+			practice_section_id
+		) values (
+			now(),
+			now(),
+			#{status},
+			#{book},
+			#{book_order},
+			#{practice_section_id}
+		)
+	</insert>
+	
+	<update id="updatePracticeBook" parameterType="com.usher.dto.PracticesPracticebookDto">
+		update practices_practicebook set
+			modified = now(),
+			status = #{status},
+			book = #{book},
+			book_order = #{book_order},
+			practice_section_id = #{practice_section_id}
+		where
+			id = #{id}	
+	</update>
+</mapper>

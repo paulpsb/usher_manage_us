@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchVideoDao">
+	<select id="getBatchVideoList" resultType="com.usher.dto.BatchVideoDto" parameterType="com.usher.dto.BatchVideoDto">
+		select
+			id,
+			test_type,
+			student_type,
+			base_batch_course,
+			base_user_course,
+			select_course,
+			select_type,	
+			finally_course,	
+			video_url	
+		from
+			batch_video
+		where 1=1
+			and test_type = #{test_type}
+			and student_type = #{student_type}
+			and select_course = #{select_course}
+		order by 2,3,4,5,6,7,8
+	</select>
+	
+	<select id="getBatchVideo" resultType="com.usher.dto.BatchVideoDto" parameterType="com.usher.dto.BatchVideoDto">
+		select
+			id,
+			test_type,
+			student_type,
+			base_batch_course,
+			base_user_course,
+			select_course,
+			select_type,	
+			finally_course,	
+			video_url	
+		from
+			batch_video
+		where 
+			test_type = #{test_type}
+			and student_type = #{student_type}
+			and base_batch_course = #{base_batch_course}
+			and base_user_course = #{base_user_course}
+			and select_course = #{select_course}
+			and select_type = #{select_type}	
+			and finally_course = #{finally_course}	
+	</select>
+		
+	<insert id="insertBatchVideo" parameterType="com.usher.dto.BatchVideoDto">
+		insert into batch_video (
+			created,
+			modified,
+			test_type,
+			student_type,
+			base_batch_course,
+			base_user_course,
+			select_course,
+			select_type,	
+			finally_course,	
+			video_url	
+		) values (
+			now(),
+			now(),
+			#{test_type},
+			#{student_type},
+			#{base_batch_course},
+			#{base_user_course},
+			#{select_course},
+			#{select_type},	
+			#{finally_course},	
+			#{video_url}	
+		)
+	</insert>
+	
+	<update id="updateBatchVideo" parameterType="com.usher.dto.BatchVideoDto">
+		update batch_video set
+			video_url = #{video_url}	
+		where 
+			id = #{id}
+	</update>
+	
+	<delete id="deleteBatchVideo" parameterType="com.usher.dto.BatchVideoDto">
+		delete
+		from
+			batch_video
+		where 
+			id = #{id}
+	</delete>				
+</mapper>	

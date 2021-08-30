@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticescheduleDao">
+	<select id="getPracticeScheduleAsID" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select 
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.course_id,
+			b.section,
+			a.practice_type,
+			b.book,
+			b.volume,
+			b."group",
+			b.article,
+			b.short_title,
+			coalesce(a.end_paragraph,0) as end_paragraph	
+		from
+			practices_practiceschedule a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where
+			a.id = #{id}			
+	</select>
+	
+	<select id="getPracticeScheduleList" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select 
+			a.id,
+			a.status,
+			a.section,
+			a.practice_type,
+			a.score_type,
+			a.name,
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			a.total_score,
+			a.life_cycle,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.course_id,
+			a.practice_problem_id,
+			b.short_title as short_title,
+			a.exam_time,
+			a.exam_count,
+			a.start_paragraph,
+			a.end_paragraph		
+		from 
+			practices_practiceschedule a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where 
+			a.course_id = #{course_id}
+			and a.section = #{section}
+			and a.status = 'ACTIVE'
+		order by a.id
+	</select>
+	
+	<select id="getPracticeTodayScheduleList" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select 
+			a.id,
+			a.status,
+			a.section,
+			a.practice_type,
+			a.score_type,
+			a.name,
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			a.total_score,
+			a.life_cycle,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.course_id,
+			a.practice_problem_id,
+			b.short_title as short_title,
+			a.exam_time,
+			a.exam_count,
+			a.start_paragraph,
+			a.end_paragraph		
+		from 
+			practices_practiceschedule a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where 
+			to_char(a.date,'yyyy-mm-dd') = #{date}
+			and a.status = 'ACTIVE'	
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+			and a.course_id = #{course_id}
+		order by a.id
+	</select>
+		
+	<select id="getPracticeScheduleOxList" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select
+			a.section,
+			a.practice_type,
+			concat(e.short_title_kr,' ',b.practice_name) as name
+		from 
+			practices_practiceschedule a
+			join practices_practicetype b on 
+				a.practice_type = b.practice_type 
+				and b.status = 'ACTIVE'
+			join courses_course_practice c on 
+				a.section = c.section 
+				and a.practice_type = c.practice_type 
+				and a.course_id = c.course_id 
+				and c.status = 'ACTIVE'
+			join practices_practicesectiontype d on
+				a.section = d.section
+				and a.practice_type = d.practice_type
+				and d.status = 'ACTIVE'		
+			join practices_practicesection e on
+				a.section = e.section
+		where 
+			a.date = current_date
+			and a.status = 'ACTIVE'
+			and b.program_use = 'N'
+			and a.course_id = #{course_id}
+		group by a.section, a.practice_type, e.section_order, b.type_order, e.short_title_kr, b.practice_name	
+		order by e.section_order, b.type_order
+	</select>
+
+	<select id="getPracticeScheduleOxPracticeTypeList" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select
+			a.id,
+			a.section,
+			a.created,
+			a.date,
+			a.practice_type,
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			b.short_title,
+			coalesce(a.start_paragraph,0) as start_paragraph,
+			coalesce(a.end_paragraph,0) as end_paragraph
+		from 
+			practices_practiceschedule a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where 
+			a.date = current_date
+			and a.status = 'ACTIVE'	
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+			and a.course_id = #{course_id}
+		order by b.book, b.volume, b.group, b.article, coalesce(a.start_paragraph,0), coalesce(a.end_paragraph,0)
+	</select>
+
+	<select id="getPracticeScheduleVocaIntervalPracticeTypeList" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select
+			a.id,
+			a.section,
+			a.created,
+			a.date,
+			a.practice_type,
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			b.short_title,
+			b.total_score_voca as total_score,
+			a.exam_time,
+			a.exam_count,
+			coalesce(a.start_paragraph,0) as start_paragraph,
+			coalesce(a.end_paragraph,0) as end_paragraph,
+			to_char(now(),'hh24:mi:ss') as practice_schedule_current_time,
+			to_char(a.practice_schedule_start_time,'hh24:mi:ss') as practice_schedule_start_time,
+			to_char(a.practice_schedule_end_time,'hh24:mi:ss') as practice_schedule_end_time,
+			coalesce(a.practice_schedule_start_yn,'N') as practice_schedule_start_yn,
+			coalesce(a.interval_time,0) as interval_time,
+			case when coalesce(a.practice_schedule_start_yn,'N') = 'Y' then extract(EPOCH from (a.practice_schedule_end_time - now()))::Integer else 0 end remain_time
+		from 
+			practices_practiceschedule a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where 
+			a.status = 'ACTIVE'	
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+			and a.course_id = #{course_id}
+		<if test="date != null and date !='' ">
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		</if>
+		<if test="date == null or date =='' ">
+			and a.date = current_date
+		</if>			
+		order by b.book, b.volume, b.group, b.article, coalesce(a.start_paragraph,0), coalesce(a.end_paragraph,0)
+	</select>
+	<select id="getPracticeScheduleVocaIntervalCourseGroupPracticeTypeList1" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select
+			a.id,
+			a.section,
+			a.practice_type,
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			b.short_title,
+			b.total_score_voca as total_score,
+			a.exam_time,
+			a.exam_count,
+			coalesce(a.start_paragraph,0) as start_paragraph,
+			coalesce(a.end_paragraph,0) as end_paragraph,
+			to_char(now(),'hh24:mi:ss') as practice_schedule_current_time,
+			to_char(a.practice_schedule_start_time,'hh24:mi:ss') as practice_schedule_start_time,
+			to_char(a.practice_schedule_end_time,'hh24:mi:ss') as practice_schedule_end_time,
+			coalesce(a.practice_schedule_start_yn,'N') as practice_schedule_start_yn,
+			coalesce(a.interval_time,0) as interval_time,
+			case when coalesce(a.practice_schedule_start_yn,'N') = 'Y' then extract(EPOCH from (a.practice_schedule_end_time - now()))::Integer else 0 end remain_time
+		from 
+			practices_practiceschedule a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where 
+			a.status = 'ACTIVE'	
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+			and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+		<if test="date != null and date !='' ">
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		</if>
+		<if test="date == null or date =='' ">
+			and a.date = current_date
+		</if>				
+		order by b.book, b.volume, b.group, b.article, coalesce(a.start_paragraph,0), coalesce(a.end_paragraph,0)	
+	</select>
+		
+	<select id="getPracticeScheduleVocaIntervalCourseGroupPracticeTypeList2" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select distinct
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			b.short_title,
+			b.total_score_voca as total_score,
+			a.exam_time,
+			a.exam_count
+		from 
+			practices_practiceschedule a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where 
+			a.status = 'ACTIVE'	
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+			and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+		<if test="date != null and date !='' ">
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		</if>
+		<if test="date == null or date =='' ">
+			and a.date = current_date
+		</if>				
+		order by b.book, b.volume, b.group, b.article, a.exam_time,	a.exam_count
+	</select>
+	
+	<select id="getPracticeScheduleArchieveList" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select
+			a.section
+		from
+			practices_practiceschedule a
+			join practices_practicesection b on a.section = b.section and b.status = 'ACTIVE'
+			join practices_practicetype c on a.practice_type = c.practice_type and c.status = 'ACTIVE'
+			join practices_practicesectiontype d on a.section = d.section and a.practice_type = d.practice_type and d.status = 'ACTIVE'
+			join courses_course_practice e on a.section = e.section and a.practice_type = e.practice_type and a.course_id = e.course_id and e.status = 'ACTIVE'
+		where
+			a.course_id = #{course_id}
+			and a.status = 'ACTIVE'
+			and a.section != 'VOCA'
+		group by a.section, b.section_order
+		order by b.section_order
+	</select>
+	
+	<select id="getPracticeScheduleArchievePracticeTypeList" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select
+			a.section,
+			a.practice_type,
+			c.practice_name,
+			c.program_use,
+			c.type_order
+		from
+			practices_practiceschedule a
+			join practices_practicesection b on a.section = b.section and b.status = 'ACTIVE'
+			join practices_practicetype c on a.practice_type = c.practice_type and c.status = 'ACTIVE'
+			join practices_practicesectiontype d on a.section = d.section and a.practice_type = d.practice_type and d.status = 'ACTIVE'
+			join courses_course_practice e on a.section = e.section and a.practice_type = e.practice_type and a.course_id = e.course_id and e.status = 'ACTIVE'
+		where
+			a.course_id = #{course_id}
+			and a.status = 'ACTIVE'
+			and a.section = #{section}
+			and a.practice_type != 'PASSAGE_PHRASE' and a.practice_type != 'PASSAGE_VOCA'
+		group by a.section, a.practice_type, c.practice_name, c.program_use, c.type_order
+		union all
+		select
+			a.section,
+			'PASSAGE' as practice_type,
+			'구문/단어' as practice_name,
+			'Y' as program_use,
+			10 as type_order
+		from
+			practices_practiceschedule a
+			join practices_practicesection b on a.section = b.section and b.status = 'ACTIVE'
+			join practices_practicetype c on a.practice_type = c.practice_type and c.status = 'ACTIVE'
+			join practices_practicesectiontype d on a.section = d.section and a.practice_type = d.practice_type and d.status = 'ACTIVE'
+			join courses_course_practice e on a.section = e.section and a.practice_type = e.practice_type and a.course_id = e.course_id and e.status = 'ACTIVE'
+		where
+			a.course_id = #{course_id}
+			and a.status = 'ACTIVE'
+			and a.section = #{section}
+			and ( a.practice_type = 'PASSAGE_PHRASE' or a.practice_type = 'PASSAGE_VOCA' )
+		group by a.section
+		order by 5
+	</select>
+		
+	<select id="getPracticeScheduleCourseVocaList" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select
+			a.date,
+			a.practice_type,
+			array_to_string(array_agg(a.volume),'/') as volume
+		from
+			(
+				select
+					a.date,
+					a.practice_type,
+					upper(b.volume) as volume
+				from
+					practices_practiceschedule a
+					join practices_practiceproblem b on a.practice_problem_id = b.id
+				where
+					a.course_id = #{course_id}
+					and a.status = 'ACTIVE'
+					and a.section = 'VOCA'
+				group by a.date, a.practice_type, upper(b.volume)
+			) a
+		where 1=1
+		<if test="date != null and date !='' ">
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		</if>			
+		group by a.date, a.practice_type
+		order by 1
+	</select>
+			
+	<select id="getPracticeScheduleCoursePracticeTypeList" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select 
+			to_char(a.date,'yyyy-mm-dd') as date,
+			b.section,
+			a.practice_type,
+			b.book,
+			b.volume,
+			b."group",
+			b.article,
+			b.short_title,
+			coalesce(a.end_paragraph,0) as end_paragraph	
+		from
+			practices_practiceschedule a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where
+			a.course_id = #{course_id}
+			and a.status = 'ACTIVE'
+			and a.section != 'VOCA'
+		<if test="date != null and date !='' ">
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		</if>				
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		<if test="practice_type != null and practice_type !='' ">
+			and a.practice_type = #{practice_type}
+		</if>
+		group by to_char(a.date,'yyyy-mm-dd'), b.section, a.practice_type, b.book, b.volume, b."group", b.article, b.short_title, coalesce(a.end_paragraph,0)
+		order by 1, 2, 3, 4, 5, 6, 7, 8
+	</select>
+		
+	<select id="getPracticeScheduleCoursePracticeTypeMonthlyList" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select 
+			b.section,
+			b.book,
+			b.volume,
+			b."group",
+			b.article,
+			b.short_title,
+			coalesce(a.end_paragraph,0) as end_paragraph	
+		from
+			practices_practiceschedule a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where
+			a.course_id = #{course_id}
+			and a.status = 'ACTIVE'
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+		group by b.section, b.book, b.volume, b."group", b.article, b.short_title, coalesce(a.end_paragraph,0)
+		order by 1, 2, 3, 4, 5, 6, 7
+	</select>
+	<select id="getPracticeScheduleOxEnrollment" parameterType="com.usher.dto.PracticesPracticescheduleDto" resultType="com.usher.dto.PracticesPracticescheduleDto">
+		select 
+			a.id,
+			a.status,
+			a.section,
+			a.practice_type,
+			a.score_type,
+			a.name,
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			a.total_score,
+			a.life_cycle,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.course_id,
+			a.practice_problem_id,
+			b.short_title as short_title,
+			a.exam_time,
+			a.exam_count,
+			a.start_paragraph,
+			a.end_paragraph		
+		from 
+			practices_practiceschedule a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where 
+			a.course_id = ( select course_id from enrollments_courseenrollment where id = #{course_enrollment_id} )
+			and a.status = 'ACTIVE'
+			and a.section = #{section}
+			and a.practice_type = #{practice_type}
+		<if test="book != null and book !='' ">
+			and b.book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">
+			and b.volume = #{volume}
+		</if>
+		<if test="group != null and group !='' ">
+			and b.group = #{group}
+		</if>
+		<if test="article != null and article !='' ">
+			and b.article = #{article}
+		</if>									
+			and a.end_paragraph = #{end_paragraph}	
+			and to_char(a.date,'yyyy-mm-dd') = to_char(current_date,'yyyy-mm-dd')
+		order by a.id
+		limit 1
+	</select>				
+	<insert id="insertPracticeSchedule" parameterType="com.usher.dto.PracticesPracticescheduleDto" useGeneratedKeys="true" keyProperty="id">
+		insert into practices_practiceschedule ( 
+			created,
+			modified,
+			status,
+			section,
+			practice_type,
+			score_type,
+			name,
+			total_score,
+			life_cycle,
+			date,
+			course_id,
+			practice_problem_id,
+			exam_time,
+			exam_count,
+			start_paragraph,
+			end_paragraph
+		) values (
+			now(),
+			now(),
+			#{status},
+			#{section},
+			#{practice_type},
+			#{score_type},
+			#{name},
+			#{total_score},
+			#{life_cycle},
+			to_date(#{date},'yyyy-mm-dd'),
+			#{course_id},
+			#{practice_problem_id},
+			#{exam_time},
+			#{exam_count},
+			#{start_paragraph},
+			#{end_paragraph}
+		)
+	</insert>
+
+	<update id="updatePracticeScheduleParagraph" parameterType="com.usher.dto.PracticesPracticescheduleDto">
+		update practices_practiceschedule set
+			modified = now(),
+			start_paragraph = #{start_paragraph},
+			end_paragraph = #{end_paragraph},
+			exam_time = #{exam_time},
+			exam_count = #{exam_count}
+		where 
+			id = #{id}
+	</update>
+	
+	<update id="updatePracticeSchedule" parameterType="com.usher.dto.PracticesPracticescheduleDto">
+		update practices_practiceschedule set
+			modified = now(),
+			status = #{status}			
+		where 
+			id = #{id}
+	</update>
+	
+	<update id="updatePracticeScheduleInterval" parameterType="com.usher.dto.PracticesPracticescheduleDto">
+		update practices_practiceschedule set
+			modified = now(),
+			practice_schedule_start_time = now(),
+			practice_schedule_end_time = now() + interval '${interval_time} min',
+			interval_time = #{interval_time},
+			practice_schedule_start_yn = #{practice_schedule_start_yn}
+		where 
+			course_id = #{course_id}
+			and section = #{section}
+			and practice_type = #{practice_type}
+			and date = current_date
+	</update>
+	<update id="updatePracticeScheduleIntervalCourseGroup" parameterType="com.usher.dto.PracticesPracticescheduleDto">
+		update practices_practiceschedule set
+			modified = now(),
+			practice_schedule_start_time = now(),
+			practice_schedule_end_time = now() + interval '${interval_time} min',
+			interval_time = #{interval_time},
+			practice_schedule_start_yn = #{practice_schedule_start_yn}
+		where 
+			course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+			and section = #{section}
+			and practice_type = #{practice_type}
+			and date = current_date
+	</update>	
+</mapper>

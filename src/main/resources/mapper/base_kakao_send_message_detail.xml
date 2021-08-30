@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseKakaoSendMessageDetailDao">
+	<select id="getBaseKakaoSendMessageDetailList" parameterType="com.usher.dto.BaseKakaoSendMessageDetailDto" resultType="com.usher.dto.BaseKakaoSendMessageDetailDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			a.created_id,
+			concat(coalesce(b.last_name,''),coalesce(b.first_name,'')) as created_name,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.modified_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as modified_name,
+			a.send_message_id,
+			a.send_message_detail_gubun,
+			a.send_message_detail_no,
+			a.send_message_detail_title,
+			a.send_message_detail_desc,
+			a.send_message_detail_sort
+		from
+			base_kakao_send_message_detail a
+			left join auth_user b on a.created_id = b.id
+			left join auth_user c on a.modified_id = c.id
+		where
+			a.send_message_id = #{send_message_id}
+		order by a.send_message_detail_sort
+	</select>
+
+	<insert id="insertBaseKakaoSendMessageDetail" parameterType="com.usher.dto.BaseKakaoSendMessageDetailDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into base_kakao_send_message_detail(
+			created,
+			created_id,
+			modified,
+			modified_id,
+			send_message_id,
+			send_message_detail_gubun,
+			send_message_detail_no,
+			send_message_detail_title,
+			send_message_detail_desc,
+			send_message_detail_sort
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{send_message_id},
+			#{send_message_detail_gubun},
+			#{send_message_detail_no},
+			#{send_message_detail_title},
+			#{send_message_detail_desc},
+			#{send_message_detail_sort}
+		)
+	</insert>	
+	<update id="updateBaseKakaoSendMessageDetail" parameterType="com.usher.dto.BaseKakaoSendMessageDetailDto">
+		update base_kakao_send_message_detail set
+			modified = now(),
+			modified_id = #{modified_id},
+			send_message_detail_title = #{send_message_detail_title},
+			send_message_detail_desc = #{send_message_detail_desc},
+			send_message_detail_sort = #{send_message_detail_sort}
+		where
+			id = #{id}
+	</update>
+
+	<delete id="deleteBaseKakaoSendMessageDetail" parameterType="com.usher.dto.BaseKakaoSendMessageDetailDto">
+		delete from base_kakao_send_message_detail
+		where
+			id = #{id}
+	</delete>	
+</mapper>

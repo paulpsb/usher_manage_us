@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CorrectionExamsCommentDao">
+	<select id="getCorrectionExamsCommentList" parameterType="com.usher.dto.CorrectionExamsCommentDto" resultType="com.usher.dto.CorrectionExamsCommentDto">
+		select 
+			a.id,
+			a.comment_type,
+			to_char(a.date,'yyyy-mm-dd hh24:mi:ss') as date,
+			a.question,
+		    a.comment_id,
+			concat(coalesce(b.last_name,''), coalesce(b.first_name,'')) as comment_name,
+			to_char(a.comment_date,'yyyy-mm-dd hh24:mi:ss') as comment_date,
+		    a.comment,
+			a.comment_yn,
+			a.correction_exams_answer_id
+		from
+			correction_exams_comment a
+			left join auth_user b on a.comment_id = b.id
+		where
+			a.correction_exams_answer_id = #{correction_exams_answer_id}
+		order by a.id asc
+	</select>
+	
+	<select id="getCorrectionExamsComment" parameterType="com.usher.dto.CorrectionExamsCommentDto" resultType="com.usher.dto.CorrectionExamsCommentDto">
+		select 
+			a.id,
+			a.comment_type,
+			to_char(a.date,'yyyy-mm-dd hh24:mi:ss') as date,
+			a.question,
+		    a.comment_id,
+			concat(coalesce(b.last_name,''), coalesce(b.first_name,'')) as comment_name,
+			to_char(a.comment_date,'yyyy-mm-dd hh24:mi:ss') as comment_date,
+		    coalesce(a.comment,'') as comment,
+			a.comment_yn,
+			a.correction_exams_answer_id
+		from
+			correction_exams_comment a
+			left join auth_user b on a.comment_id = b.id
+		where
+			a.id = #{id}
+	</select>
+		
+	<update id="updateCorrectionExamsComment" parameterType="com.usher.dto.CorrectionExamsCommentDto">
+		update correction_exams_comment set
+			modified = now(),
+			comment_id = #{comment_id},
+			comment_date = now(),
+			comment = #{comment},
+			comment_yn = 'Y'
+		where
+			id = #{id}
+	</update>
+	
+	<delete id="deleteCorrectionExamsComment" parameterType="com.usher.dto.CorrectionExamsCommentDto">
+		delete from correction_exams_comment
+		where
+			id = #{id}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesNewStudentDao">
+	<select id="getNoticesNewStudentUserList" resultType="com.usher.dto.NoticesNewStudentDto" parameterType="com.usher.dto.NoticesNewStudentDto">
+		select
+			id,
+			course_group_id,
+			course_id,
+			course_group_name,
+			course_name,
+			new_date,
+			new_time,
+			target_id,
+			reference_id,
+			student_count,
+			student_training_count
+		from
+			notices_new_student
+		where
+			to_char(new_date,'yyyy-mm-dd') = #{new_date}
+			and ( target_id = #{user_id} or reference_id = #{user_id} )
+		order by course_group_id, course_id	
+	</select>
+	<select id="getNoticesNewStudent" resultType="com.usher.dto.NoticesNewStudentDto" parameterType="com.usher.dto.NoticesNewStudentDto">
+		select
+			id,
+			course_group_id,
+			course_id,
+			course_group_name,
+			course_name,
+			new_date,
+			new_time,
+			target_id,
+			reference_id,
+			student_count,
+			student_training_count
+		from
+			notices_new_student
+		where
+			id = #{id}
+	</select>	
+	
+	<update id="updatetNoticesNewStudent" parameterType="com.usher.dto.NoticesNewStudentDto">
+		update notices_new_student set
+			student_training_count = #{student_training_count}
+		where
+			id = #{id}
+	</update>	
+</mapper>

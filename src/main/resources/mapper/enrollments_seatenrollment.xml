@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.EnrollmentsSeatenrollmentDao">
+	<select id="getSeatenrollmentList" resultType="com.usher.dto.EnrollmentsSeatenrollmentDto" parameterType="com.usher.dto.EnrollmentsSeatenrollmentDto">
+		select
+			b.semester_id,
+			a.course_id,
+			a.id as course_enrollment_id,
+			b.id as semester_enrollment_id,
+			d.id as user_id,
+			b.student_id,
+			f.seat_row,
+			f.seat_col,
+			a.status,
+			a.schedule,
+			a.refund_status,
+			a.refund_reason,
+			c.registration_type,
+			e.username,
+			e.first_name,
+			e.last_name,
+			e.email,
+			e.is_staff,
+			e.is_active,
+			a.chamgang_yn	
+		from 
+			enrollments_courseenrollment a
+			join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+			join courses_allocation c on a.id = c.course_enrollment_id and a.course_id = c.current_course_id 
+			join students_student d on b.student_id = d.id
+			join auth_user e on d.user_id = e.id
+			join enrollments_seatenrollment f on a.course_id = f.course_id and a.semester_enrollment_id = f.semester_enrollment_id
+		where
+			a.course_id = #{course_id}
+			and a.status IN ('PAID','REFUND_REQUESTED')
+			and e.username != 'test6' and e.username != 'test5'
+		order by f.seat_row, f.seat_col
+	</select>
+	<insert id="insertSeatenrollment" parameterType="com.usher.dto.EnrollmentsSeatenrollmentDto">
+		insert into enrollments_seatenrollment(
+			created,
+			modified,
+			seat_row,
+			seat_col,
+			course_id,
+			semester_enrollment_id
+		)values(
+			now(),
+			now(),
+			#{seat_row},
+			#{seat_col},
+			#{course_id},
+			#{semester_enrollment_id}		
+		)
+	</insert>
+	<delete id="deleteSeatenrollment" parameterType="com.usher.dto.EnrollmentsSeatenrollmentDto">
+		delete from enrollments_seatenrollment
+		where
+			course_id = #{course_id}
+	</delete>
+</mapper>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchExamToeicDao">
+	<select id="getBatchExamToeicNumList" resultType="com.usher.dto.BatchExamToeicDto" parameterType="com.usher.dto.BatchExamToeicDto">
+		select
+			num
+		from
+			batch_exam_toeic
+		where
+			type = #{type}
+		order by num		
+	</select>
+	
+	<select id="getBatchExamToeic" resultType="com.usher.dto.BatchExamToeicDto" parameterType="com.usher.dto.BatchExamToeicDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd HH24:MI:SS') as created,
+			a.created_id,
+			concat(b.last_name, b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd HH24:MI:SS') as modified,
+			a.modified_id,
+			concat(c.last_name, c.first_name) as modified_name,
+			a.type,
+			a.num,
+			a.question_count,
+			a.question_start_num,
+			a.objective_item_count,
+			a.objective_item_type,
+			a.group_name
+		from
+			batch_exam_toeic a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+		where
+			a.type = #{type}
+			and a.num = #{num}
+	</select>	
+	
+	<select id="getBatchExamToeicMaxNum" resultType="com.usher.dto.BatchExamToeicDto" parameterType="com.usher.dto.BatchExamToeicDto">
+		select
+			coalesce(max(num),0) + 1 as num
+		from
+			batch_exam_toeic
+		where
+			type = #{type}
+		order by num		
+	</select>
+
+	<insert id="insertBatchExamToeic" parameterType="com.usher.dto.BatchExamToeicDto">
+		insert into batch_exam_toeic (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			type,
+			num
+		)values(
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{type},
+			#{num}
+		)
+	</insert>
+	
+	<update id="updateBatchExamToeic" parameterType="com.usher.dto.BatchExamToeicDto">
+		update batch_exam_toeic set
+			modified = now(),
+			modified_id = #{modified_id},
+			question_count = #{question_count},
+			question_start_num = #{question_start_num},
+			objective_item_count = #{objective_item_count},
+			objective_item_type = #{objective_item_type},
+			group_name = #{group_name}
+		where
+			type = #{type}
+			and num = #{num}
+	</update>		
+	<delete id="deleteBatchExamToeicImage" parameterType="com.usher.dto.BatchExamToeicDto">
+		delete from batch_exam_toeic_image
+		where
+			type = #{type}
+			and num = #{num}
+	</delete>	
+	<delete id="deleteBatchExamToeicQuestion" parameterType="com.usher.dto.BatchExamToeicDto">
+		delete from batch_exam_toeic_question
+		where
+			type = #{type}
+			and num = #{num}
+	</delete>
+</mapper>

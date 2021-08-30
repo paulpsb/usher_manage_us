@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CoursesCourseStatsDao">
+	<select id="getCourseStatsSemesterList" resultType="com.usher.dto.CoursesCourseStatsDto">
+		select 
+			semester_id,
+			to_char(semester_date,'yyyy년 mm월') as semester_date
+		from 
+			courses_course_stats
+		group by semester_id, semester_date
+		order by semester_id desc
+	</select>
+	<select id="getCourseStatsSemesterBetweenList" resultType="com.usher.dto.CoursesCourseStatsDto" parameterType="com.usher.dto.CoursesCourseStatsDto">
+		select 
+			semester_id,
+			to_char(semester_date,'yyyy년 mm월') as semester_date
+		from 
+			courses_course_stats
+		where
+			semester_id between #{semester_start_id} and #{semester_end_id}
+		group by semester_id, semester_date
+		order by semester_id asc
+	</select>
+	<select id="getCourseStatsTeacherList" resultType="com.usher.dto.CoursesCourseStatsDto" parameterType="com.usher.dto.CoursesCourseStatsDto">
+		select
+			course_teacher_id, 
+			course_teacher_name
+		from
+			courses_course_stats
+		where
+			course_teacher_id > 0
+			and semester_id between #{semester_start_id} and #{semester_end_id}
+		group by course_teacher_id, course_teacher_name
+		union
+		select
+			course_manage_id as course_teacher_id, 
+			course_manage_name as course_teacher_name
+		from
+			courses_course_stats
+		where
+			course_manage_id > 0
+			and semester_id between #{semester_start_id} and #{semester_end_id}
+		group by course_manage_id, course_manage_name
+		order by 1
+	</select>
+	<select id="getCourseStatsList" resultType="com.usher.dto.CoursesCourseStatsDto" parameterType="com.usher.dto.CoursesCourseStatsDto">
+		select
+			id,
+			semester_id,
+			course_group_id,
+			course_group_name,
+			course_id,
+			course_name,
+			test_type,
+			student_type,
+			lecture_type,
+			days,
+			difficulty,
+			inner_difficulty,
+			course_teacher_id,
+			course_teacher_name,
+			course_manage_id,
+			course_manage_name,
+			repeat_class_count,
+			repeat_class_total_count,
+			attendance_count,
+			attendance_total_count,
+			exam_voca_class_id,
+			exam_voca_class_name,
+			exam_voca_study_id,
+			exam_voca_study_name,
+			exam_voca_pass_count,
+			exam_voca_total_count,
+			exam_gr_class_id,
+			exam_gr_class_name,
+			exam_gr_study_id,
+			exam_gr_study_name,
+			exam_gr_pass_count,
+			exam_gr_total_count,
+			exam_rc_class_id,
+			exam_rc_class_name,
+			exam_rc_study_id,
+			exam_rc_study_name,
+			exam_rc_pass_count,
+			exam_rc_total_count,
+			exam_lc_class_id,
+			exam_lc_class_name,
+			exam_lc_study_id,
+			exam_lc_study_name,
+			exam_lc_pass_count,
+			exam_lc_total_count,
+			exam_sp_class_id,
+			exam_sp_class_name,
+			exam_sp_study_id,
+			exam_sp_study_name,
+			exam_sp_pass_count,
+			exam_sp_total_count,
+			exam_wr_class_id,
+			exam_wr_class_name,
+			exam_wr_study_id,
+			exam_wr_study_name,
+			exam_wr_pass_count,
+			exam_wr_total_count
+		from
+			courses_course_stats
+		where
+			repeat_class_count > 0
+			and (course_teacher_id > 0 or course_manage_id > 0)
+			and semester_id between #{semester_start_id} and #{semester_end_id}
+		order by semester_id, test_type, student_type desc, lecture_type, days, difficulty, inner_difficulty	
+	</select>
+</mapper>

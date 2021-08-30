@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesRoutineTransOraganizationDetailDao">
+	<select id="getRoutineTransOraganizationDetailList" resultType="com.usher.dto.NoticesRoutineTransOraganizationDetailDto" parameterType="com.usher.dto.NoticesRoutineTransOraganizationDetailDto">
+		select
+		    a.id,
+		    a.routine_day,
+		    a.routine_date,
+		    a.routine_start_time,
+		    a.routine_trans_oraganization_id,
+		    a.routine_id,
+			b.routine_title
+		from
+			notices_routine_trans_oraganization_detail a
+			join notices_routine b on a.routine_id = b.id
+		where
+			a.routine_trans_oraganization_id = #{routine_trans_oraganization_id}
+		order by id
+	</select>
+
+	<insert id="insertRoutineTransOraganizationDetail" parameterType="com.usher.dto.NoticesRoutineTransOraganizationDetailDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into notices_routine_trans_oraganization_detail (
+			created,
+			modified,
+			routine_day,
+		    routine_date,
+		    routine_start_time,
+		    routine_trans_oraganization_id,
+		    routine_id
+		) values (
+			now(),
+			now(),
+			#{routine_day},
+		    #{routine_date},
+		    #{routine_start_time},
+		    #{routine_trans_oraganization_id},
+		    #{routine_id}
+		)
+	</insert>
+	<delete id="deleteRoutineTransOraganizationDetail" parameterType="com.usher.dto.NoticesRoutineTransOraganizationDetailDto">
+		delete from notices_routine_trans_oraganization_detail 
+		where
+			id = #{id}
+	</delete>
+</mapper>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesRoutineDao">
+	<select id="getNoticesRoutineCount" resultType="com.usher.dto.NoticesRoutineDto" parameterType="com.usher.dto.NoticesRoutineDto">
+		select count(*) as total_count
+		from 
+			notices_routine 
+		where 1=1
+		<if test="routine_organization_id > 0 ">		
+			and routine_organization_id = #{routine_organization_id}
+		</if>
+		<if test="routine_category != null and routine_category !='' ">			
+			and routine_category = #{routine_category}
+		</if>		
+		<if test="routine_type != null and routine_type !='' ">			
+			and routine_type = #{routine_type}
+		</if>		
+			
+	</select>
+	<select id="getNoticesRoutineList" resultType="com.usher.dto.NoticesRoutineDto" parameterType="com.usher.dto.NoticesRoutineDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.created_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as created_name,
+			a.modified_id,
+			concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as modified_name,			
+			a.routine_category,		
+			a.routine_title,		
+			a.routine_organization_id,
+			coalesce(b.organization_name,'전체') as routine_organization_name,
+			a.routine_type
+		from
+			notices_routine a
+			left join auth_organization b on a.routine_organization_id = b.id
+			left join auth_user c on a.created_id = c.id
+			left join auth_user d on a.modified_id = d.id
+		where 1=1
+		<if test="routine_organization_id > 0 ">			
+			and a.routine_organization_id = #{routine_organization_id}
+		</if>		
+		<if test="routine_category != null and routine_category !='' ">			
+			and a.routine_category = #{routine_category}
+		</if>		
+		<if test="routine_type != null and routine_type !='' ">			
+			and a.routine_type = #{routine_type}
+		</if>		
+		order by a.id desc
+		limit #{row_num} offset #{first_num}
+	</select>
+	
+	<select id="getNoticesRoutineAsCategoryList" resultType="com.usher.dto.NoticesRoutineDto" parameterType="com.usher.dto.NoticesRoutineDto">
+		select
+			id,
+			routine_category,		
+			routine_title,		
+			routine_organization_id,
+			routine_type
+		from
+			notices_routine
+		where
+			routine_category = #{routine_category}
+		<if test="routine_organization_id > 0">	
+			and ( routine_organization_id = 0 or routine_organization_id = #{routine_organization_id} or routine_organization_id in (select organization_up_id from auth_organization where id = #{routine_organization_id} ) )
+		</if>
+			and routine_type = #{routine_type}
+		order by id desc
+	</select>
+	
+	<select id="getNoticesRoutine" resultType="com.usher.dto.NoticesRoutineDto" parameterType="com.usher.dto.NoticesRoutineDto">
+		select
+			id,
+			routine_category,		
+			routine_title,		
+			routine_organization_id,
+			routine_type
+		from
+			notices_routine
+		where
+			id = #{id}
+	</select>
+	
+	<insert id="insertNoticesRoutine" parameterType="com.usher.dto.NoticesRoutineDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into notices_routine (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			routine_category,		
+			routine_title,		
+			routine_organization_id,
+			routine_type
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{routine_category},		
+			#{routine_title},		
+			#{routine_organization_id},
+			#{routine_type}
+		)
+	</insert>
+	<update id="updateNoticesRoutine" parameterType="com.usher.dto.NoticesRoutineDto">
+		update notices_routine set 
+			modified = now(),
+			modified_id = #{modified_id},
+			routine_category = #{routine_category},
+			routine_title = #{routine_title},		
+			routine_organization_id = #{routine_organization_id},
+			routine_type = #{routine_type}
+		where
+			id = #{id}
+	</update>
+	<delete id="deleteNoticesRoutine" parameterType="com.usher.dto.NoticesRoutineDto">
+		delete from notices_routine 
+		where
+			id = #{id}
+	</delete>
+	<delete id="deleteNoticesRoutineDetailsAll" parameterType="com.usher.dto.NoticesRoutineDto">
+		delete from notices_routine_details 
+		where
+			routine_id = #{id}
+	</delete>
+	<insert id="insertNoticesRoutineLog" parameterType="com.usher.dto.NoticesRoutineDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into notices_routine_log(
+			log_date,
+			log_id,
+			routine_id,
+			created,
+			modified,
+			routine_category,
+			routine_organization_id,
+			routine_title,
+			routine_type
+		)
+		select
+			now(),
+			#{log_id} as log_id,
+			id,
+			created,
+			modified,
+			routine_category,
+			routine_organization_id,
+			routine_title,
+			routine_type
+		from
+			notices_routine
+		where 
+			id = #{id}
+	</insert>
+	<insert id="insertNoticesRoutineDetailsLog" parameterType="com.usher.dto.NoticesRoutineDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into notices_routine_log_details(
+			log_date,
+			log_id,
+			routine_detail_id,
+			created,
+			modified,
+			routine_detail_content,
+			routine_detail_reference_image,
+			routine_detail_reference_image_name,
+			routine_detail_reference_url,
+			routine_detail_reference_file,
+			routine_detail_reference_file_name,
+			routine_detail_report_image,
+			routine_detail_report_url,
+			routine_detail_report_ox,
+			routine_detail_report_file,
+			routine_id,
+			routine_detail_title
+		)
+		select
+			now(),
+			#{log_id} as log_id,
+			id,
+			created,
+			modified,
+			routine_detail_content,
+			routine_detail_reference_image,
+			routine_detail_reference_image_name,
+			routine_detail_reference_url,
+			routine_detail_reference_file,
+			routine_detail_reference_file_name,
+			routine_detail_report_image,
+			routine_detail_report_url,
+			routine_detail_report_ox,
+			routine_detail_report_file,
+			routine_id,
+			routine_detail_title
+		from
+			notices_routine_details
+		where 
+			routine_id = #{id}
+		order by id
+	</insert>
+</mapper>

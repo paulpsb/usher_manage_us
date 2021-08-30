@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchExamListeningQuestionDao">
+	<select id="getBatchExamListeningQuestionList" resultType="com.usher.dto.BatchExamListeningQuestionDto" parameterType="com.usher.dto.BatchExamListeningQuestionDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd HH24:MI:SS') as created,
+			a.created_id,
+			concat(b.last_name, b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd HH24:MI:SS') as modified,
+			a.modified_id,
+			concat(c.last_name, c.first_name) as modified_name,		
+			a.type,
+			a.num,
+			a.sub_num,
+			a.article_num,
+			a.question_num,
+			a.category,
+			a.question_type,
+			a.question,
+			a.answer,
+			a.answer1,
+			a.answer2
+		from
+			batch_exam_listening_question a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+		where
+			a.type = #{type}
+			and a.num = #{num}
+			and a.sub_num = #{sub_num}
+			and a.article_num = #{article_num}
+		order by a.question_num	
+	</select>
+	<select id="getBatchExamListeningQuestion" resultType="com.usher.dto.BatchExamListeningQuestionDto" parameterType="com.usher.dto.BatchExamListeningQuestionDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd HH24:MI:SS') as created,
+			a.created_id,
+			concat(b.last_name, b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd HH24:MI:SS') as modified,
+			a.modified_id,
+			concat(c.last_name, c.first_name) as modified_name,
+			a.type,
+			a.num,
+			a.sub_num,
+			a.article_num,
+			a.question_num,
+			a.category,
+			a.question_type,
+			a.question,
+			a.choice_a,
+			a.choice_b,
+			a.choice_c,
+			a.choice_d,
+			a.choice_e,
+			a.choice_f,
+			a.choice_g,
+			a.choice_h,
+			a.choice_i,
+			a.choice_a_check,
+			a.choice_b_check,
+			a.choice_c_check,
+			a.choice_d_check,
+			a.choice_e_check,
+			a.choice_f_check,
+			a.choice_g_check,
+			a.choice_h_check,
+			a.choice_i_check,		    
+			a.score,
+			a.answer,
+			a.answer1,
+			a.answer2,
+			a.qcat1,
+			a.qcat2,	
+			a.qcat3,
+			a.question_count
+		from
+			batch_exam_listening_question a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+		where
+			a.type = #{type}
+			and a.num = #{num}
+			and a.sub_num = #{sub_num}
+			and a.article_num = #{article_num}
+			and a.question_num = #{question_num}
+	</select>
+	
+	<select id="getBatchExamListeningQuestionNum" resultType="com.usher.dto.BatchExamListeningQuestionDto" parameterType="com.usher.dto.BatchExamListeningQuestionDto">
+		select
+			coalesce(max(question_num) + 1,1) as question_num
+		from
+			batch_exam_listening_question
+		where
+			type = #{type}
+			and num = #{num}
+			and sub_num = #{sub_num}
+			and article_num = #{article_num}
+	</select>
+		
+	<insert id="insertBatchExamListeningQuestion" parameterType="com.usher.dto.BatchExamListeningQuestionDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into batch_exam_listening_question (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			type,
+			num,
+			sub_num,
+			article_num,
+			question_num
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{type},
+			#{num},
+			#{sub_num},
+			#{article_num},
+			#{question_num}
+		)
+	</insert>	
+	
+	<update id="updateBatchExamListeningQuestion" parameterType="com.usher.dto.BatchExamListeningQuestionDto">
+		update batch_exam_listening_question  set
+			modified = now(),
+			modified_id = #{modified_id},
+			category = #{category},
+			question_type = #{question_type},
+			question = #{question},
+			choice_a = #{choice_a},
+			choice_b = #{choice_b},
+			choice_c = #{choice_c},
+			choice_d = #{choice_d},
+			choice_e = #{choice_e},
+			choice_f = #{choice_f},
+			choice_g = #{choice_g},
+			choice_h = #{choice_h},
+			choice_i = #{choice_i},
+			choice_a_check = #{choice_a_check},
+			choice_b_check = #{choice_b_check},
+			choice_c_check = #{choice_c_check},
+			choice_d_check = #{choice_d_check},
+			choice_e_check = #{choice_e_check},
+			choice_f_check = #{choice_f_check},
+			choice_g_check = #{choice_g_check},
+			choice_h_check = #{choice_h_check},
+			choice_i_check = #{choice_i_check},
+			score = #{score},
+			answer = #{answer},
+			answer1 = #{answer1},
+			answer2 = #{answer2},
+			qcat1 = #{qcat1},
+			qcat2 = #{qcat2},	
+			qcat3 = #{qcat3},
+			question_count = #{question_count}
+		where
+			type = #{type}
+			and num = #{num}
+			and sub_num = #{sub_num}
+			and article_num = #{article_num}
+			and question_num = #{question_num}
+	</update>
+		
+	<delete id="deleteBatchExamListeningQuestion" parameterType="com.usher.dto.BatchExamListeningQuestionDto">
+		delete from batch_exam_listening_question
+		where
+			type = #{type}
+			and num = #{num}
+			and sub_num = #{sub_num}
+			and article_num = #{article_num}
+			and question_num = #{question_num}
+	</delete>			
+</mapper>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchExamToeicImageDao">
+	<select id="getBatchExamToeicImageList" resultType="com.usher.dto.BatchExamToeicImageDto" parameterType="com.usher.dto.BatchExamToeicImageDto">
+		select
+			id,
+			type,
+			num,
+			image_url,
+			image_sorting
+		from
+			batch_exam_toeic_image
+		where
+			type = #{type}
+			and num = #{num}
+		order by image_sorting
+	</select>	
+	
+	<insert id="insertBatchExamToeicImage" parameterType="com.usher.dto.BatchExamToeicImageDto">
+		insert into batch_exam_toeic_image (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			type,
+			num,
+			image_url,
+			image_sorting
+		)values(
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{type},
+			#{num},
+			#{image_url},
+			#{image_sorting}
+		)
+	</insert>
+	
+			
+</mapper>

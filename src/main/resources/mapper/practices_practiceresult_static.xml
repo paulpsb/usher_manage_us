@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticeresultStaticDao">
+	<select id="getPracticeResultStatic" parameterType="com.usher.dto.PracticesPracticeresultStaticDto" resultType="com.usher.dto.PracticesPracticeresultStaticDto">
+		select
+			id,
+			section,	
+			practice_type,	
+			book,	
+			volume,
+			"group",
+			article,
+			passage,	
+			paragraph,
+			date,
+			score,
+			score1,
+			score2,
+			total_score,
+			total_score1,
+			total_score2,
+			course_enrollment_id,
+			pass_result,
+			out_pass_result,
+			user_pass_result,
+			week_pass_result
+		from
+			practices_practiceresult_static
+		where
+			section = #{section}	
+			and practice_type = #{practice_type}	
+			and book = #{book}
+			and volume = #{volume}
+			and "group" = #{group}
+			and article = #{article}
+			and passage = #{passage}
+			and paragraph = #{paragraph}
+			and course_enrollment_id = #{course_enrollment_id}
+			and date = current_date
+		limit 1
+	</select>
+
+	<select id="getPracticeResultStaticList" parameterType="com.usher.dto.PracticesPracticeresultStaticDto" resultType="com.usher.dto.PracticesPracticeresultStaticDto">
+		select
+			section,
+			practice_type,
+			book,
+			volume,
+			"group",
+			article,
+			passage,
+			paragraph,
+			to_char(date,'yyyy-mm-dd') as date,
+			to_char(modified,'hh24:mi') as timem,
+			score,
+			score1,
+			score2,
+			total_score,
+			total_score1,
+			total_score2,
+			course_enrollment_id,
+			pass_result,
+			out_pass_result,
+			user_pass_result,
+			week_pass_result
+		from 
+			practices_practiceresult_static 
+		where
+			course_enrollment_id in ( select course_enrollment_id from courses_allocation  where first_course_id = #{course_id} or current_course_id = #{course_id} )
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		<if test="practice_type != null and practice_type !='' ">
+			and practice_type = #{practice_type}
+		</if>	
+		<if test="date != null and date !='' ">
+			and to_char(date,'yyyy-mm-dd') = #{date}
+		</if>	
+		order by course_enrollment_id, section, practice_type, book, volume, "group", article, pass_result, score desc, passage, paragraph, to_char(date,'yyyy-mm-dd'),  out_pass_result, user_pass_result, week_pass_result
+	</select>
+
+	<select id="getPracticeResultStaticHomeworkList" parameterType="com.usher.dto.PracticesPracticeresultStaticDto" resultType="com.usher.dto.PracticesPracticeresultStaticDto">
+		select
+			section,
+			practice_type,
+			book,
+			volume,
+			"group",
+			article,
+			passage,
+			paragraph,
+			to_char(date,'yyyy-mm-dd') as date,
+			to_char(modified,'hh24:mi') as timem,
+			score,
+			score1,
+			score2,
+			total_score,
+			total_score1,
+			total_score2,
+			course_enrollment_id,
+			pass_result,
+			out_pass_result,
+			user_pass_result,
+			week_pass_result
+		from 
+			practices_practiceresult_static_homework 
+		where
+			course_enrollment_id in ( select course_enrollment_id from courses_allocation  where first_course_id = #{course_id} or current_course_id = #{course_id} )
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		<if test="practice_type != null and practice_type !='' ">
+			and practice_type = #{practice_type}
+		</if>	
+		<if test="date != null and date !='' ">
+			and to_char(date,'yyyy-mm-dd') = #{date}
+		</if>	
+		order by course_enrollment_id, section, practice_type, book, volume, "group", article, pass_result, score desc, passage, paragraph, to_char(date,'yyyy-mm-dd'),  out_pass_result, user_pass_result, week_pass_result
+	</select>
+				
+	<select id="getPracticeResultStaticCourseGroupList" parameterType="com.usher.dto.PracticesPracticeresultStaticDto" resultType="com.usher.dto.PracticesPracticeresultStaticDto">
+		select
+			section,
+			practice_type,
+			book,
+			volume,
+			"group",
+			article,
+			passage,
+			paragraph,
+			to_char(date,'yyyy-mm-dd') as date,
+			to_char(modified,'hh24:mi') as timem,
+			score,
+			score1,
+			score2,
+			total_score,
+			total_score1,
+			total_score2,
+			course_enrollment_id,
+			pass_result,
+			out_pass_result,
+			user_pass_result,
+			week_pass_result
+		from 
+			practices_practiceresult_static 
+		where
+			course_enrollment_id in ( select id from enrollments_courseenrollment  where course_id in ( select id from courses_course where course_group_id =#{course_group_id} ))
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		<if test="practice_type != null and practice_type !='' ">
+			and practice_type = #{practice_type}
+		</if>	
+		<if test="date != null and date !='' ">
+			and to_char(date,'yyyy-mm-dd') = #{date}
+		</if>	
+		order by course_enrollment_id, section, practice_type, book, volume, "group", article, pass_result, score desc, passage, paragraph, to_char(date,'yyyy-mm-dd'),  out_pass_result, user_pass_result, week_pass_result
+	</select>
+	<select id="getPracticeResultStaticCourseEnrollmentDailyList" parameterType="com.usher.dto.PracticesPracticeresultStaticDto" resultType="com.usher.dto.PracticesPracticeresultStaticDto">
+		<![CDATA[
+		select
+			a.date,
+			coalesce(b.score,0) as score
+		from
+			(
+				select
+					unnest(string_to_array(c.schedule,',')) as date
+				from
+					enrollments_courseenrollment a
+					join courses_course b on a.course_id = b.id
+					join courses_coursegroup c on b.course_group_id = c.id
+				where
+					a.id = #{course_enrollment_id}
+			) a
+			left join (
+				select
+					to_char(date,'yyyy-mm-dd') as date,
+					max(score) as score
+				from
+					practices_practiceresult_static
+				where
+					section = #{section}
+					and practice_type = #{practice_type}
+					and course_enrollment_id = #{course_enrollment_id}
+				group by to_char(date,'yyyy-mm-dd')
+			) b on a.date = b.date
+		where
+			a.date <= to_char(current_date,'yyyy-mm-dd')
+		order by a.date	
+		]]>
+	</select>				
+	<select id="getPracticeResultStaticCourseDailyList" parameterType="com.usher.dto.PracticesPracticeresultStaticDto" resultType="com.usher.dto.PracticesPracticeresultStaticDto">
+		<![CDATA[
+			select
+				a.date,
+				coalesce(b.score,0) as score
+			from
+				(
+					select
+						unnest(string_to_array(b.schedule,',')) as date
+					from
+						courses_course a
+						join courses_coursegroup b on a.course_group_id = b.id
+					where
+						a.id = #{course_id}
+				) a
+				left join (
+					select
+						a.date,
+						round(avg(a.score),0) as score
+					from
+						(
+							select
+								course_enrollment_id,
+								to_char(date,'yyyy-mm-dd') as date,
+								max(score) as score
+							from
+								practices_practiceresult_static
+							where
+								section = #{section}
+								and practice_type = #{practice_type}
+								and course_enrollment_id in (
+									select id from enrollments_courseenrollment where course_id = #{course_id}
+								)
+							group by course_enrollment_id, to_char(date,'yyyy-mm-dd')
+						) a
+					group by a.date
+				)  b on a.date = b.date
+			where
+				a.date <= to_char(current_date,'yyyy-mm-dd')
+			order by a.date
+		]]>
+	</select>				
+	<insert id="insertPracticeResultStatic" parameterType="com.usher.dto.PracticesPracticeresultStaticDto">
+		with upsert as(
+			update practices_practiceresult_static set
+				modified = now(),
+				score = #{score},
+				score1 = #{score1},
+				score2 = #{score2},
+				total_score = #{total_score},
+				total_score1 = #{total_score1},
+				total_score2 = #{total_score2},
+				pass_result = #{pass_result},
+				out_pass_result = #{out_pass_result},
+				user_pass_result = #{user_pass_result},
+				week_pass_result = #{week_pass_result}
+			where
+				section = #{section}	
+				and practice_type = #{practice_type}	
+				and book = #{book}
+				and volume = #{volume}
+				and "group" = #{group}
+				and article = #{article}
+				and passage = #{passage}
+				and paragraph = #{paragraph}
+				and course_enrollment_id = #{course_enrollment_id}
+				and date = current_date	
+			returning *
+		)
+		insert into practices_practiceresult_static(
+			created,
+			modified,
+			section,	
+			practice_type,	
+			book,	
+			volume,
+			"group",
+			article,
+			passage,	
+			paragraph,
+			date,
+			score,
+			score1,
+			score2,
+			total_score,
+			total_score1,
+			total_score2,
+			course_enrollment_id,
+			pass_result,
+			out_pass_result,
+			user_pass_result,
+			week_pass_result
+		)
+		select
+			now(),
+			now(),
+			#{section},	
+			#{practice_type},	
+			#{book},	
+			#{volume},
+			#{group},
+			#{article},
+			#{passage},	
+			#{paragraph},
+			current_date,
+			#{score},
+			#{score1},
+			#{score2},
+			#{total_score},
+			#{total_score1},
+			#{total_score2},
+			#{course_enrollment_id},
+			#{pass_result},
+			#{out_pass_result},
+			#{user_pass_result},
+			#{week_pass_result}
+		where not exists(select * from upsert)
+	</insert>	
+	
+	<update id="updatePracticeResultStatic" parameterType="com.usher.dto.PracticesPracticeresultStaticDto">
+		update practices_practiceresult_static set
+			modified = now(),
+			score = #{score},
+			score1 = #{score1},
+			score2 = #{score2},
+			total_score = #{total_score},
+			total_score1 = #{total_score1},
+			total_score2 = #{total_score2},
+			pass_result = #{pass_result},
+			out_pass_result = #{out_pass_result},
+			user_pass_result = #{user_pass_result},
+			week_pass_result = #{week_pass_result}
+		where
+			id = #{id}
+	</update>		
+</mapper>

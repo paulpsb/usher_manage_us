@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchExamReadingQuestionDao">
+	<select id="getBatchExamReadingQuestionList" resultType="com.usher.dto.BatchExamReadingQuestionDto" parameterType="com.usher.dto.BatchExamReadingQuestionDto">
+		select
+			id,
+			type,
+			num,
+			sub_num,
+			question_num,
+			question,
+			category,
+			score,
+			answer,
+			answer1			
+		from
+			batch_exam_reading_question
+		where
+			type = #{type}
+			and num = #{num}
+			and sub_num = #{sub_num}	
+		order by question_num		
+	</select>
+	<select id="getBatchExamReadingQuestion" resultType="com.usher.dto.BatchExamReadingQuestionDto" parameterType="com.usher.dto.BatchExamReadingQuestionDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd HH24:MI:SS') as created,
+			a.created_id,
+			concat(b.last_name, b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd HH24:MI:SS') as modified,
+			a.modified_id,
+			concat(c.last_name, c.first_name) as modified_name,
+			a.type,
+			a.num,
+			a.sub_num,
+			a.question_num,
+			a.question_type,
+			a.question,
+			a.choice_a,
+			a.choice_b,
+			a.choice_c,
+			a.choice_d,
+			a.choice_e,
+			a.choice_f,
+			a.choice_g,
+			a.choice_h,
+			a.choice_i,
+			a.score,
+			a.answer,
+			a.answer1,
+			a.category,
+			a.marker1,
+			a.marker2,
+			a.passage,
+			a.paragraph1,
+			a.paragraph2,
+			a.paragraph3,
+			a.paragraph4,
+			a.paragraph5,
+			a.paragraph6,
+			a.paragraph7,
+			a.paragraph8,
+			a.paragraph9,
+			a.paragraph10,
+			a.qcat1,
+			a.qcat2,
+			a.qcat1c,
+			a.qcat2c
+		from
+			batch_exam_reading_question a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+		where
+			a.type = #{type}
+			and a.num = #{num}
+			and a.sub_num = #{sub_num}
+			and a.question_num = #{question_num}
+	</select>
+	
+	<insert id="insertBatchExamReadingQuestion" parameterType="com.usher.dto.BatchExamReadingQuestionDto">
+		insert into batch_exam_reading_question (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			type,
+			num,
+			sub_num,
+			question_num,
+			question_type,
+			question,
+			choice_a,
+			choice_b,
+			choice_c,
+			choice_d,
+			choice_e,
+			choice_f,
+			choice_g,
+			choice_h,
+			choice_i,
+			score,
+			answer,
+			answer1,
+			category,
+			marker1,
+			marker2,
+			passage,
+			paragraph1,
+			paragraph2,
+			paragraph3,
+			paragraph4,
+			paragraph5,
+			paragraph6,
+			paragraph7,
+			paragraph8,
+			paragraph9,
+			paragraph10,
+			qcat1,
+			qcat2,
+			qcat1c,
+			qcat2c
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{type},
+			#{num},
+			#{sub_num},
+			#{question_num},
+			#{question_type},
+			#{question},
+			#{choice_a},
+			#{choice_b},
+			#{choice_c},
+			#{choice_d},
+			#{choice_e},
+			#{choice_f},
+			#{choice_g},
+			#{choice_h},
+			#{choice_i},
+			#{score},
+			#{answer},
+			#{answer1},
+			#{category},
+			#{marker1},
+			#{marker2},
+			#{passage},
+			#{paragraph1},
+			#{paragraph2},
+			#{paragraph3},
+			#{paragraph4},
+			#{paragraph5},
+			#{paragraph6},
+			#{paragraph7},
+			#{paragraph8},
+			#{paragraph9},
+			#{paragraph10},
+			#{qcat1},
+			#{qcat2},
+			#{qcat1c},
+			#{qcat2c}
+		)
+	</insert>	
+	
+	<update id="updateBatchExamReadingQuestion" parameterType="com.usher.dto.BatchExamReadingQuestionDto">
+		update batch_exam_reading_question  set
+			modified = now(),
+			modified_id = #{modified_id},
+			question_type = #{question_type},
+			question = #{question},
+			choice_a = #{choice_a},
+			choice_b = #{choice_b},
+			choice_c = #{choice_c},
+			choice_d = #{choice_d},
+			choice_e = #{choice_e},
+			choice_f = #{choice_f},
+			choice_g = #{choice_g},
+			choice_h = #{choice_h},
+			choice_i = #{choice_i},
+			score = #{score},
+			answer = #{answer},
+			answer1 = #{answer1},
+			category = #{category},
+			marker1 = #{marker1},
+			marker2 = #{marker2},
+			passage = #{passage},
+			paragraph1 = #{paragraph1},
+			paragraph2 = #{paragraph2},
+			paragraph3 = #{paragraph3},
+			paragraph4 = #{paragraph4},
+			paragraph5 = #{paragraph5},
+			paragraph6 = #{paragraph6},
+			paragraph7 = #{paragraph7},
+			paragraph8 = #{paragraph8},
+			paragraph9 = #{paragraph9},
+			paragraph10 = #{paragraph10},
+			qcat1 = #{qcat1},
+			qcat2 = #{qcat2},
+			qcat1c = #{qcat1c},
+			qcat2c = #{qcat2c}
+		where
+			type = #{type}
+			and num = #{num}
+			and sub_num = #{sub_num}
+			and question_num = #{question_num}
+	</update>			
+</mapper>

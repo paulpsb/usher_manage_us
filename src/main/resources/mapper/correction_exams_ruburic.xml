@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CorrectionExamsRuburicDao">
+	<select id="getCorrectionExamsRuburic" parameterType="com.usher.dto.CorrectionExamsRuburicDto" resultType="com.usher.dto.CorrectionExamsRuburicDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.rubric_id,
+			concat(b.last_name,b.first_name) as rubric_name,
+			a.rubric_score01,
+			a.rubric_score02,
+			a.rubric_score03,
+			a.rubric_score04,
+			a.rubric_score05,
+			a.rubric_score06,
+			a.rubric_score07,
+			a.rubric_score08,
+			a.rubric_score09,
+			a.rubric_score10,
+			a.rubric_total_score,
+			a.correction_exams_answer_id
+		from
+			correction_exams_ruburic a
+			join auth_user b on a.rubric_id = b.id
+		where
+			a.correction_exams_answer_id = #{correction_exams_answer_id}
+	</select>
+	<insert id="insertCorrectionExamsRuburic" parameterType="com.usher.dto.CorrectionExamsRuburicDto">
+		with upsert as (
+			update correction_exams_ruburic set
+				modified = now(),
+				rubric_id = #{rubric_id},
+				rubric_score01 = #{rubric_score01},
+				rubric_score02 = #{rubric_score02},
+				rubric_score03 = #{rubric_score03},
+				rubric_score04 = #{rubric_score04},
+				rubric_score05 = #{rubric_score05},
+				rubric_score06 = #{rubric_score06},
+				rubric_score07 = #{rubric_score07},
+				rubric_score08 = #{rubric_score08},
+				rubric_score09 = #{rubric_score09},
+				rubric_score10 = #{rubric_score10},
+				rubric_total_score = #{rubric_total_score}
+			where
+				correction_exams_answer_id = #{correction_exams_answer_id}
+			returning * 
+		)
+		insert into correction_exams_ruburic(
+			created,
+			modified,
+			rubric_id,
+			rubric_score01,
+			rubric_score02,
+			rubric_score03,
+			rubric_score04,
+			rubric_score05,
+			rubric_score06,
+			rubric_score07,
+			rubric_score08,
+			rubric_score09,
+			rubric_score10,
+			rubric_total_score,
+			correction_exams_answer_id			
+		)
+		select
+			now(),
+			now(),
+			#{rubric_id},
+			#{rubric_score01},
+			#{rubric_score02},
+			#{rubric_score03},
+			#{rubric_score04},
+			#{rubric_score05},
+			#{rubric_score06},
+			#{rubric_score07},
+			#{rubric_score08},
+			#{rubric_score09},
+			#{rubric_score10},
+			#{rubric_total_score},
+			#{correction_exams_answer_id}
+		where not exists( select * from upsert)
+	</insert>
+	<insert id="insertCorrectionExamsRuburicLog" parameterType="com.usher.dto.CorrectionExamsRuburicDto">
+		insert into correction_exams_ruburic_log(
+			created,
+			modified,
+			rubric_id,
+			rubric_score01,
+			rubric_score02,
+			rubric_score03,
+			rubric_score04,
+			rubric_score05,
+			rubric_score06,
+			rubric_score07,
+			rubric_score08,
+			rubric_score09,
+			rubric_score10,
+			rubric_total_score,
+			correction_exams_answer_id			
+		)
+		select
+			created,
+			modified,
+			rubric_id,
+			rubric_score01,
+			rubric_score02,
+			rubric_score03,
+			rubric_score04,
+			rubric_score05,
+			rubric_score06,
+			rubric_score07,
+			rubric_score08,
+			rubric_score09,
+			rubric_score10,
+			rubric_total_score,
+			correction_exams_answer_id		
+		from
+			correction_exams_ruburic
+		where
+			correction_exams_answer_id = #{correction_exams_answer_id}
+	</insert>		
+</mapper>

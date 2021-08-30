@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticeproblemDao">
+	<select id="getProblemSectionList" resultType="com.usher.dto.PracticesPracticeproblemDto">
+		select 
+			a.section,
+			b.section_order
+		from
+			practices_practiceproblem a
+			join practices_practicesection b on a.section = b.section
+		where
+			a.status = 'ACTIVE'
+		group by a.section, b.section_order
+		order by 2,1
+	</select>
+	
+	<select id="getProblemBookList" resultType="com.usher.dto.PracticesPracticeproblemDto" parameterType="com.usher.dto.PracticesPracticeproblemDto">
+		select 
+			a.book,
+			b.book_order
+		from
+			practices_practiceproblem a
+			join (
+				select
+					a.section,
+					a.section_order,
+					b.book,
+					b.book_order,
+					coalesce(c.volume,'') as volume,
+					coalesce(c.volume_order,0) as volume_order,
+					coalesce(d.group,'') as group,
+					coalesce(d.group_order,0) as group_order
+				from
+					practices_practicesection a
+					join practices_practicebook b on a.id = b.practice_section_id
+					left join practices_practicevolume c on b.practice_section_id = c.practice_section_id and b.id = c.practice_book_id
+					left join practices_practicegroup d on c.practice_section_id = d.practice_section_id and c.practice_book_id = d.practice_book_id and c.id = d.practice_volume_id			
+			) b on a.section = b.section and a.book = b.book and a.volume = b.volume and a.group = b.group			
+		where
+			a.section = #{section}
+			and a.status = 'ACTIVE'
+		<if test="correction_yn != null and correction_yn !='' ">			
+			and a.correction_yn = #{correction_yn}
+		</if>			
+		group by a.book,b.book_order
+		order by 2,1
+	</select>
+
+	<select id="getProblemVolumeList" resultType="com.usher.dto.PracticesPracticeproblemDto" parameterType="com.usher.dto.PracticesPracticeproblemDto">
+		select 
+			a.volume,
+			b.volume_order
+		from
+			practices_practiceproblem a
+			join (
+				select
+					a.section,
+					a.section_order,
+					b.book,
+					b.book_order,
+					coalesce(c.volume,'') as volume,
+					coalesce(c.volume_order,0) as volume_order,
+					coalesce(d.group,'') as group,
+					coalesce(d.group_order,0) as group_order
+				from
+					practices_practicesection a
+					join practices_practicebook b on a.id = b.practice_section_id
+					left join practices_practicevolume c on b.practice_section_id = c.practice_section_id and b.id = c.practice_book_id
+					left join practices_practicegroup d on c.practice_section_id = d.practice_section_id and c.practice_book_id = d.practice_book_id and c.id = d.practice_volume_id		
+			) b on a.section = b.section and a.book = b.book and a.volume = b.volume and a.group = b.group			
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume != ''
+			and a.status = 'ACTIVE'
+		group by a.volume,b.volume_order
+		order by 2,1
+	</select>
+	
+	<select id="getProblemGroupList" resultType="com.usher.dto.PracticesPracticeproblemDto" parameterType="com.usher.dto.PracticesPracticeproblemDto">
+		select 
+			a."group",
+			b.group_order
+		from
+			practices_practiceproblem a
+			join (
+				select
+					a.section,
+					a.section_order,
+					b.book,
+					b.book_order,
+					coalesce(c.volume,'') as volume,
+					coalesce(c.volume_order,0) as volume_order,
+					coalesce(d.group,'') as group,
+					coalesce(d.group_order,0) as group_order
+				from
+					practices_practicesection a
+					join practices_practicebook b on a.id = b.practice_section_id
+					left join practices_practicevolume c on b.practice_section_id = c.practice_section_id and b.id = c.practice_book_id
+					left join practices_practicegroup d on c.practice_section_id = d.practice_section_id and c.practice_book_id = d.practice_book_id and c.id = d.practice_volume_id		
+			) b on a.section = b.section and a.book = b.book and a.volume = b.volume and a.group = b.group			
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume = #{volume}
+			and a."group" != ''
+			and a.status = 'ACTIVE'
+		group by a."group", b.group_order
+		order by 2,1
+	</select>
+		
+	<select id="getProblemArticleList" resultType="com.usher.dto.PracticesPracticeproblemDto" parameterType="com.usher.dto.PracticesPracticeproblemDto">
+		select 
+			article,
+			short_title
+		from
+			practices_practiceproblem
+		where
+			section = #{section}
+			and book = #{book}
+			and volume = #{volume}
+			and "group" = #{group}
+			and article != ''
+			and status = 'ACTIVE'
+		group by article, short_title
+		order by 1
+	</select>
+	
+	<select id="getProblemList" resultType="com.usher.dto.PracticesPracticeproblemDto" parameterType="com.usher.dto.PracticesPracticeproblemDto">
+		select 
+			a.id,
+			a.status,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.total_score_voca,
+			a.total_score_blueprint,
+			a.total_score_grammar_syntax,
+			a.total_score_passage_phrase,
+			a.total_score_passage_voca,
+			a.total_score,
+			a.short_title,
+			a.correction_yn
+		from
+			practices_practiceproblem a
+			join (
+				select
+					a.section,
+					a.section_order,
+					b.book,
+					b.book_order,
+					coalesce(c.volume,'') as volume,
+					coalesce(c.volume_order,0) as volume_order,
+					coalesce(d.group,'') as group,
+					coalesce(d.group_order,0) as group_order
+				from
+					practices_practicesection a
+					join practices_practicebook b on a.id = b.practice_section_id
+					left join practices_practicevolume c on b.practice_section_id = c.practice_section_id and b.id = c.practice_book_id
+					left join practices_practicegroup d on c.practice_section_id = d.practice_section_id and c.practice_book_id = d.practice_book_id and c.id = d.practice_volume_id			
+			) b on a.section = b.section and a.book = b.book and a.volume = b.volume and a.group = b.group
+		where
+			a.section = #{section}
+			and a.status = 'ACTIVE'
+		<if test="book != null and book !='' ">			
+			and a.book = #{book}
+		</if>				
+		<if test="volume != null and volume !='' ">			
+			and a.volume = #{volume}
+		</if>	
+		<if test="group != null and group !='' ">			
+			and a."group" = #{group}
+		</if>
+		<if test="correction_yn != null and correction_yn !='' ">			
+			and a.correction_yn = #{correction_yn}
+		</if>
+								
+		order by b.section_order, b.section, b.book_order, b.book, b.volume_order, b.volume, b.group_order, b.group, a.article
+	</select>
+	
+	<select id="getProblem" resultType="com.usher.dto.PracticesPracticeproblemDto" parameterType="com.usher.dto.PracticesPracticeproblemDto">
+		select 
+			id,
+			status,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+			total_score_voca,
+			total_score_blueprint,
+			total_score_grammar_syntax,
+			total_score_passage_phrase,
+			total_score_passage_voca,
+			total_score,
+			short_title,
+			correction_yn
+		from
+			practices_practiceproblem
+		where
+			id = #{id}
+	</select>
+				
+	<insert id="insertProblem" parameterType="com.usher.dto.PracticesPracticeproblemDto">
+		insert into practices_practiceproblem (
+			created,
+			modified,
+			status,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+			total_score_voca,
+			total_score_blueprint,
+			total_score_grammar_syntax,
+			total_score_passage_phrase,
+			total_score_passage_voca,
+			total_score,
+			short_title,
+			correction_yn
+		) values (
+			now(),
+			now(),
+			'ACTIVE',
+			#{section},
+			#{book},
+			#{volume},
+			#{group},
+			#{article},
+			#{total_score_voca},
+			#{total_score_blueprint},
+			#{total_score_grammar_syntax},
+			#{total_score_passage_phrase},
+			#{total_score_passage_voca},
+			#{total_score},
+			#{short_title},
+			'N'
+		)
+	</insert>
+	
+	<update id="updateProblemCorrection" parameterType="com.usher.dto.PracticesPracticeproblemDto">
+		update practices_practiceproblem set
+			modified = now(),
+			correction_yn = #{correction_yn}
+		where
+			id = #{id}	
+	</update>
+	
+	<update id="updateProblem" parameterType="com.usher.dto.PracticesPracticeproblemDto">
+		update practices_practiceproblem set
+			modified = now(),
+			total_score_voca = #{total_score_voca},
+			total_score_blueprint = #{total_score_blueprint},
+			total_score_grammar_syntax = #{total_score_grammar_syntax},
+			total_score_passage_phrase = #{total_score_passage_phrase},
+			total_score_passage_voca = #{total_score_passage_voca},
+			total_score = #{total_score},
+			short_title = #{short_title},
+			correction_yn = #{correction_yn}
+		where
+			id = #{id}	
+	</update>
+	
+	<delete id="deleteProblem" parameterType="com.usher.dto.PracticesPracticeproblemDto">
+		delete from practices_practiceproblem
+		where
+			id = #{id}	
+	</delete>
+	
+</mapper>

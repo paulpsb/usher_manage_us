@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CorrectionUserProductDao">
+	<select id="getCorrectionUserProductCount" parameterType="com.usher.dto.CorrectionUserProductDto" resultType="com.usher.dto.CorrectionUserProductDto">
+		select count(*) as total_count
+		from
+			correction_user_product a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+			join auth_user d on a.user_id = d.id
+		where
+			1 = 1
+		<if test="status != null and status !='' ">			
+			and a.status = #{status}
+		</if>			
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>	
+		<if test="practice_type != null and practice_type !='' ">			
+			and a.practice_type = #{practice_type}
+		</if>	
+		<if test="user_name != null and user_name !='' ">			
+			and ( concat(d.last_name,d.first_name) like concat('%',#{user_name},'%') or d.username like concat('%',#{user_name},'%') )
+		</if>				
+	</select>
+	
+	<select id="getCorrectionUserProductList" parameterType="com.usher.dto.CorrectionUserProductDto" resultType="com.usher.dto.CorrectionUserProductDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			a.created_id,
+			concat(b.last_name,b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.modified_id,
+			concat(c.last_name,c.first_name) as modified_name,
+			a.status,
+			a.section,
+			a.practice_type,
+			a.product_type,
+			a.user_id,
+			concat(d.last_name,d.first_name) as user_name,
+			d.username as user_username,
+			to_char(a.expire_date,'yyyy-mm-dd') as expire_date,
+			a.product_count,
+			a.use_count,
+			a.expire_count,
+			a.remain_count,
+			a.book,
+			a.use_type
+		from
+			correction_user_product a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+			join auth_user d on a.user_id = d.id
+		where
+			1 = 1
+		<if test="status != null and status !='' ">			
+			and a.status = #{status}
+		</if>			
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>	
+		<if test="practice_type != null and practice_type !='' ">			
+			and a.practice_type = #{practice_type}
+		</if>	
+		<if test="user_name != null and user_name !='' ">			
+			and ( concat(d.last_name,d.first_name) like concat('%',#{user_name},'%') or d.username like concat('%',#{user_name},'%') )
+		</if>	
+		order by a.id desc
+		limit #{row_num} offset #{first_num}
+	</select>
+	<select id="getCorrectionUserProduct" parameterType="com.usher.dto.CorrectionUserProductDto" resultType="com.usher.dto.CorrectionUserProductDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			a.created_id,
+			concat(b.last_name,b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.modified_id,
+			concat(c.last_name,c.first_name) as modified_name,
+			a.status,
+			a.section,
+			a.practice_type,
+			a.product_type,
+			a.user_id,
+			concat(d.last_name,d.first_name) as user_name,
+			d.username as user_username,
+			to_char(a.expire_date,'yyyy-mm-dd') as expire_date,
+			a.product_count,
+			a.use_count,
+			a.expire_count,
+			a.remain_count,
+			a.book,
+			a.use_type
+		from
+			correction_user_product a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+			join auth_user d on a.user_id = d.id
+		where
+			a.id = #{id}
+	</select>	
+	<insert id="insertCorrectionUserProduct" parameterType="com.usher.dto.CorrectionUserProductDto">
+		insert into correction_user_product(
+			created,
+			created_id,
+			modified,
+			modified_id,
+			status,
+			section,
+			practice_type,
+			product_type,
+			user_id,
+			expire_date,
+			product_count,
+			use_count,
+			expire_count,
+			remain_count,
+			book,
+			use_type		
+		)values(
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{status},
+			#{section},
+			#{practice_type},
+			#{product_type},
+			#{user_id},
+			to_date(#{expire_date},'yyyy-mm-dd'),
+			#{product_count},
+			#{use_count},
+			#{expire_count},
+			#{remain_count},
+			#{book},
+			#{use_type}
+		)
+	</insert>
+	<update id="updateCorrectionUserProduct" parameterType="com.usher.dto.CorrectionUserProductDto">
+		update correction_user_product set
+			modified = now(),
+			modified_id = #{modified_id},
+			product_type = #{product_type},
+			expire_date = to_date(#{expire_date},'yyyy-mm-dd'),
+			product_count = #{product_count},
+			remain_count = #{remain_count},
+			book = #{book},
+			use_type = #{use_type}
+		where
+			id = #{id}		
+	</update>
+	<update id="deleteCorrectionUserProduct" parameterType="com.usher.dto.CorrectionUserProductDto">
+		delete from correction_user_product
+		where
+			id = #{id}		
+	</update>
+</mapper>

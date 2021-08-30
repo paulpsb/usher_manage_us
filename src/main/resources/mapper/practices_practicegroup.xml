@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticegroupDao">
+	<select id="getPracticeGroupPageCount" resultType="com.usher.dto.PracticesPracticegroupDto" parameterType="com.usher.dto.PracticesPracticegroupDto">
+		select
+			count(*) as total_count	
+		from
+			practices_practicegroup a
+			join practices_practicesection b on a.practice_section_id = b.id and b.status = 'ACTIVE'
+			join practices_practicebook c on a.practice_book_id = c.id and c.status = 'ACTIVE'
+			join practices_practicevolume d on a.practice_volume_id = d.id and d.status = 'ACTIVE'
+		where 
+			a.status = 'ACTIVE'
+		<if test="practice_section_id > 0 ">
+			and a.practice_section_id = #{practice_section_id}
+		</if>
+		<if test="practice_book_id > 0 ">
+			and a.practice_book_id = #{practice_book_id}
+		</if>
+		<if test="practice_volume_id > 0 ">
+			and a.practice_volume_id = #{practice_volume_id}
+		</if>
+		<if test="section != null and section !='' ">			
+			and b.section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and c.book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and d.volume = #{volume}
+		</if>
+				
+	</select>
+	<select id="getPracticeGroupPageList" resultType="com.usher.dto.PracticesPracticegroupDto" parameterType="com.usher.dto.PracticesPracticegroupDto">
+		select
+			a.id,
+			a.status,
+			b.section,
+			c.book,
+			d.volume,
+			a."group",
+			a.group_order,
+			a.practice_section_id,
+			a.practice_book_id
+		from
+			practices_practicegroup a
+			join practices_practicesection b on a.practice_section_id = b.id and b.status = 'ACTIVE'
+			join practices_practicebook c on a.practice_book_id = c.id and c.status = 'ACTIVE'
+			join practices_practicevolume d on a.practice_volume_id = d.id and d.status = 'ACTIVE'
+		where
+			a.status = 'ACTIVE'
+		<if test="practice_section_id > 0 ">
+			and a.practice_section_id = #{practice_section_id}
+		</if>
+		<if test="practice_book_id > 0 ">
+			and a.practice_book_id = #{practice_book_id}
+		</if>
+		<if test="practice_volume_id > 0 ">
+			and a.practice_volume_id = #{practice_volume_id}
+		</if>
+		<if test="section != null and section !='' ">			
+			and b.section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and c.book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and d.volume = #{volume}
+		</if>		
+		order by b.section_order, b.id, c.book_order, c.id, d.volume_order, d.id, a.group_order, a.id 
+		limit #{row_num} offset #{first_num}
+	</select>	
+	<select id="getPracticeGroupList" resultType="com.usher.dto.PracticesPracticegroupDto" parameterType="com.usher.dto.PracticesPracticegroupDto">
+		select
+			a.id,
+			a.status,
+			b.section,
+			c.book,
+			d.volume,
+			a."group",
+			a.group_order,
+			a.practice_section_id,
+			a.practice_book_id
+		from
+			practices_practicegroup a
+			join practices_practicesection b on a.practice_section_id = b.id and b.status = 'ACTIVE'
+			join practices_practicebook c on a.practice_book_id = c.id and c.status = 'ACTIVE'
+			join practices_practicevolume d on a.practice_volume_id = d.id and d.status = 'ACTIVE'
+		where
+			a.status = 'ACTIVE'
+		<if test="practice_section_id > 0 ">
+			and a.practice_section_id = #{practice_section_id}
+		</if>
+		<if test="practice_book_id > 0 ">
+			and a.practice_book_id = #{practice_book_id}
+		</if>
+		<if test="practice_volume_id > 0 ">
+			and a.practice_volume_id = #{practice_volume_id}
+		</if>
+		<if test="section != null and section !='' ">			
+			and b.section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and c.book = #{book}
+		</if>
+		<if test="volume != null and volume !='' ">			
+			and d.volume = #{volume}
+		</if>	
+		order by b.section_order, b.id, c.book_order, c.id, d.volume_order, d.id, a.group_order, a.id 
+	</select>
+	
+	<select id="getPracticeGroup" resultType="com.usher.dto.PracticesPracticegroupDto" parameterType="com.usher.dto.PracticesPracticegroupDto">
+		select
+			a.id,
+			a.status,
+			b.section,
+			c.book,
+			d.volume,
+			a."group",
+			a.group_order,
+			a.practice_section_id,
+			a.practice_book_id
+		from
+			practices_practicegroup a
+			join practices_practicesection b on a.practice_section_id = b.id
+			join practices_practicebook c on a.practice_book_id = c.id
+			join practices_practicevolume d on a.practice_volume_id = d.id
+		where
+			a.id = #{id}
+	</select>
+	
+	<insert id="insertPracticeGroup" parameterType="com.usher.dto.PracticesPracticegroupDto">
+		insert into practices_practicegroup (
+			created,
+			modified,
+			status,
+			"group",
+			group_order,
+			practice_section_id,
+			practice_book_id,
+			practice_volume_id
+		) values (
+			now(),
+			now(),
+			#{status},
+			#{group},
+			#{group_order},
+			#{practice_section_id},
+			#{practice_book_id},
+			#{practice_volume_id}
+		)
+	</insert>
+	
+	<update id="updatePracticeGroup" parameterType="com.usher.dto.PracticesPracticegroupDto">
+		update practices_practicegroup set
+			modified = now(),
+			status = #{status},
+			"group" = #{group},
+			group_order = #{group_order},
+			practice_section_id = #{practice_section_id},
+			practice_book_id = #{practice_book_id},
+			practice_volume_id = #{practice_volume_id}
+		where
+			id = #{id}	
+	</update>
+	<update id="updatePracticeGroupOrder" parameterType="com.usher.dto.PracticesPracticegroupDto">
+		update practices_practicegroup set
+			modified = now(),
+			group_order = #{group_order}
+		where
+			id = #{id}	
+	</update>	
+</mapper>

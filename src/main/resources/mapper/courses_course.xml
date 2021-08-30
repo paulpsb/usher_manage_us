@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CoursesCourseDao">
+	<select id="getCourseCurrent" resultType="com.usher.dto.CoursesCourseDto">
+		select 
+			to_char(now(),'yyyy-mm-dd') as cur_date,
+			to_char(now(),'hh24:mi:ss') as cur_time
+	</select>
+	<select id="getCourseList" resultType="com.usher.dto.CoursesCourseDto" parameterType="com.usher.dto.CoursesCourseDto">
+		select
+			a.id,
+			a.status,
+			a.name,
+			a.difficulty,
+			a.inner_difficulty,
+			a.open,
+			a.building_name,
+			a.room_no,
+			a.chamgang_building_name,
+			a.chamgang_room_no,
+			a.life_cycle,
+			a.course_group_id,
+			a.row_count,
+			a.column_count,
+			b.name as course_group_name,
+			b.schedule,
+			b.student_type,
+			b.lecture_type,
+			a.zoom_url,
+			a.zoom_ot_url,
+			to_char(now(),'yyyy-mm-dd') as cur_date,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			a.instructor_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as instructor_name,
+			a.manager_id,
+			concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as manager_name
+		from 
+			courses_course a
+			join courses_coursegroup b on a.course_group_id = b.id
+			left join auth_user c on a.instructor_id = c.id
+			left join auth_user d on a.manager_id = d.id
+		where
+			a.course_group_id = #{course_group_id}
+		order by a.difficulty, a.inner_difficulty
+	</select>
+	
+	<select id="getCourseAllList" resultType="com.usher.dto.CoursesCourseDto" parameterType="com.usher.dto.CoursesCourseDto">
+		select
+			a.id,
+			a.status,
+			a.name,
+			a.difficulty,
+			a.inner_difficulty,
+			a.open,
+			a.building_name,
+			a.room_no,
+			a.chamgang_building_name,
+			a.chamgang_room_no,
+			a.life_cycle,
+			a.course_group_id,
+			a.row_count,
+			a.column_count,
+			b.schedule,
+			b.student_type,
+			b.test_type,
+			b.lecture_type,
+			a.zoom_url,
+			a.zoom_ot_url,
+			to_char(now(),'yyyy-mm-dd') as cur_date,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			a.instructor_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as instructor_name,
+			a.manager_id,
+			concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as manager_name
+		from 
+			courses_course a
+			join courses_coursegroup b on a.course_group_id = b.id
+			left join auth_user c on a.instructor_id = c.id
+			left join auth_user d on a.manager_id = d.id
+		where
+			a.course_group_id in ( select id from  courses_coursegroup where semester_id = #{semester_id} )
+		order by a.course_group_id, a.difficulty, a.inner_difficulty
+	</select>
+		
+	<select id="getCourse" resultType="com.usher.dto.CoursesCourseDto" parameterType="com.usher.dto.CoursesCourseDto">
+		select
+			a.id,
+			a.status,
+			a.name,
+			a.difficulty,
+			a.inner_difficulty,
+			a.open,
+			a.building_name,
+			a.room_no,
+			a.chamgang_building_name,
+			a.chamgang_room_no,
+			a.life_cycle,
+			a.course_group_id,
+			a.row_count,
+			a.column_count,
+			b.name as course_group_name,
+			b.schedule,
+			b.student_type,
+			b.test_type,
+			b.lecture_type,
+			a.zoom_url,
+			a.zoom_ot_url,
+			to_char(now(),'yyyy-mm-dd') as cur_date,
+			a.is_voca,
+			a.is_grammar,
+			a.is_reading,
+			a.is_listening,
+			a.is_speaking,
+			a.is_writing,
+			a.instructor_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as instructor_name,
+			a.manager_id,
+			concat(coalesce(d.last_name,''),coalesce(d.first_name,'')) as manager_name,
+			to_char(e.date + interval '1 months','yyyy-mm') as next_semester_date,
+			e.id as semester_id,
+			to_char(e.date,'yyyy년 mm월') as semester_date
+		from 
+			courses_course a
+			join courses_coursegroup b on a.course_group_id = b.id
+			left join auth_user c on a.instructor_id = c.id
+			left join auth_user d on a.manager_id = d.id
+			join courses_semester e on b.semester_id = e.id
+		where
+			a.id = #{id}
+	</select>
+	<update id="updateCourse" parameterType="com.usher.dto.CoursesCourseDto">
+		update courses_course set
+			column_count = #{column_count},
+			row_count = #{row_count}
+		where
+			id = #{id}
+	</update>
+	<update id="updateCourseRoom" parameterType="com.usher.dto.CoursesCourseDto">
+		update courses_course set
+			building_name = #{building_name},
+			room_no = #{room_no},
+			chamgang_building_name = #{chamgang_building_name},
+			chamgang_room_no = #{chamgang_room_no}
+		where
+			id = #{course_id}
+	</update>	
+	<update id="updateCourseZommUrl" parameterType="com.usher.dto.CoursesCourseDto">
+		update courses_course set
+			zoom_url = #{zoom_url},
+			zoom_ot_url = #{zoom_ot_url}
+		where
+			id = #{id}
+	</update>
+	
+	<update id="updateCourseSection" parameterType="com.usher.dto.CoursesCourseDto">
+		update courses_course set
+			is_voca = #{is_voca},
+			is_grammar = #{is_grammar},
+			is_reading = #{is_reading},
+			is_listening = #{is_listening},
+			is_speaking = #{is_speaking},
+			is_writing = #{is_writing}
+		where
+			id = #{course_id}
+	</update>
+	<update id="updateCourseInstructor" parameterType="com.usher.dto.CoursesCourseDto">
+		update courses_course set
+			instructor_id = #{instructor_id}
+		where
+			id = #{course_id}
+	</update>		
+	<update id="updateCourseManager" parameterType="com.usher.dto.CoursesCourseDto">
+		update courses_course set
+			manager_id = #{manager_id}
+		where
+			id = #{course_id}
+	</update>		
+</mapper>

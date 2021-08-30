@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.PracticesPracticescheduleHomeworkDao">
+	<select id="getPracticeScheduleHomeworkSectionList" parameterType="com.usher.dto.PracticesPracticescheduleHomeworkDto" resultType="com.usher.dto.PracticesPracticescheduleHomeworkDto">
+		select 
+			a.section
+		from 
+			practices_practiceschedule_homework a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+			join practices_practicesection c on a.section = c.section
+		where 
+			a.status = 'ACTIVE'
+			and a.course_id = #{course_id}
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		group by a.section, c.section_order
+		order by c.section_order	
+	</select>
+	<select id="getPracticeScheduleHomeworkPracticeList" parameterType="com.usher.dto.PracticesPracticescheduleHomeworkDto" resultType="com.usher.dto.PracticesPracticescheduleHomeworkDto">
+		select 
+			a.section,
+			a.practice_type,
+			d.practice_name
+		from 
+			practices_practiceschedule_homework a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+			join practices_practicesection c on a.section = c.section
+			join practices_practicetype d on a.practice_type = d.practice_type
+		where 
+			a.status = 'ACTIVE'
+			and a.course_id = #{course_id}
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		group by a.section, c.section_order, a.practice_type, d.practice_name, d.type_order
+		order by c.section_order, d.type_order	
+	</select>
+	<select id="getPracticeScheduleHomeworkCourseList" parameterType="com.usher.dto.PracticesPracticescheduleHomeworkDto" resultType="com.usher.dto.PracticesPracticescheduleHomeworkDto">
+		select 
+			a.section,
+			a.practice_type,
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			b.short_title,
+			a.end_paragraph
+		from 
+			practices_practiceschedule_homework a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+			join practices_practicesection c on a.section = c.section
+			join practices_practicetype d on a.practice_type = d.practice_type
+		where 
+			a.status = 'ACTIVE'
+			and a.course_id = #{course_id}
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		group by a.section, a.practice_type, b.book, b.volume, b.group, b.article, b.short_title, a.end_paragraph	
+	</select>
+	<select id="getPracticeScheduleHomeworkList" parameterType="com.usher.dto.PracticesPracticescheduleHomeworkDto" resultType="com.usher.dto.PracticesPracticescheduleHomeworkDto">
+		select 
+			a.id,
+			a.status,
+			a.section,
+			a.practice_type,
+			a.name,
+			b.book,
+			b.volume,
+			b.group,
+			b.article,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.course_id,
+			a.course_enrollment_id,
+			a.practice_problem_id,
+			b.short_title as short_title,
+			a.start_paragraph,
+			a.end_paragraph,
+			a.exam_time,
+			a.exam_count,
+			a.test_type	
+		from 
+			practices_practiceschedule_homework a
+			join practices_practiceproblem b on a.practice_problem_id = b.id
+		where 
+			a.course_id = #{course_id}
+			and a.section = #{section}
+			<if test="date != null and date !='' ">
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+			</if>	
+			and coalesce(a.practice_schedule_id,0) = 0
+			and a.status = 'ACTIVE'
+		order by a.id
+	</select>
+	
+	<insert id="insertPracticeScheduleHomework" parameterType="com.usher.dto.PracticesPracticescheduleHomeworkDto">
+		insert into practices_practiceschedule_homework ( 
+			created,
+			modified,
+			status,
+			section,
+			practice_type,
+			name,
+			date,
+			course_id,
+			course_enrollment_id,
+			practice_problem_id,
+			start_paragraph,
+			end_paragraph,
+			exam_time,
+			exam_count,
+			test_type,
+			practice_schedule_id
+		) values (
+			now(),
+			now(),
+			#{status},
+			#{section},
+			#{practice_type},
+			#{name},
+			to_date(#{date},'yyyy-mm-dd'),
+			#{course_id},
+			#{course_enrollment_id},
+			#{practice_problem_id},
+			#{start_paragraph},
+			#{end_paragraph},
+			#{exam_time},
+			#{exam_count},
+			#{test_type},
+			#{practice_schedule_id}
+		)
+	</insert>
+
+	<update id="updatePracticeScheduleHomeworkParagraph" parameterType="com.usher.dto.PracticesPracticescheduleHomeworkDto">
+		update practices_practiceschedule_homework set
+			modified = now(),
+			start_paragraph = #{start_paragraph},
+			end_paragraph = #{end_paragraph},
+			exam_time = #{exam_time},
+			exam_count = #{exam_count},
+			test_type = #{test_type}			
+		where 
+			id = #{id}
+	</update>
+	
+	<update id="updatePracticeScheduleHomeworkParagraphAsSchedule" parameterType="com.usher.dto.PracticesPracticescheduleHomeworkDto">
+		update practices_practiceschedule_homework set
+			modified = now(),
+			start_paragraph = #{start_paragraph},
+			end_paragraph = #{end_paragraph}		
+		where 
+			practice_schedule_id = #{practice_schedule_id}
+	</update>
+	
+		
+	<update id="updatePracticeScheduleHomework" parameterType="com.usher.dto.PracticesPracticescheduleHomeworkDto">
+		update practices_practiceschedule_homework set
+			modified = now(),
+			status = #{status}			
+		where 
+			id = #{id}
+	</update>
+	
+	<update id="updatePracticeScheduleHomeworkAsSchedule" parameterType="com.usher.dto.PracticesPracticescheduleHomeworkDto">
+		update practices_practiceschedule_homework set
+			modified = now(),
+			status = #{status}			
+		where 
+			practice_schedule_id = #{practice_schedule_id}
+	</update>
+	
+</mapper>

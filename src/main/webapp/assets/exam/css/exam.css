@@ -1,0 +1,165 @@
+html,body {
+    font-family: "Open Sans",Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+   
+}
+
+h1 {
+	margin:20px 0;
+	font-size:24px; 
+	font-weight:800;
+	color:#414042; 
+}
+.header-bar, header {
+    color: #333;
+    background-color: #fff;
+    height: 70px;
+    padding-left: 4px;
+    padding-right: 4px;
+	display:block;
+}
+
+ .logo-container {
+    width:150px;
+	float:left;
+    z-index: 1;
+}
+
+.logo-toefl {
+    display: block;
+    width: 168px;
+    height: 55px;
+	padding:5px;
+}
+.navbar-nav {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+}
+
+.container-ipt {padding:10px;}
+
+.navbar-ipt {
+	padding:0px;/* overriding bootstrap css  */ 
+}
+.navbar-nav {
+    float: left;
+    margin: 0;
+}
+.navbar-nav>li {
+    float: left;
+}
+.nav>li {
+    position: relative;
+    display: block;
+	margin:3px;
+}
+.toefl .brand-bar {
+    background-color: #ea9111;
+    background-color: #077f83;
+	height: auto;
+	height: 10px;
+}
+
+ul, menu, dir {
+    display: block;
+    list-style-type: disc;
+   
+}
+.toefl .toolbar {
+    background-color: #f1f1f1;
+	height:auto;
+    padding: 10px;
+}
+.section-name {
+	font-weight:700;
+}
+
+a.btn,a.btn,button,.btn, input[type=button],input[type=reset],input[type=submit]
+{display:inline-block;padding:.5em .625em .325em .625em;color:#fff;background-color:#2d69ac;border-color:#2d69ac;text-decoration:none;text-align:left;text-decoration:none!important;vertical-align:top!important;cursor:pointer}
+ a.btn:hover,a.btn:focus,a.btn:hover,button:focus,button:hover, .btn:hover, input[type=button]:focus,input[type=button]:hover,input[type=reset]:focus,input[type=reset]:hover,input[type=submit]:focus,input[type=submit]:hover
+ {color:#fff;background-color:#003082;text-decoration:none}
+
+/**.btn {
+    padding: 2px 8px 3px;
+    min-width: 62px;
+    height: 32px;
+    text-shadow: none;
+    font-size: 14px;
+    line-height: 1;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+}**/
+.btn.btn-navigation {
+    color: #FFF;
+    fill: #FFF;
+    background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiP¡¦dpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==);
+    background-size: 100%;
+    background-image: -webkit-gradient(linear,50% 0,50% 100%,color-stop(0,#3b69a0),color-stop(100%,#305481));
+    background-image: -moz-linear-gradient(#3b69a0,#305481);
+    background-image: -webkit-linear-gradient(#3b69a0,#305481);
+    background-image: linear-gradient(#3b69a0,#305481);
+    border-color: #89A4C6;
+    background-position: 0 0;
+}
+
+#wrap-timer {
+    display: block;
+    width: 100%;
+    font-family: arial, sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+    clear: both;
+    padding: 0 5px 0 0;
+    float: right;
+}
+
+.offscreenBottomNav {
+	position:absolute;
+left:-10000px;
+top:auto;
+width:1px;
+height:1px;
+overflow:hidden;
+	
+}
+
+.wrap-head .logos, .wrap-head .nav-site {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 1 50%;
+    flex: 0 1 50%;
+    max-width: 50%;
+}
+.logos {
+    padding-top: 30px;
+    padding-bottom: 10px;
+}
+.logos .logo {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.footer { 
+    top:850px;
+    
+    height:85px; position:absolute; font-size:9px;}
+
+.footer-tradmark{
+
+        background-image: url("../images/toefl-trademark.png");
+        background-repeat: no-repeat;
+        background-position: left top;
+        padding:50px 10px 10px 50px;
+    }
+
+mark {
+	background-color:#F9FE70;
+	color: black;
+}

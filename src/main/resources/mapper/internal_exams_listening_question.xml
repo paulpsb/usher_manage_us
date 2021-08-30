@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsListeningQuestionDao">
+	<select id="getExamsListeningQuestionList" resultType="com.usher.dto.InternalExamsListeningQuestionDto" parameterType="com.usher.dto.InternalExamsListeningQuestionDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd HH24:MI:SS') as created,
+			a.created_id,
+			concat(b.last_name, b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd HH24:MI:SS') as modified,
+			a.modified_id,
+			concat(c.last_name, c.first_name) as modified_name,		
+			a.listening_id,
+			a.question_num,
+			a.category,
+			a.question_type,
+			a.question,
+			a.answer,
+			a.answer1,
+			a.answer2,
+			a.answer3
+		from
+			internal_exams_listening_question a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+		where
+			a.listening_id = #{listening_id}
+		order by a.question_num	
+	</select>
+	<select id="getExamsListeningQuestion" resultType="com.usher.dto.InternalExamsListeningQuestionDto" parameterType="com.usher.dto.InternalExamsListeningQuestionDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd HH24:MI:SS') as created,
+			a.created_id,
+			concat(b.last_name, b.first_name) as created_name,
+			to_char(a.modified,'yyyy-mm-dd HH24:MI:SS') as modified,
+			a.modified_id,
+			concat(c.last_name, c.first_name) as modified_name,
+			a.listening_id,
+		    a.question_num,
+		    a.category,
+		    a.question_type,
+		    a.question,
+		    a.choice_a,
+		    a.choice_b,
+		    a.choice_c,
+		    a.choice_d,
+		    a.choice_e,
+		    a.choice_f,
+		    a.choice_g,
+		    a.choice_h,
+		    a.choice_i,
+		    a.choice_a_check,
+		    a.choice_b_check,
+		    a.choice_c_check,
+		    a.choice_d_check,
+		    a.choice_e_check,
+		    a.choice_f_check,
+		    a.choice_g_check,
+		    a.choice_h_check,
+		    a.choice_i_check,		    
+		    a.score,
+		    a.answer,
+		    a.answer1,
+		    a.answer2,
+		    a.answer3,
+		    a.qcat1,
+		    a.qcat2,
+		    a.qcat3,	
+		    a.qcat4,	
+		    a.question_count
+		from
+			internal_exams_listening_question a
+			join auth_user b on a.created_id = b.id
+			join auth_user c on a.modified_id = c.id
+		where
+			a.listening_id = #{listening_id}
+			and a.question_num = #{question_num}
+	</select>
+	
+	<select id="getExamsListeningQuestionNum" resultType="com.usher.dto.InternalExamsListeningQuestionDto" parameterType="com.usher.dto.InternalExamsListeningQuestionDto">
+		select
+			coalesce(max(question_num) + 1,1) as question_num
+		from
+			internal_exams_listening_question
+		where
+			listening_id = #{listening_id}
+	</select>
+
+	<select id="getExamsListeningQuestionReview" resultType="com.usher.dto.InternalExamsListeningQuestionDto" parameterType="com.usher.dto.InternalExamsListeningQuestionDto">
+		select
+			a.id,
+		    a.question_num,
+		    a.category,
+		    a.question_type,
+		    a.question,
+		    a.choice_a,
+		    a.choice_b,
+		    a.choice_c,
+		    a.choice_d,
+		    a.choice_e,
+		    a.choice_f,
+		    a.choice_g,
+		    a.choice_h,
+		    a.choice_i,
+		    a.choice_a_check,
+		    a.choice_b_check,
+		    a.choice_c_check,
+		    a.choice_d_check,
+		    a.choice_e_check,
+		    a.choice_f_check,
+		    a.choice_g_check,
+		    a.choice_h_check,
+		    a.choice_i_check,		    
+		    a.score,
+		    a.answer,
+		    a.answer1,
+			a.answer2,
+			a.answer3,
+		    a.qcat1,
+		    a.qcat2,
+		    a.qcat3,
+		    a.qcat4,	
+		    a.question_count,
+			coalesce(b.total_count) as total_count,
+			coalesce(b.accept_count) as accept_count,
+			coalesce(c.answer_count_a) as answer_count_a,
+			coalesce(c.answer_count_b) as answer_count_b,
+			coalesce(c.answer_count_c) as answer_count_c,
+			coalesce(c.answer_count_d) as answer_count_d,
+			coalesce(c.answer_count_e) as answer_count_e,
+			coalesce(c.answer_count_f) as answer_count_f,
+			coalesce(c.answer_count_g) as answer_count_g,
+			coalesce(c.answer_count_h) as answer_count_h,
+			coalesce(c.answer_count_i) as answer_count_i		    
+		from
+			internal_exams_listening_question a
+			left join (
+				select
+					question_num,
+					count(*) as total_count,
+					sum(case when result = true then 1 else 0 end) as accept_count
+				from
+					practices_practiceresult_question
+				where
+					practice_problem_id = #{practice_problem_id}
+					and question_num = #{question_num}
+					and course_enrollment_id in (
+						select id
+						from enrollments_courseenrollment
+						where course_id = #{course_id}
+					)
+				group by question_num			
+			) b on a.question_num = b.question_num
+			left join (
+				select
+					a.question_num, 
+					sum(case when a.answer = 'A' then 1 else 0 end) as answer_count_a,
+					sum(case when a.answer = 'B' then 1 else 0 end) as answer_count_b,
+					sum(case when a.answer = 'C' then 1 else 0 end) as answer_count_c,
+					sum(case when a.answer = 'D' then 1 else 0 end) as answer_count_d,
+					sum(case when a.answer = 'E' then 1 else 0 end) as answer_count_e,
+					sum(case when a.answer = 'F' then 1 else 0 end) as answer_count_f,
+					sum(case when a.answer = 'G' then 1 else 0 end) as answer_count_g,
+					sum(case when a.answer = 'H' then 1 else 0 end) as answer_count_h,
+					sum(case when a.answer = 'I' then 1 else 0 end) as answer_count_i
+				from
+					(
+						select
+							question_num,
+							unnest(string_to_array(useranswer,'|')) as answer
+						from
+							practices_practiceresult_question
+						where
+							practice_problem_id = #{practice_problem_id}
+							and question_num = #{question_num}
+							and useranswer != ''
+							and course_enrollment_id in (
+								select id
+								from enrollments_courseenrollment
+								where course_id = #{course_id}
+							)
+						union all
+						select
+							question_num,
+							unnest(string_to_array(useranswer1,'|')) as answer
+						from
+							practices_practiceresult_question
+						where
+							practice_problem_id = #{practice_problem_id}
+							and question_num = #{question_num}
+							and useranswer1 != ''
+							and course_enrollment_id in (
+								select id
+								from enrollments_courseenrollment
+								where course_id = #{course_id}
+							)
+						union all
+						select
+							question_num,
+							unnest(string_to_array(useranswer2,'|')) as answer
+						from
+							practices_practiceresult_question
+						where
+							practice_problem_id = #{practice_problem_id}
+							and question_num = #{question_num}
+							and useranswer2 != ''	
+							and course_enrollment_id in (
+								select id
+								from enrollments_courseenrollment
+								where course_id = #{course_id}
+							)
+					) a
+				group by a.question_num
+			) c on a.question_num = c.question_num
+		where
+			a.listening_id = #{listening_id}
+			and a.question_num = #{question_num}
+	</select>	
+	<select id="getExamsListeningQuestionCourseList" resultType="com.usher.dto.InternalExamsListeningQuestionDto" parameterType="com.usher.dto.InternalExamsListeningQuestionDto">
+		select
+			a.question_num,
+			a.question_type,
+			coalesce(b.total_count,0) as total_count,
+			coalesce(b.accept_count,0) as accept_count,
+			coalesce(b.fail_count,0) as fail_count,
+			case when coalesce(b.total_count,0) > 0 then b.accept_count * 100 / b.total_count else 0 end as accept_rate,
+			case when coalesce(b.total_count,0) > 0 then b.fail_count * 100 / b.total_count else 0 end as fail_rate,
+			coalesce(c.fail_users,'') as fail_users
+		from
+			(
+				select
+					question_num,
+					question_type
+				from
+					practices_practiceproblem a
+					join internal_exams_listening b 
+						on a.section = b.section 
+						and a.book = b.book 
+						and a.volume = b.volume 
+						and a."group" = b."group" 
+						and a.article = b.article
+					join internal_exams_listening_question c on b.id = c.listening_id
+				where
+					a.id = #{practice_problem_id}
+			) a
+			left join (
+				select
+					question_num,
+					count(*) as total_count,
+					sum(case when result = true then 1 else 0 end) as accept_count,
+					sum(case when result = false then 1 else 0 end) as fail_count
+		
+				from
+					practices_practiceresult_question
+				where
+					practice_problem_id = #{practice_problem_id}
+					and course_enrollment_id in (
+						select id
+						from enrollments_courseenrollment
+						where course_id = #{course_id}
+					)
+				group by question_num	
+			) b on a.question_num = b.question_num
+			left join (
+				select
+					a.question_num,
+					array_to_string(array_agg(concat(e.last_name, e.first_name) order by concat(e.last_name, e.first_name)),', ') as fail_users
+				from
+					practices_practiceresult_question a
+					join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+					join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+					join students_student d on c.student_id = d.id
+					join auth_user e on d.user_id = e.id
+				where
+					a.practice_problem_id = #{practice_problem_id}
+					and a.course_enrollment_id in (
+						select id
+						from enrollments_courseenrollment
+						where course_id = #{course_id}
+					)
+					and a.result = false
+				group by a.question_num	
+			) c on a.question_num = c.question_num
+		order by ${sort_id} ${sort_asc}	
+	</select>	
+			
+	<insert id="insertExamsListeningQuestion" parameterType="com.usher.dto.InternalExamsListeningQuestionDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into internal_exams_listening_question (
+			created,
+			created_id,
+			modified,
+			modified_id,
+			listening_id,
+		    question_num,
+		    score
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{listening_id},
+		    #{question_num},
+		    1
+		)
+	</insert>	
+	
+	<update id="updateExamsListeningQuestion" parameterType="com.usher.dto.InternalExamsListeningQuestionDto">
+		update internal_exams_listening_question  set
+			modified = now(),
+			modified_id = #{modified_id},
+			category = #{category},
+			question_type = #{question_type},
+			question = #{question},
+			choice_a = #{choice_a},
+			choice_b = #{choice_b},
+			choice_c = #{choice_c},
+			choice_d = #{choice_d},
+			choice_e = #{choice_e},
+			choice_f = #{choice_f},
+			choice_g = #{choice_g},
+			choice_h = #{choice_h},
+			choice_i = #{choice_i},
+			choice_a_check = #{choice_a_check},
+			choice_b_check = #{choice_b_check},
+			choice_c_check = #{choice_c_check},
+			choice_d_check = #{choice_d_check},
+			choice_e_check = #{choice_e_check},
+			choice_f_check = #{choice_f_check},
+			choice_g_check = #{choice_g_check},
+			choice_h_check = #{choice_h_check},
+			choice_i_check = #{choice_i_check},
+			score = #{score},
+			answer = #{answer},
+			answer1 = #{answer1},
+			answer2 = #{answer2},
+			answer3 = #{answer3},
+			qcat1 = #{qcat1},
+			qcat2 = #{qcat2},	
+			qcat3 = #{qcat3},
+			qcat4 = #{qcat4},
+			question_count = #{question_count}
+		where
+			listening_id = #{listening_id}
+			and question_num = #{question_num}
+	</update>
+		
+	<delete id="deleteExamsListeningQuestion" parameterType="com.usher.dto.InternalExamsListeningQuestionDto">
+		delete from internal_exams_listening_question
+		where
+			listening_id = #{listening_id}
+			and question_num = #{question_num}
+	</delete>			
+</mapper>

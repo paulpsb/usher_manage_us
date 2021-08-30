@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.ExamsToeflDao">
+	<select id="getExamsToeflUserOnlyList" resultType="com.usher.dto.ExamsToeflDto" parameterType="com.usher.dto.ExamsToeflDto">
+		select
+			a.id,
+			a.user_id,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.exams_toefl_type,
+			a.listening,
+			a.reading,
+			a.writing,
+			a.speaking,
+			a.total_score
+		from
+			exams_toefl a
+		where
+			a.user_id = #{user_id}
+		order by a.exams_toefl_type, a.date desc
+	</select>
+	
+	<select id="getExamsToeflList" resultType="com.usher.dto.ExamsToeflDto" parameterType="com.usher.dto.ExamsToeflDto">
+		with enrollment as (
+				select
+					e.id as user_id
+				from
+					courses_allocation a
+					join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+					join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+					join students_student d on c.student_id = d.id
+					join auth_user e on d.user_id = e.id
+				where
+					( a.first_course_id = #{course_id} or a.current_course_id = #{course_id})
+					and COALESCE(b.status,'') != 'REGISTERED'
+					and COALESCE(b.status,'') != 'CANCEL_COMPLETED'
+					and e.username != 'test6' and e.username != 'test5'	
+				group by e.id
+		)
+		select
+			a.id,
+			a.user_id,
+			to_char(a.date,'mm/dd') as date,
+			a.listening,
+			a.reading,
+			a.writing,
+			a.speaking,
+			a.total_score
+		from
+			exams_toefl a
+			join enrollment b on a.user_id = b.user_id
+		where
+			to_char(a.date,'yyyy-mm') = #{date}
+			and a.exams_toefl_type = #{exams_toefl_type}
+		order by a.user_id, a.date desc					
+	</select>
+	<select id="getExamsToeflUserMonthList" resultType="com.usher.dto.ExamsToeflDto" parameterType="com.usher.dto.ExamsToeflDto">
+		select
+			a.id,
+			a.user_id,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.listening,
+			a.reading,
+			a.writing,
+			a.speaking,
+			a.total_score
+		from
+			exams_toefl a
+		where
+			a.user_id = #{user_id}
+			and a.exams_toefl_type = #{exams_toefl_type}
+			and to_char(a.date,'yyyy-mm') = #{date}
+	</select>	
+	
+	<select id="getExamsToeflExcelCount" resultType="com.usher.dto.ExamsToeflDto" parameterType="com.usher.dto.ExamsToeflDto">
+		select count(*) as total_count
+		from
+			exams_toefl
+		where
+			coalesce(toefl_excel_upload,'N')  = 'Y'
+		<if test="toefl_excel_matching != null and toefl_excel_matching !='' ">			
+			and toefl_excel_matching = #{toefl_excel_matching}
+		</if>
+	</select>
+		
+	<select id="getExamsToeflExcelList" resultType="com.usher.dto.ExamsToeflDto" parameterType="com.usher.dto.ExamsToeflDto">
+		select
+			a.id,
+			a.user_id,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.listening,
+			a.reading,
+			a.writing,
+			a.speaking,
+			a.total_score,
+			a.toefl_excel_user_id,
+			a.toefl_excel_user_name,
+			a.toefl_excel_matching,
+			a.toefl_excel_upload
+		from
+			exams_toefl a
+		where
+			coalesce(toefl_excel_upload,'N')  = 'Y'
+		<if test="toefl_excel_matching != null and toefl_excel_matching !='' ">			
+			and toefl_excel_matching = #{toefl_excel_matching}
+		</if>
+		order by a.date desc, a.toefl_excel_user_name
+		limit #{row_num} offset #{first_num}
+	</select>
+
+	<select id="getExamsToeflExcel" resultType="com.usher.dto.ExamsToeflDto" parameterType="com.usher.dto.ExamsToeflDto">
+		select
+			a.id,
+			a.user_id,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.listening,
+			a.reading,
+			a.writing,
+			a.speaking,
+			a.total_score,
+			a.toefl_excel_user_id,
+			a.toefl_excel_user_name,
+			a.toefl_excel_matching,
+			a.toefl_excel_upload
+		from
+			exams_toefl a
+		where 
+			a.toefl_excel_user_id = #{toefl_excel_user_id}
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		limit 1
+	</select>
+	<select id="getExamsToeflNotMatchCount" resultType="com.usher.dto.ExamsToeflDto">
+		select
+			count(*) as toefl_not_matching_count
+		from 
+			exams_toefl
+		where
+			coalesce(toefl_excel_matching,'Y') = 'N'
+	</select>		
+	<insert id="insertExamsToefl" parameterType="com.usher.dto.ExamsToeflDto">
+		insert into exams_toefl(
+			created,
+		    modified,
+		    user_id,
+		    date,
+			exams_toefl_type,
+		    listening,
+		    reading,
+		    writing,
+		    speaking,
+		    total_score
+		)values(
+			now(),
+		    now(),
+		    #{user_id},
+		    to_date(#{date},'yyyy-mm-dd'),
+			#{exams_toefl_type},
+		    #{listening},
+		    #{reading},
+		    #{writing},
+		    #{speaking},
+		    #{total_score}
+		)
+	</insert>
+	<insert id="insertExamsToeflExcel" parameterType="com.usher.dto.ExamsToeflDto">
+		insert into exams_toefl(
+			created,
+		    modified,
+		    user_id,
+		    date,
+			exams_toefl_type,
+		    listening,
+		    reading,
+		    writing,
+		    speaking,
+		    total_score,
+		    toefl_excel_user_id,
+			toefl_excel_user_name,
+			toefl_excel_matching,
+			toefl_excel_upload
+		)values(
+			now(),
+		    now(),
+		    #{user_id},
+		    to_date(#{date},'yyyy-mm-dd'),
+			#{exams_toefl_type},
+		    #{listening},
+		    #{reading},
+		    #{writing},
+		    #{speaking},
+		    #{total_score},
+		    #{toefl_excel_user_id},
+			#{toefl_excel_user_name},
+			#{toefl_excel_matching},
+			#{toefl_excel_upload}
+		)
+	</insert>
+	<update id="updateExamsToeflExcel" parameterType="com.usher.dto.ExamsToeflDto">
+		update exams_toefl set
+			 user_id = #{user_id},
+			 toefl_excel_matching = 'Y'
+		where
+			id = #{id}
+	</update>
+	<delete id="deleteExamsToefl" parameterType="com.usher.dto.ExamsToeflDto">
+		delete from exams_toefl 
+		where
+			user_id = #{user_id}
+			and exams_toefl_type = #{exams_toefl_type}
+			and to_char(date,'yyyy-mm') = #{date}
+	</delete>
+</mapper>

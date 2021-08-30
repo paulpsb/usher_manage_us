@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BatchScheduleDao">
+	<select id="getBatchScheduleMonthlyList" resultType="com.usher.dto.BatchScheduleDto" parameterType="com.usher.dto.BatchScheduleDto">
+		select
+			a.id,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			to_char(a.start_time,'HH24:MI') as start_time,
+			to_char(a.end_time,'HH24:MI') as end_time,
+			a.batch_grammar,
+			a.batch_grammar_type,
+			a.batch_grammar_num,
+			a.batch_grammar_min,
+			to_char(a.batch_grammar_start_time,'HH24:MI') as batch_grammar_start_time,
+			to_char(a.batch_grammar_end_time,'HH24:MI') as batch_grammar_end_time,
+			a.batch_reading,
+			a.batch_reading_type,
+			a.batch_reading_num,
+			a.batch_reading_min,
+			to_char(a.batch_reading_start_time,'HH24:MI') as batch_reading_start_time,
+			to_char(a.batch_reading_end_time,'HH24:MI') as batch_reading_end_time,
+			a.batch_listening,
+			a.batch_listening_type,
+			a.batch_listening_num,
+			a.batch_listening_min,
+			to_char(a.batch_listening_start_time,'HH24:MI') as batch_listening_start_time,
+			to_char(a.batch_listening_end_time,'HH24:MI') as batch_listening_end_time,
+			a.batch_toeic,
+			a.batch_toeic_type,
+			a.batch_toeic_num,
+			a.batch_toeic_min,
+			to_char(a.batch_toeic_start_time,'HH24:MI') as batch_toeic_start_time,
+			to_char(a.batch_toeic_end_time,'HH24:MI') as batch_toeic_end_time,
+			a.course_id,
+			b.course_name,
+			a.batch_adviser_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as batch_adviser_name	
+		from
+			batch_schedule a
+			left join (
+				select
+					a.id,
+					concat(b.name, ' ', a.name, '반') as course_name
+				from 
+					courses_course a
+					join courses_coursegroup b on a.course_group_id = b.id			
+			) b on a.course_id = b.id 
+			left join auth_user c on a.batch_adviser_id = c.id
+		where
+			to_char(a.date,'yyyy-mm') = #{date}
+		order by a.id
+	</select>
+	
+	<select id="getBatchScheduleAsDate" resultType="com.usher.dto.BatchScheduleDto" parameterType="com.usher.dto.BatchScheduleDto">
+		select
+			a.id,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			to_char(a.start_time,'HH24:MI') as start_time,
+			to_char(a.end_time,'HH24:MI') as end_time,
+			a.batch_grammar,
+			a.batch_grammar_type,
+			a.batch_grammar_num,
+			a.batch_grammar_min,
+			a.batch_reading,
+			a.batch_reading_type,
+			a.batch_reading_num,
+			a.batch_reading_min,
+			a.batch_toeic,
+			a.batch_toeic_type,
+			a.batch_toeic_num,
+			a.batch_toeic_min,
+			a.course_id,
+			a.batch_adviser_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as batch_adviser_name	
+		from
+			batch_schedule a
+			left join auth_user c on a.batch_adviser_id = c.id
+		where
+			to_char(date,'yyyy-mm-dd') = #{date}
+	</select>
+	
+	<select id="getBatchSchedule" resultType="com.usher.dto.BatchScheduleDto" parameterType="com.usher.dto.BatchScheduleDto">
+		select
+			a.id,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			to_char(a.start_time,'HH24:MI') as start_time,
+			to_char(a.end_time,'HH24:MI') as end_time,
+			a.batch_grammar,
+			a.batch_grammar_type,
+			a.batch_grammar_num,
+			a.batch_grammar_min,
+			to_char(a.batch_grammar_start_time,'HH24:MI') as batch_grammar_start_time,
+			to_char(a.batch_grammar_end_time,'HH24:MI') as batch_grammar_end_time,
+			a.batch_reading,
+			a.batch_reading_type,
+			a.batch_reading_num,
+			a.batch_reading_min,
+			to_char(a.batch_reading_start_time,'HH24:MI') as batch_reading_start_time,
+			to_char(a.batch_reading_end_time,'HH24:MI') as batch_reading_end_time,
+			a.batch_listening,
+			a.batch_listening_type,
+			a.batch_listening_num,
+			a.batch_listening_min,
+			to_char(a.batch_listening_start_time,'HH24:MI') as batch_listening_start_time,
+			to_char(a.batch_listening_end_time,'HH24:MI') as batch_listening_end_time,
+			a.batch_toeic,
+			a.batch_toeic_type,
+			a.batch_toeic_num,
+			a.batch_toeic_min,
+			to_char(a.batch_toeic_start_time,'HH24:MI') as batch_toeic_start_time,
+			to_char(a.batch_toeic_end_time,'HH24:MI') as batch_toeic_end_time,
+			a.course_id,
+			b.course_name,
+			a.batch_adviser_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as batch_adviser_name		
+		from
+			batch_schedule a
+			left join (
+				select
+					a.id,
+					concat(b.name, ' ', a.name, '반') as course_name
+				from 
+					courses_course a
+					join courses_coursegroup b on a.course_group_id = b.id			
+			) b on a.course_id = b.id 
+			left join auth_user c on a.batch_adviser_id = c.id
+		where
+			a.id = #{id}
+	</select>	
+
+	<insert id="insertBatchSchedule" parameterType="com.usher.dto.BatchScheduleDto">
+		insert into batch_schedule (
+			created,
+			modified,
+			date,
+			start_time,
+			end_time,
+			batch_grammar,
+			batch_grammar_type,
+			batch_grammar_num,
+			batch_grammar_min,
+			batch_grammar_start_time,
+			batch_grammar_end_time,
+			batch_reading,
+			batch_reading_type,
+			batch_reading_num,
+			batch_reading_min,
+			batch_reading_start_time,
+			batch_reading_end_time,
+			batch_listening,
+			batch_listening_type,
+			batch_listening_num,
+			batch_listening_min,
+			batch_listening_start_time,
+			batch_listening_end_time,
+			batch_toeic,
+			batch_toeic_type,
+			batch_toeic_num,
+			batch_toeic_min,
+			batch_toeic_start_time,
+			batch_toeic_end_time,
+			course_id,
+			batch_adviser_id
+		) values (
+			now(),
+			now(),
+			to_date(#{date},'yyyy-mm-dd'),
+			to_timestamp(#{start_time},'yyyy-mm-dd HH24:MI:SS'),
+			to_timestamp(#{end_time},'yyyy-mm-dd HH24:MI:SS'),
+			#{batch_grammar},
+			#{batch_grammar_type},
+			#{batch_grammar_num},
+			#{batch_grammar_min},
+			to_timestamp(#{batch_grammar_start_time},'yyyy-mm-dd HH24:MI:SS'),
+			to_timestamp(#{batch_grammar_end_time},'yyyy-mm-dd HH24:MI:SS'),
+			#{batch_reading},
+			#{batch_reading_type},
+			#{batch_reading_num},
+			#{batch_reading_min},
+			to_timestamp(#{batch_reading_start_time},'yyyy-mm-dd HH24:MI:SS'),
+			to_timestamp(#{batch_reading_end_time},'yyyy-mm-dd HH24:MI:SS'),
+			#{batch_listening},
+			#{batch_listening_type},
+			#{batch_listening_num},
+			#{batch_listening_min},
+			to_timestamp(#{batch_listening_start_time},'yyyy-mm-dd HH24:MI:SS'),
+			to_timestamp(#{batch_listening_end_time},'yyyy-mm-dd HH24:MI:SS'),
+			#{batch_toeic},
+			#{batch_toeic_type},
+			#{batch_toeic_num},
+			#{batch_toeic_min},
+			to_timestamp(#{batch_toeic_start_time},'yyyy-mm-dd HH24:MI:SS'),
+			to_timestamp(#{batch_toeic_end_time},'yyyy-mm-dd HH24:MI:SS'),
+			#{course_id},
+			#{batch_adviser_id}
+		)
+	</insert>	
+	
+	<update id="updateBatchSchedule" parameterType="com.usher.dto.BatchScheduleDto">
+		update batch_schedule set
+			modified = now(),
+			start_time = to_timestamp(#{start_time},'yyyy-mm-dd HH24:MI:SS'),
+			end_time = to_timestamp(#{end_time},'yyyy-mm-dd HH24:MI:SS'),
+			batch_grammar = #{batch_grammar},
+			batch_grammar_type = #{batch_grammar_type},
+			batch_grammar_num = #{batch_grammar_num},
+			batch_grammar_min = #{batch_grammar_min},
+			batch_grammar_start_time = to_timestamp(#{batch_grammar_start_time},'yyyy-mm-dd HH24:MI:SS'),
+			batch_grammar_end_time = to_timestamp(#{batch_grammar_end_time},'yyyy-mm-dd HH24:MI:SS'),
+			batch_reading = #{batch_reading},
+			batch_reading_type = #{batch_reading_type},
+			batch_reading_num = #{batch_reading_num},
+			batch_reading_min = #{batch_reading_min},
+			batch_reading_start_time = to_timestamp(#{batch_reading_start_time},'yyyy-mm-dd HH24:MI:SS'),
+			batch_reading_end_time = to_timestamp(#{batch_reading_end_time},'yyyy-mm-dd HH24:MI:SS'),
+			batch_listening = #{batch_listening},
+			batch_listening_type = #{batch_listening_type},
+			batch_listening_num = #{batch_listening_num},
+			batch_listening_min = #{batch_listening_min},
+			batch_listening_start_time = to_timestamp(#{batch_listening_start_time},'yyyy-mm-dd HH24:MI:SS'),
+			batch_listening_end_time = to_timestamp(#{batch_listening_end_time},'yyyy-mm-dd HH24:MI:SS'),
+			batch_toeic = #{batch_toeic},
+			batch_toeic_type = #{batch_toeic_type},
+			batch_toeic_num = #{batch_toeic_num},
+			batch_toeic_min = #{batch_toeic_min},
+			batch_toeic_start_time = to_timestamp(#{batch_toeic_start_time},'yyyy-mm-dd HH24:MI:SS'),
+			batch_toeic_end_time = to_timestamp(#{batch_toeic_end_time},'yyyy-mm-dd HH24:MI:SS'),
+			batch_adviser_id = #{batch_adviser_id}
+		where
+			id = #{id}
+	</update>		
+	
+	<update id="updateBatchScheduleAdvise" parameterType="com.usher.dto.BatchScheduleDto">
+		update batch_schedule set
+			batch_advise_yn = 'Y'
+		where
+			id = #{id}
+	</update>			
+</mapper>

@@ -1,0 +1,1291 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.DashboardDao">
+	<select id="getDashboardNextDate" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			coalesce(min(date),#{date}) as next_date
+		from
+			(
+				select
+					unnest(string_to_array(schedule,',')) as date
+				from
+					courses_coursegroup
+				where
+					id = #{course_group_id}
+			) a
+		where
+			a.date > #{date}	
+	</select>
+	<select id="getDashboardPrevDate" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+	<![CDATA[
+		select
+			coalesce(max(date),#{date}) as prev_date
+		from
+			(
+				select
+					unnest(string_to_array(schedule,',')) as date
+				from
+					courses_coursegroup
+				where
+					id = #{course_group_id}
+			) a
+		where
+			a.date < #{date}
+	]]>	
+	</select>	
+	<select id="getDashboardList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.semester_id,
+			a.student_id,
+			b.course_id,
+			b.semester_enrollment_id,
+			b.chamgang_yn,
+			concat(d.last_name,d.first_name) as name,
+			b.status,
+			case when position(#{date} in b.schedule ) = 1 then 'OK' else 'NO' end as current_new,
+			case when position(#{next_date} in b.schedule ) = 1 then 'OK' else 'NO' end as next_new,			
+			case when position(#{date} in b.schedule ) > 0 then 'OK' else 'NO' end as current_status,
+			COALESCE(b.refund_status,'') as refund_status,
+			COALESCE(b.refund_reason,'') as refund_reason,
+			case when e.status is not null then e.status else case when f.will_attend is not null then 'PERMITTED_ABSENT' else 'UNPERMITTED_ABSENT' end end as attend_status,					
+			COALESCE(f.reason_type,'') as reason_type,
+			COALESCE(f.extra_reason,'') as extra_reason,
+			case when f.eta is not null then to_char(f.eta,'HH24:MI') else '' end as will_time,
+			COALESCE(g.come_time,'') as come_time,
+			case when h.id is not null then true else false end as goal_plan,
+			COALESCE(i.send_yn,'N') as kakao_send_yn
+		from
+			enrollments_semesterenrollment a
+			join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+			join students_student c on a.student_id = c.id
+			join auth_user d on c.user_id = d.id
+			left join attendances_attendance e on to_char(e.date,'yyyy-mm-dd') = #{date} and b.id = e.course_enrollment_id
+			left join attendances_attendancereason f on to_char(f.date,'yyyy-mm-dd') = #{date} and b.id = f.course_enrollment_id
+			left join (select user_id, to_char(min(date),'HH24:MI') as come_time from students_userloginlog where to_char(date,'yyyy-mm-dd') = #{date} group by user_id ) g on c.user_id = g.user_id
+			left join goals_goalplan h on b.id = h.course_enrollment_id
+			left join (
+				select course_enrollment_id, max(send_yn) as send_yn
+				from
+					practices_practiceresult_static_send 
+				where
+					to_char(date,'yyyy-mm-dd') = #{date}
+				group by course_enrollment_id
+			) i on b.id = i.course_enrollment_id
+		where
+			b.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+			and COALESCE(b.status,'') != 'REGISTERED'
+			and COALESCE(b.status,'') != 'CANCEL_COMPLETED'
+			and d.username != 'test6' and d.username != 'test5'
+		order by b.course_id, d.last_name, d.first_name
+	</select>
+	<select id="getDashboardVocaList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			c.book,
+			b.course_id,
+			e.student_id,
+			d.chamgang_yn,
+			concat(g.last_name,g.first_name) as name,
+			case when max(case when a.pass_result = true then 1 else 0 end) = 1 then true else false end as pass_result
+		from 
+			practices_practiceresult a
+			join practices_practiceschedule b on a.practice_schedule_id = b.id
+			join practices_practiceproblem c on a.practice_problem_id = c.id
+			join enrollments_courseenrollment d on a.course_enrollment_id = d.id
+			join enrollments_semesterenrollment e on d.semester_enrollment_id = e.id
+			join students_student f on e.student_id = f.id
+			join auth_user g on f.user_id = g.id
+		where
+			real = true
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+			and to_char(b.date,'yyyy-mm-dd') = #{date}
+			and a.practice_type = 'VOCA'
+			and b.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+			and g.username != 'test6' and g.username != 'test5'
+		group by c.book, b.course_id, e.student_id, d.chamgang_yn, g.last_name,g.first_name	
+	</select>
+	<select id="getDashboardSpeechNewList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select distinct
+			a.book,
+			a.course_id,
+			a.student_id,
+			a.chamgang_yn,
+			a.name,
+			a.pass_result
+		from
+			(
+				select
+					c.book,
+					a.practice_problem_id,
+					d.course_id,
+					d.chamgang_yn,
+					e.student_id,
+					g.username,
+					concat(g.last_name,g.first_name) as name,
+					case when max(case when a.pass_result = true then 1 else 0 end) = 1 then true else false end as pass_result
+				from 
+					practices_practiceresult a
+					join practices_practiceproblem c on a.practice_problem_id = c.id
+					join enrollments_courseenrollment d on a.course_enrollment_id = d.id
+					join enrollments_semesterenrollment e on d.semester_enrollment_id = e.id
+					join students_student f on e.student_id = f.id
+					join auth_user g on f.user_id = g.id
+				where
+					a.practice_type = 'SPEECH'
+					and to_char(a.date,'yyyy-mm-dd') between #{bef_week_date} and #{date}
+					and g.username != 'test6' and g.username != 'test5'
+				group by c.book, d.course_id, d.chamgang_yn, a.practice_problem_id, e.student_id, g.username, g.last_name,g.first_name		
+			)a
+			join (
+				select
+					a.course_id,
+					a.practice_problem_id,
+					b.book
+				from
+					practices_practiceschedule a
+					join practices_practiceproblem b on a.practice_problem_id = b.id
+				where 
+					to_char(a.date,'yyyy-mm-dd') = #{date} 
+					and b.section = 'VOCA'
+			) b on a.course_id = b.course_id and a.practice_problem_id = b.practice_problem_id and a.book = b.book
+		where
+			a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+	</select>	
+	<select id="getDashboardSpeechList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select distinct
+			a.book,
+			a.course_id,
+			a.student_id,
+			a.chamgang_yn,
+			a.name
+		from
+			(
+				select
+					c.book,
+					a.practice_problem_id,
+					d.course_id,
+					d.chamgang_yn,
+					e.student_id,
+					g.username,
+					concat(g.last_name,g.first_name) as name
+				from 
+					practices_practiceresult a
+					join practices_practiceproblem c on a.practice_problem_id = c.id
+					join enrollments_courseenrollment d on a.course_enrollment_id = d.id
+					join enrollments_semesterenrollment e on d.semester_enrollment_id = e.id
+					join students_student f on e.student_id = f.id
+					join auth_user g on f.user_id = g.id
+				where
+					a.practice_type = 'SPEECH'
+					and a.pass_result = true
+					and to_char(a.date,'yyyy-mm-dd') between #{bef_week_date} and #{date}
+					and g.username != 'test6' and g.username != 'test5'
+				group by c.book, d.course_id, d.chamgang_yn, a.practice_problem_id, e.student_id, g.username, g.last_name,g.first_name		
+			)a
+			join (
+				select
+					a.course_id,
+					a.practice_problem_id,
+					b.book
+				from
+					practices_practiceschedule a
+					join practices_practiceproblem b on a.practice_problem_id = b.id
+				where 
+					to_char(a.date,'yyyy-mm-dd') = #{date} 
+					and b.section = 'VOCA'
+			) b on a.course_id = b.course_id and a.practice_problem_id = b.practice_problem_id and a.book = b.book
+		where
+			a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+	</select>		
+	<select id="getDashboardGoalList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.course_id,
+			a.chamgang_yn,
+			d.username,
+			concat(d.last_name,d.first_name) as name,
+			case when f.id is not null then true else false end as goal_achive,
+			case when f.confirmed is not null then f.confirmed else false end as goal_confirmed
+		from
+			enrollments_courseenrollment a
+			join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+			join students_student c on b.student_id = c.id
+			join auth_user d on c.user_id = d.id
+			join goals_goalplan e on a.id = e.course_enrollment_id
+			left join goals_goalarchive f on e.id = f.goal_plan_id and to_char(e.date,'yyyy-mm-dd') =  #{date} 
+		where
+			a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+			and d.username != 'test6' and d.username != 'test5'
+		order by 1, 2
+	</select>
+	<select id="getDashboardGoalConcentrationList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			b.course_id,
+			a.course_enrollment_id,
+			b.chamgang_yn,
+			e.username,
+			concat(e.last_name, e.first_name) as name,
+			count(*) as goal_not_count
+		from
+			goals_goalconcentration_practice a
+			join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+			join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+			join students_student d on c.student_id = d.id
+			join auth_user e on d.user_id = e.id
+		where
+			a.accept_result = false
+			and b.course_id in( select id from courses_course where course_group_id = #{course_group_id})
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+			and e.username != 'test6' and e.username != 'test5'
+		group by b.course_id, a.course_enrollment_id, b.chamgang_yn, e.username, e.last_name, e.first_name
+		order by 1,3	
+	</select>
+	<select id="getDashboardSylabusList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.course_id,
+			a.section,
+			a.section_short,
+			a.section_order,
+			sum(case when coalesce(b.section,'') != '' then 1 else 0 end) as section_all_count,
+			sum(case when coalesce(b.section,'') = '' then 1 else 0 end) as section_all_not_count,
+			sum(case when coalesce(b.section,'') != '' and a.date = #{date} then 1 else 0 end) as section_cur_count,
+			sum(case when coalesce(b.section,'') = '' and a.date = #{date} then 1 else 0 end) as section_cur_not_count,
+			sum(case when coalesce(b.section,'') != '' and a.date = #{next_date} then 1 else 0 end) as section_next_count,
+			sum(case when coalesce(b.section,'') = '' and a.date = #{next_date} then 1 else 0 end) as section_next_not_count
+		from
+			(
+				select
+					a.section,
+					b.short_title_kr as section_short,
+					a.practice_type,
+					a.course_id,
+					b.section_order,
+					to_char(a.date,'yyyy-mm-dd') as date
+				from 
+					courses_course_practice_daily a
+					join practices_practicesection b on a.section = b.section
+				where 
+					a.course_id in (select id from courses_course where course_group_id = #{course_group_id} )
+			) a
+			left join (
+				select
+					section,
+					practice_type,
+					course_id,
+					to_char(date,'yyyy-mm-dd') as date
+				from
+					practices_practiceschedule 
+				where
+					status = 'ACTIVE'
+					and course_id in (select id from courses_course where course_group_id = #{course_group_id} )
+				group by section, practice_type, course_id, to_char(date,'yyyy-mm-dd')	
+			) b on a.section = b.section and a.practice_type = b.practice_type and a.course_id = b.course_id and a.date = b.date
+		group by a.course_id, a.section, a.section_short, a.section_order
+		order by a.course_id, a.section_order
+	</select>
+	<select id="getDashboardProblemList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.course_id, 
+			b.short_title_kr as section_short,
+			array_to_string(array_agg(a.passage),', ') as passage
+		from
+			(
+				select
+					a.course_id,
+					b.section,
+					concat(case when b.section = 'VOCA' then case when b.book = 'toefl' then '토플' else '중고등' end else b.book end,
+						   case when b.volume != '' then concat('_',b.volume) else '' end,
+						   case when b."group" != '' then concat('_',b."group") else '' end,
+						   case when b.article != '' then concat('_',b.article) else '' end
+					) as passage
+				from
+					practices_practiceschedule a
+					join practices_practiceproblem b on a.practice_problem_id = b.id
+				where
+					a.status = 'ACTIVE'
+					and to_char(date,'yyyy-mm-dd') = #{date}
+					and a.course_id in (select id from courses_course where course_group_id = #{course_group_id} )
+					and ( a.practice_type = 'MOCK_TEST' or a.practice_type = 'VOCA' )
+				group by a.course_id, b.section, b.book, b.volume, b."group", b.article
+			) a
+			join practices_practicesection b on a.section = b.section
+		group by a.course_id, b.short_title_kr, b.section_order
+		order by a.course_id, b.section_order
+	</select>
+	<select id="getDashboardAchieveCountList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.course_id,
+			count(*) as total_count,
+			sum(case when coalesce(b.pass_result,false) = true then 1 else 0 end ) as success_count
+		from
+			(
+				select
+					a.id as course_enrollment_id,
+					b.course_id,
+					b.section,
+					b.practice_type,
+					b.book,
+					b.volume,
+					b."group",
+					b.article,
+					b.end_time
+				from
+					(
+						select a.*
+						from
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+							join students_student c on b.student_id = c.id
+							join auth_user d on c.user_id = d.id
+						where
+							a.status = 'PAID'
+							and position(#{date} in schedule ) > 0 
+							and d.username != 'test5' and d.username != 'test6'
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+					) a
+					join (
+						select
+							a.course_id,
+							a.section,
+							a.practice_type,
+							b.book,
+							b.volume,
+							b."group",
+							b.article,
+							c.end_time
+						from 
+							practices_practiceschedule a
+							join practices_practiceproblem b on a.practice_problem_id = b.id
+							join courses_course_practice_daily c on a.section = c.section and a.practice_type = c.practice_type and a.course_id = c.course_id and to_char(a.date,'yyyy-mm-dd') = to_char(c.date,'yyyy-mm-dd')
+						where
+							a.status = 'ACTIVE'
+							and to_char(a.date,'yyyy-mm-dd') = #{date}
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+							and a.practice_type != 'VOCA'
+							<if test="end_time != null and end_time !='' ">
+								<![CDATA[ and c.end_time <= #{end_time} ]]>
+							</if>								
+						group by a.course_id, a.section, a.practice_type, b.book, b.volume, b."group", b.article, c.end_time
+						union all
+						select
+							a.course_id,
+							a.section,
+							a.practice_type,
+							'' as book,
+							'' as volume,
+							'' as "group",
+							'' as article,
+							c.end_time
+						from 
+							practices_practiceschedule a
+							join courses_course_practice_daily c on a.section = c.section and a.practice_type = c.practice_type and a.course_id = c.course_id and to_char(a.date,'yyyy-mm-dd') = to_char(c.date,'yyyy-mm-dd')
+						where
+							a.status = 'ACTIVE'
+							and to_char(a.date,'yyyy-mm-dd') = #{date}
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+							and a.practice_type = 'VOCA'
+							<if test="end_time != null and end_time !='' ">
+								<![CDATA[ and c.end_time <= #{end_time} ]]>
+							</if>	
+						group by a.course_id, a.section, a.practice_type, c.end_time
+					) b on a.course_id = b.course_id
+			) a
+			left join (
+				select
+					course_enrollment_id,
+					section,
+					practice_type,
+					book,
+					volume,
+					"group",
+					article,
+					case when max(case when pass_result = true then 1 else 0 end) > 0 then true else false end as pass_result,
+					case when max(case when pass_result = true or user_pass_result = true then 1 else 0 end) > 0 then true else false end as user_pass_result
+				from
+					practices_practiceresult_static
+				where
+					course_enrollment_id in (
+						select a.id
+						from
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+							join students_student c on b.student_id = c.id
+							join auth_user d on c.user_id = d.id
+						where
+							a.status = 'PAID'
+							and position(#{date} in schedule ) > 0 
+							and d.username != 'test5' and d.username != 'test6'
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+					)
+					and to_char(date,'yyyy-mm-dd') = #{date}
+					and practice_type != 'VOCA'
+				group by course_enrollment_id, section, practice_type, book, volume, "group", article
+				union all
+				select
+					course_enrollment_id,
+					section,
+					practice_type,
+					'' as book,
+					'' as volume,
+					'' as "group",
+					'' as article,
+					case when max(case when pass_result = true then case when book = 'toefl' then 1 else 0 end else 0 end) > 0 then true else false end as pass_result,
+					case when max(case when pass_result = true or user_pass_result = true then 1 else 0 end) > 0 then true else false end as user_pass_result
+				from
+					practices_practiceresult_static
+				where
+					course_enrollment_id in (
+						select a.id
+						from
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+							join students_student c on b.student_id = c.id
+							join auth_user d on c.user_id = d.id
+						where
+							a.status = 'PAID'
+							and position(#{date} in schedule ) > 0 
+							and d.username != 'test5' and d.username != 'test6'
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+					)
+					and to_char(date,'yyyy-mm-dd') = #{date}
+					and practice_type = 'VOCA'
+				group by course_enrollment_id, section, practice_type	
+			) b on a.course_enrollment_id = b.course_enrollment_id
+					and a.section = b.section
+					and a.practice_type = b.practice_type
+					and a.book = b.book
+					and a.volume = b.volume
+					and a."group" = b."group"
+					and a.article = b.article
+		group by a.course_id	
+	</select>
+	<select id="getDashboardAchieveList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.course_id,
+			a.course_enrollment_id,
+			a.name,
+			case when a.attend_yn = 'Y' then
+				case when a.is_voca = true and a.is_grammar = true and a.is_reading = true and a.is_listening = true and a.is_speaking = true and a.is_writing = true then
+					case when a.goal_level = 'L' then 'L1' else a.goal_level end
+				else
+					case when a.is_user_voca = true and a.is_user_grammar = true and a.is_user_reading = true and a.is_user_listening = true and a.is_user_speaking = true and a.is_user_writing = true then 'L1' else 'L2' end
+				end
+			else 'LL' end as achieve_level
+		from
+			(
+				select
+					a.course_id,
+					a.course_enrollment_id,
+					a.name,
+					a.attend_yn,
+					<![CDATA[ case when coalesce(b.enrollment_level,0) > coalesce(b.course_level,0) then 'H' else case when coalesce(b.enrollment_level,0) < coalesce(b.course_level,0) then 'L' else 'M' end end as goal_level,]]>
+					case when b.is_voca = true then case when a.is_voca = true then true else false end else true end as is_voca,
+					case when b.is_voca = true then case when a.is_user_voca = true then true else false end else true end as is_user_voca,
+					case when b.is_grammar = true then case when a.is_grammar = true then true else false end else true end as is_grammar,
+					case when b.is_grammar = true then case when a.is_user_grammar = true then true else false end else true end as is_user_grammar,
+					case when b.is_reading = true then case when a.is_reading = true then true else false end else true end as is_reading,
+					case when b.is_reading = true then case when a.is_user_reading = true then true else false end else true end as is_user_reading,
+					case when b.is_listening = true then case when a.is_listening = true then true else false end else true end as is_listening,
+					case when b.is_listening = true then case when a.is_user_listening = true then true else false end else true end as is_user_listening,
+					case when b.is_speaking = true then case when a.is_speaking = true then true else false end else true end as is_speaking,
+					case when b.is_speaking = true then case when a.is_user_speaking = true then true else false end else true end as is_user_speaking,
+					case when b.is_writing = true then case when a.is_writing = true then true else false end else true end as is_writing,
+					case when b.is_writing = true then case when a.is_user_writing = true then true else false end else true end as is_user_writing
+				from
+					(
+						select
+							a.course_id,
+							a.course_enrollment_id,
+							a.name,
+							a.attend_yn,
+							case when max(case when a.section='VOCA' and coalesce(b.pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_voca,
+							case when max(case when a.section='VOCA' and coalesce(b.pass_result,false) = false and coalesce(b.user_pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_user_voca,
+							case when max(case when a.section='GRAMMAR' and coalesce(b.pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_grammar,
+							case when max(case when a.section='GRAMMAR' and coalesce(b.pass_result,false) = false and coalesce(b.user_pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_user_grammar,
+							case when max(case when a.section='READING' and coalesce(b.pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_reading,
+							case when max(case when a.section='READING' and coalesce(b.pass_result,false) = false and coalesce(b.user_pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_user_reading,
+							case when max(case when a.section='LISTENING' and coalesce(b.pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_listening,
+							case when max(case when a.section='LISTENING' and coalesce(b.pass_result,false) = false and coalesce(b.user_pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_user_listening,
+							case when max(case when a.section='SPEAKING' and coalesce(b.pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_speaking,
+							case when max(case when a.section='SPEAKING' and coalesce(b.pass_result,false) = false and coalesce(b.user_pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_user_speaking,
+							case when max(case when a.section='WRITING' and coalesce(b.pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_writing,
+							case when max(case when a.section='WRITING' and coalesce(b.pass_result,false) = false and coalesce(b.user_pass_result,false) = false then 1 else 0 end ) > 0 then false else true end as is_user_writing
+						from
+							(
+								select
+									a.id as course_enrollment_id,
+									a.name,
+									a.attend_yn,
+									b.course_id,
+									b.section,
+									b.practice_type,
+									b.book,
+									b.volume,
+									b."group",
+									b.article,
+									b.end_time
+								from
+									(
+										select a.*, concat(d.last_name, d.first_name) as name, case when e.id is null then 'N' else 'Y' end attend_yn
+										from
+											enrollments_courseenrollment a
+											join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+											join students_student c on b.student_id = c.id
+											join auth_user d on c.user_id = d.id
+											left join attendances_attendance e on a.id = e.course_enrollment_id and to_char(e.date,'yyyy-mm-dd') = #{date}
+										where
+											a.status = 'PAID'
+											and position(#{date} in schedule ) > 0 
+											and d.username != 'test5' and d.username != 'test6'
+											and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+									) a
+									join (
+										select
+											a.course_id,
+											a.section,
+											a.practice_type,
+											b.book,
+											b.volume,
+											b."group",
+											b.article,
+											c.end_time
+										from 
+											practices_practiceschedule a
+											join practices_practiceproblem b on a.practice_problem_id = b.id
+											join courses_course_practice_daily c on a.section = c.section and a.practice_type = c.practice_type and a.course_id = c.course_id and to_char(a.date,'yyyy-mm-dd') = to_char(c.date,'yyyy-mm-dd')
+										where
+											a.status = 'ACTIVE'
+											and to_char(a.date,'yyyy-mm-dd') = #{date}
+											and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+											and a.practice_type != 'VOCA'
+											<if test="end_time != null and end_time !='' ">
+												<![CDATA[ and c.end_time <= #{end_time} ]]>
+											</if>	
+										group by a.course_id, a.section, a.practice_type, b.book, b.volume, b."group", b.article, c.end_time
+										union all
+										select
+											a.course_id,
+											a.section,
+											a.practice_type,
+											'' as book,
+											'' as volume,
+											'' as "group",
+											'' as article,
+											c.end_time
+										from 
+											practices_practiceschedule a
+											join courses_course_practice_daily c on a.section = c.section and a.practice_type = c.practice_type and a.course_id = c.course_id and to_char(a.date,'yyyy-mm-dd') = to_char(c.date,'yyyy-mm-dd')
+										where
+											a.status = 'ACTIVE'
+											and to_char(a.date,'yyyy-mm-dd') = #{date}
+											and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+											and a.practice_type = 'VOCA'
+											<if test="end_time != null and end_time !='' ">
+												<![CDATA[ and c.end_time <= #{end_time} ]]>
+											</if>
+										group by a.course_id, a.section, a.practice_type, c.end_time
+									) b on a.course_id = b.course_id
+							) a
+							left join (
+								select
+									course_enrollment_id,
+									section,
+									practice_type,
+									book,
+									volume,
+									"group",
+									article,
+									case when max(case when pass_result = true then 1 else 0 end) > 0 then true else false end as pass_result,
+									case when max(case when pass_result = true or user_pass_result = true then 1 else 0 end) > 0 then true else false end as user_pass_result
+								from
+									practices_practiceresult_static
+								where
+									course_enrollment_id in (
+										select a.id
+										from
+											enrollments_courseenrollment a
+											join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+											join students_student c on b.student_id = c.id
+											join auth_user d on c.user_id = d.id
+										where
+											a.status = 'PAID'
+											and position(#{date} in schedule ) > 0 
+											and d.username != 'test5' and d.username != 'test6'
+											and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+									)
+									and to_char(date,'yyyy-mm-dd') = #{date}
+									and practice_type != 'VOCA'
+								group by course_enrollment_id, section, practice_type, book, volume, "group", article
+								union all
+								select
+									course_enrollment_id,
+									section,
+									practice_type,
+									'' as book,
+									'' as volume,
+									'' as "group",
+									'' as article,
+									case when max(case when pass_result = true then case when book = 'toefl' then 1 else 0 end else 0 end) > 0 then true else false end as pass_result,
+									case when max(case when pass_result = true or user_pass_result = true then 1 else 0 end) > 0 then true else false end as user_pass_result
+								from
+									practices_practiceresult_static
+								where
+									course_enrollment_id in (
+										select a.id
+										from
+											enrollments_courseenrollment a
+											join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+											join students_student c on b.student_id = c.id
+											join auth_user d on c.user_id = d.id
+										where
+											a.status = 'PAID'
+											and position(#{date} in schedule ) > 0 
+											and d.username != 'test5' and d.username != 'test6'
+											and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+									)
+									and to_char(date,'yyyy-mm-dd') = #{date}
+									and practice_type = 'VOCA'
+								group by course_enrollment_id, section, practice_type	
+							) b on a.course_enrollment_id = b.course_enrollment_id
+									and a.section = b.section
+									and a.practice_type = b.practice_type
+									and a.book = b.book
+									and a.volume = b.volume
+									and a."group" = b."group"
+									and a.article = b.article
+						group by a.course_id, a.course_enrollment_id, a.name, a.attend_yn
+					) a
+					left join goals_goalconcentration b on a.course_enrollment_id = b.course_enrollment_id and to_char(b.date,'yyyy-mm-dd') = #{date}
+			) a
+		order by a.course_id, a.name
+	</select>
+	<select id="getDashboardConfidenceCountList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.course_id,
+			count(*) as total_count,
+			sum(case when coalesce(b.pass_result,false) = true or coalesce(b.user_pass_result,false) = true then 1 else 0 end ) as success_count
+		from
+			(
+				select
+					a.id as course_enrollment_id,
+					b.course_id,
+					b.section,
+					b.practice_type,
+					b.book,
+					b.volume,
+					b."group",
+					b.article,
+					b.end_time
+				from
+					(
+						select a.*
+						from
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+							join students_student c on b.student_id = c.id
+							join auth_user d on c.user_id = d.id
+						where
+							a.status = 'PAID'
+							and position(#{date} in schedule ) > 0 
+							and d.username != 'test5' and d.username != 'test6'
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+					) a
+					join (
+						select
+							a.course_id,
+							a.section,
+							a.practice_type,
+							b.book,
+							b.volume,
+							b."group",
+							b.article,
+							c.end_time
+						from 
+							practices_practiceschedule a
+							join practices_practiceproblem b on a.practice_problem_id = b.id
+							join courses_course_practice_daily c on a.section = c.section and a.practice_type = c.practice_type and a.course_id = c.course_id and to_char(a.date,'yyyy-mm-dd') = to_char(c.date,'yyyy-mm-dd')
+						where
+							a.status = 'ACTIVE'
+							and to_char(a.date,'yyyy-mm-dd') = #{date}
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+							and a.practice_type != 'VOCA'
+							<if test="end_time != null and end_time !='' ">
+								<![CDATA[ and c.end_time <= #{end_time} ]]>
+							</if>	
+						group by a.course_id, a.section, a.practice_type, b.book, b.volume, b."group", b.article, c.end_time
+						union all
+						select
+							a.course_id,
+							a.section,
+							a.practice_type,
+							'' as book,
+							'' as volume,
+							'' as "group",
+							'' as article,
+							c.end_time
+						from 
+							practices_practiceschedule a
+							join courses_course_practice_daily c on a.section = c.section and a.practice_type = c.practice_type and a.course_id = c.course_id and to_char(a.date,'yyyy-mm-dd') = to_char(c.date,'yyyy-mm-dd')
+						where
+							a.status = 'ACTIVE'
+							and to_char(a.date,'yyyy-mm-dd') = #{date}
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+							and a.practice_type = 'VOCA'
+							<if test="end_time != null and end_time !='' ">
+								<![CDATA[ and c.end_time <= #{end_time} ]]>
+							</if>	
+						group by a.course_id, a.section, a.practice_type, c.end_time
+					) b on a.course_id = b.course_id
+			) a
+			left join (
+				select
+					course_enrollment_id,
+					section,
+					practice_type,
+					book,
+					volume,
+					"group",
+					article,
+					case when max(case when pass_result = true then 1 else 0 end) > 0 then true else false end as pass_result,
+					case when max(case when pass_result = true or user_pass_result = true then 1 else 0 end) > 0 then true else false end as user_pass_result
+				from
+					practices_practiceresult_static
+				where
+					course_enrollment_id in (
+						select a.id
+						from
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+							join students_student c on b.student_id = c.id
+							join auth_user d on c.user_id = d.id
+						where
+							a.status = 'PAID'
+							and position(#{date} in schedule ) > 0 
+							and d.username != 'test5' and d.username != 'test6'
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+					)
+					and to_char(date,'yyyy-mm-dd') = #{date}
+					and practice_type != 'VOCA'
+				group by course_enrollment_id, section, practice_type, book, volume, "group", article
+				union all
+				select
+					course_enrollment_id,
+					section,
+					practice_type,
+					'' as book,
+					'' as volume,
+					'' as "group",
+					'' as article,
+					case when max(case when pass_result = true then case when book = 'toefl' then 1 else 0 end else 0 end) > 0 then true else false end as pass_result,
+					case when max(case when pass_result = true or user_pass_result = true then 1 else 0 end) > 0 then true else false end as user_pass_result
+				from
+					practices_practiceresult_static
+				where
+					course_enrollment_id in (
+						select a.id
+						from
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+							join students_student c on b.student_id = c.id
+							join auth_user d on c.user_id = d.id
+						where
+							a.status = 'PAID'
+							and position(#{date} in schedule ) > 0 
+							and d.username != 'test5' and d.username != 'test6'
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+					)
+					and to_char(date,'yyyy-mm-dd') = #{date}
+					and practice_type = 'VOCA'
+				group by course_enrollment_id, section, practice_type	
+			) b on a.course_enrollment_id = b.course_enrollment_id
+					and a.section = b.section
+					and a.practice_type = b.practice_type
+					and a.book = b.book
+					and a.volume = b.volume
+					and a."group" = b."group"
+					and a.article = b.article
+		group by a.course_id	
+	</select>	
+	
+	<select id="getDashboardConfidenceList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.course_id,
+			a.course_enrollment_id,
+			a.name,
+			a.success_count * 100 / a.total_count as total_rate
+		from
+			(
+				select
+					a.course_id,
+					a.course_enrollment_id,
+					a.name,
+					count(*) as total_count,
+					sum(case when coalesce(b.pass_result,false) = true or coalesce(b.user_pass_result,false) = true then 1 else 0 end ) as success_count
+				from
+					(
+						select
+							a.id as course_enrollment_id,
+							a.name,
+							b.course_id,
+							b.section,
+							b.practice_type,
+							b.book,
+							b.volume,
+							b."group",
+							b.article,
+							b.end_time
+						from
+							(
+								select a.*, concat(d.last_name, d.first_name) as name
+								from
+									enrollments_courseenrollment a
+									join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+									join students_student c on b.student_id = c.id
+									join auth_user d on c.user_id = d.id
+								where
+									a.status = 'PAID'
+									and position(#{date} in schedule ) > 0 
+									and d.username != 'test5' and d.username != 'test6'
+									and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+							) a
+							join (
+								select
+									a.course_id,
+									a.section,
+									a.practice_type,
+									b.book,
+									b.volume,
+									b."group",
+									b.article,
+									c.end_time
+								from 
+									practices_practiceschedule a
+									join practices_practiceproblem b on a.practice_problem_id = b.id
+									join courses_course_practice_daily c on a.section = c.section and a.practice_type = c.practice_type and a.course_id = c.course_id and to_char(a.date,'yyyy-mm-dd') = to_char(c.date,'yyyy-mm-dd')
+								where
+									a.status = 'ACTIVE'
+									and to_char(a.date,'yyyy-mm-dd') = #{date}
+									and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+									and a.practice_type != 'VOCA'
+									<if test="end_time != null and end_time !='' ">
+										<![CDATA[ and c.end_time <= #{end_time} ]]>
+									</if>	
+								group by a.course_id, a.section, a.practice_type, b.book, b.volume, b."group", b.article, c.end_time
+								union all
+								select
+									a.course_id,
+									a.section,
+									a.practice_type,
+									'' as book,
+									'' as volume,
+									'' as "group",
+									'' as article,
+									c.end_time
+								from 
+									practices_practiceschedule a
+									join courses_course_practice_daily c on a.section = c.section and a.practice_type = c.practice_type and a.course_id = c.course_id and to_char(a.date,'yyyy-mm-dd') = to_char(c.date,'yyyy-mm-dd')
+								where
+									a.status = 'ACTIVE'
+									and to_char(a.date,'yyyy-mm-dd') = #{date}
+									and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+									and a.practice_type = 'VOCA'
+									<if test="end_time != null and end_time !='' ">
+										<![CDATA[ and c.end_time <= #{end_time} ]]>
+									</if>	
+								group by a.course_id, a.section, a.practice_type, c.end_time
+							) b on a.course_id = b.course_id
+					) a
+					left join (
+						select
+							course_enrollment_id,
+							section,
+							practice_type,
+							book,
+							volume,
+							"group",
+							article,
+							case when max(case when pass_result = true then 1 else 0 end) > 0 then true else false end as pass_result,
+							case when max(case when pass_result = true or user_pass_result = true then 1 else 0 end) > 0 then true else false end as user_pass_result
+						from
+							practices_practiceresult_static
+						where
+							course_enrollment_id in (
+								select a.id
+								from
+									enrollments_courseenrollment a
+									join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+									join students_student c on b.student_id = c.id
+									join auth_user d on c.user_id = d.id
+								where
+									a.status = 'PAID'
+									and position(#{date} in schedule ) > 0 
+									and d.username != 'test5' and d.username != 'test6'
+									and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+							)
+							and to_char(date,'yyyy-mm-dd') = #{date}
+							and practice_type != 'VOCA'
+						group by course_enrollment_id, section, practice_type, book, volume, "group", article
+						union all
+						select
+							course_enrollment_id,
+							section,
+							practice_type,
+							'' as book,
+							'' as volume,
+							'' as "group",
+							'' as article,
+							case when max(case when pass_result = true then case when book = 'toefl' then 1 else 0 end else 0 end) > 0 then true else false end as pass_result,
+							case when max(case when pass_result = true or user_pass_result = true then 1 else 0 end) > 0 then true else false end as user_pass_result
+						from
+							practices_practiceresult_static
+						where
+							course_enrollment_id in (
+								select a.id
+								from
+									enrollments_courseenrollment a
+									join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+									join students_student c on b.student_id = c.id
+									join auth_user d on c.user_id = d.id
+								where
+									a.status = 'PAID'
+									and position(#{date} in schedule ) > 0 
+									and d.username != 'test5' and d.username != 'test6'
+									and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+							)
+							and to_char(date,'yyyy-mm-dd') = #{date}
+							and practice_type = 'VOCA'
+						group by course_enrollment_id, section, practice_type	
+					) b on a.course_enrollment_id = b.course_enrollment_id
+							and a.section = b.section
+							and a.practice_type = b.practice_type
+							and a.book = b.book
+							and a.volume = b.volume
+							and a."group" = b."group"
+							and a.article = b.article
+				group by a.course_id, a.course_enrollment_id, a.name	
+			) a
+		order by 1,3
+	</select>	
+		
+	<select id="getDashboardNotEffectCountList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.course_id,
+			a.section,
+			sum(case when b.course_enrollment_id is null then 1 else 0 end ) as total_count
+		from
+			(
+				select
+					a.id as course_enrollment_id,
+					b.course_id,
+					b.section,
+					b.practice_type,
+					b.book,
+					b.volume,
+					b."group",
+					b.article,
+					b.end_time
+				from
+					(
+						select a.*
+						from
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+							join students_student c on b.student_id = c.id
+							join auth_user d on c.user_id = d.id
+						where
+							a.status = 'PAID'
+							and position(#{date} in schedule ) > 0 
+							and d.username != 'test5' and d.username != 'test6'
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+					) a
+					join (
+						select
+							a.course_id,
+							a.section,
+							a.practice_type,
+							b.book,
+							b.volume,
+							b."group",
+							b.article,
+							c.end_time
+						from 
+							practices_practiceschedule a
+							join practices_practiceproblem b on a.practice_problem_id = b.id
+							join courses_course_practice_daily c on a.section = c.section and a.practice_type = c.practice_type and a.course_id = c.course_id and to_char(a.date,'yyyy-mm-dd') = to_char(c.date,'yyyy-mm-dd')
+						where
+							a.status = 'ACTIVE'
+							and to_char(a.date,'yyyy-mm-dd') = #{date}
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+							and a.practice_type != 'VOCA'
+							<if test="end_time != null and end_time !='' ">
+								<![CDATA[ and c.end_time <= #{end_time} ]]>
+							</if>
+						group by a.course_id, a.section, a.practice_type, b.book, b.volume, b."group", b.article, c.end_time
+						union all
+						select
+							a.course_id,
+							a.section,
+							a.practice_type,
+							'' as book,
+							'' as volume,
+							'' as "group",
+							'' as article,
+							c.end_time
+						from 
+							practices_practiceschedule a
+							join courses_course_practice_daily c on a.section = c.section and a.practice_type = c.practice_type and a.course_id = c.course_id and to_char(a.date,'yyyy-mm-dd') = to_char(c.date,'yyyy-mm-dd')
+						where
+							a.status = 'ACTIVE'
+							and to_char(a.date,'yyyy-mm-dd') = #{date}
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+							and a.practice_type = 'VOCA'
+							<if test="end_time != null and end_time !='' ">
+								<![CDATA[ and c.end_time <= #{end_time} ]]>
+							</if>
+						group by a.course_id, a.section, a.practice_type, c.end_time
+					) b on a.course_id = b.course_id
+			) a
+			left join (
+				select
+					course_enrollment_id,
+					section,
+					practice_type,
+					book,
+					volume,
+					"group",
+					article,
+					case when max(case when pass_result = true then 1 else 0 end) > 0 then true else false end as pass_result,
+					case when max(case when pass_result = true or user_pass_result = true then 1 else 0 end) > 0 then true else false end as user_pass_result
+				from
+					practices_practiceresult_static
+				where
+					course_enrollment_id in (
+						select a.id
+						from
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+							join students_student c on b.student_id = c.id
+							join auth_user d on c.user_id = d.id
+						where
+							a.status = 'PAID'
+							and position(#{date} in schedule ) > 0 
+							and d.username != 'test5' and d.username != 'test6'
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+					)
+					and to_char(date,'yyyy-mm-dd') = #{date}
+					and practice_type != 'VOCA'
+				group by course_enrollment_id, section, practice_type, book, volume, "group", article
+				union all
+				select
+					course_enrollment_id,
+					section,
+					practice_type,
+					'' as book,
+					'' as volume,
+					'' as "group",
+					'' as article,
+					case when max(case when pass_result = true then case when book = 'toefl' then 1 else 0 end else 0 end) > 0 then true else false end as pass_result,
+					case when max(case when pass_result = true or user_pass_result = true then 1 else 0 end) > 0 then true else false end as user_pass_result
+				from
+					practices_practiceresult_static
+				where
+					course_enrollment_id in (
+						select a.id
+						from
+							enrollments_courseenrollment a
+							join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+							join students_student c on b.student_id = c.id
+							join auth_user d on c.user_id = d.id
+						where
+							a.status = 'PAID'
+							and position(#{date} in schedule ) > 0 
+							and d.username != 'test5' and d.username != 'test6'
+							and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+					)
+					and to_char(date,'yyyy-mm-dd') = #{date}
+					and practice_type = 'VOCA'
+				group by course_enrollment_id, section, practice_type	
+			) b on a.course_enrollment_id = b.course_enrollment_id
+					and a.section = b.section
+					and a.practice_type = b.practice_type
+					and a.book = b.book
+					and a.volume = b.volume
+					and a."group" = b."group"
+					and a.article = b.article
+		group by a.course_id, a.section	
+	</select>
+	<select id="getDashboardJuniorLevelUpList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			b.course_id,
+			b.id as course_enrollment_id,
+			concat(e.last_name,e.first_name) as name
+		from
+			practices_practiceresult_static a
+			join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+			join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+			join students_student d on c.student_id = d.id
+			join auth_user e on d.user_id = e.id
+		where
+			b.status = 'PAID'
+			and a.practice_type = 'VOCA'
+			and a.pass_result = true
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+			and e.username != 'test5' and e.username != 'test6'
+			and b.course_id in ( select id from courses_course where course_group_id = #{course_group_id} ) 
+		group by b.course_id, b.id, e.last_name,e.first_name
+		order by 1,3	
+	</select>
+	<select id="getDashboardJuniorNotSendList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+	<![CDATA[
+		select
+			a.course_id,
+			sum(case when coalesce(b.send_yn,'N') = 'N' then 1 else 0 end) as total_count,
+			sum(case when a.date = #{prev_date} and coalesce(b.send_yn,'N') = 'N' then 1 else 0 end) as total_prev_count,
+			sum(case when a.date = #{date} and coalesce(b.send_yn,'N') = 'N' then 1 else 0 end) as total_curr_count	
+		from
+			(
+				select
+					a.course_id,
+					a.id as course_enrollment_id,
+					unnest(string_to_array(a.schedule,',')) as date
+				from
+					enrollments_courseenrollment a
+					join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+					join students_student c on b.student_id = c.id
+					join auth_user d on c.user_id = d.id
+					left join users_school e on c.user_id = e.user_id
+				where
+					a.status = 'PAID'
+					and d.username != 'test5' and d.username != 'test6'
+					and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} ) 
+			) a
+			left join practices_practiceresult_static_send b on a.course_enrollment_id = b.course_enrollment_id and a.date = to_char(b.date,'yyyy-mm-dd')
+		where
+			a.date <= #{date}
+		group by a.course_id
+	]]>	
+	</select>
+	<select id="getDashboardNotSchoolList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.course_id,
+			a.course_enrollment_id,
+			a.name
+		from
+			(
+				select
+					a.course_id,
+					a.id as course_enrollment_id,
+					concat(d.last_name,d.first_name) as name,
+					coalesce(e.school_name,'') as school_name
+				from
+					enrollments_courseenrollment a
+					join enrollments_semesterenrollment b on a.semester_enrollment_id = b.id
+					join students_student c on b.student_id = c.id
+					join auth_user d on c.user_id = d.id
+					left join users_school e on c.user_id = e.user_id
+				where
+					a.status = 'PAID'
+					and d.username != 'test5' and d.username != 'test6'
+					and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id} ) 
+			) a
+		where
+			a.school_name = ''
+		order by 1,3	
+	</select>	
+	
+	<select id="getAchieveAttendList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			course_id,
+			course_enrollment_id,
+			attend_status
+		from
+			(
+				select
+					b.course_id,
+					b.id as course_enrollment_id,
+					case when position(#{date} in b.schedule ) = 1 then 'OK' else 'NO' end as current_new,
+					COALESCE(b.refund_status,'') as refund_status,
+					COALESCE(b.refund_reason,'') as refund_reason,
+					case when e.status is not null then e.status else case when f.will_attend is not null then 'PERMITTED_ABSENT' else 'UNPERMITTED_ABSENT' end end as attend_status					
+				from
+					enrollments_semesterenrollment a
+					join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+					join students_student c on a.student_id = c.id
+					join auth_user d on c.user_id = d.id
+					left join attendances_attendance e on to_char(e.date,'yyyy-mm-dd') = #{date} and b.id = e.course_enrollment_id
+					left join attendances_attendancereason f on to_char(f.date,'yyyy-mm-dd') = #{date} and b.id = f.course_enrollment_id
+					left join (select user_id, to_char(min(date),'HH24:MI') as come_time from students_userloginlog where to_char(date,'yyyy-mm-dd') = #{date} group by user_id ) g on c.user_id = g.user_id
+					left join goals_goalplan h on b.id = h.course_enrollment_id
+				where
+					b.course_id in ( select id from courses_course where course_group_id = #{course_group_id} )
+					and COALESCE(b.status,'') = 'PAID'
+					and d.username != 'test6' and d.username != 'test5'
+					and COALESCE(b.refund_status,'') != 'FULL_REFUND'
+					and position(#{date} in b.schedule ) > 0
+			) a
+		order by course_id	
+	</select>
+	<select id="getAchieveSylabusList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select
+			a.course_id, 
+			a.section, 
+			a.practice_type, 
+			a.book, 
+			a.volume, 
+			a."group", 
+			a.article,
+			a.end_paragraph as paragraph
+		from
+			(
+				select
+					a.course_id,
+					a.section,
+					a.practice_type,
+					case when a.section = 'VOCA' then '' else b.book end book,
+					case when a.section = 'VOCA' then '' else b.volume end volume,
+					case when a.section = 'VOCA' then '' else b."group" end "group",
+					case when a.section = 'VOCA' then '' else b.article end article,
+					a.end_paragraph
+				from
+					practices_practiceschedule a
+					join practices_practiceproblem b on a.practice_problem_id = b.id
+				where
+					a.status = 'ACTIVE'
+					and to_char(a.date,'yyyy-mm-dd') = #{date}
+					and a.course_id in ( select id from courses_course where course_group_id = #{course_group_id})
+			) a
+		group by a.course_id, a.section, a.practice_type, a.book, a.volume, a."group", a.article, a.end_paragraph	
+	</select>
+	<select id="getAchieveResultList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select distinct
+			a.section,
+			b.course_id,
+			a.course_enrollment_id,
+			a.practice_type,
+			case when a.section = 'VOCA' then '' else a.book end book,
+			case when a.section = 'VOCA' then '' else a.volume end volume,
+			case when a.section = 'VOCA' then '' else a."group" end "group",
+			case when a.section = 'VOCA' then '' else a.article end article,	
+			a.paragraph
+		from 
+			practices_practiceresult_static a
+			join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+		where
+			( a.pass_result = true or a.user_pass_result = true)
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+			and b.course_id in ( select id from courses_course where course_group_id = #{course_group_id})
+	</select>
+	<select id="getAchieveGiveUpList" resultType="com.usher.dto.DashboardDto" parameterType="com.usher.dto.DashboardDto">
+		select 
+			a.section,
+			a.practice_type,
+			b.course_id,
+			a.course_enrollment_id
+		from
+			goals_goalconcentration_practice a
+			join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+		where
+			to_char(a.date,'yyyy-mm-dd') = #{date}
+			and a.accept_result = true
+			and a.pass_user_score = 0
+			and b.course_id in ( select id from courses_course where course_group_id = #{course_group_id})
+	</select>
+</mapper>

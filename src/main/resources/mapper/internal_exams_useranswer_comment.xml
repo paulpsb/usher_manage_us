@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsUseranswerCommentDao">
+	<select id="getExamUserAnswerComment" parameterType="com.usher.dto.InternalExamsUseranswerCommentDto" resultType="com.usher.dto.InternalExamsUseranswerCommentDto">
+		select 
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.comment_id,
+			concat(b.last_name,b.first_name) as comment_name,
+			a.comment_type,
+			a.comment,
+			a.practice_result_id
+		from 
+			internal_exams_useranswer_comment a
+			join auth_user b on a.comment_id = b.id
+		where
+			a.practice_result_id = #{practice_result_id}
+			and a.comment_type = #{comment_type}
+
+	</select>
+	<insert id="insertExamUserAnswerComment" parameterType="com.usher.dto.InternalExamsUseranswerCommentDto" >
+		insert into internal_exams_useranswer_comment ( 
+			created,
+			modified,
+			comment_id,
+			comment_type,
+			comment,
+			practice_result_id
+		) values (
+			now(),
+			now(),
+			#{comment_id},
+			#{comment_type},
+			#{comment},
+			#{practice_result_id}
+		)
+	</insert>	
+	<insert id="insertExamUserAnswerCommentLog" parameterType="com.usher.dto.InternalExamsUseranswerCommentDto" >
+		insert into internal_exams_useranswer_comment_log ( 
+			created,
+			modified,
+			comment_id,
+			comment_type,
+			comment,
+			practice_result_id
+		) 
+		select
+			created,
+			modified,
+			comment_id,
+			comment_type,
+			comment,
+			practice_result_id		
+		from
+			internal_exams_useranswer_comment
+		where
+			practice_result_id = #{practice_result_id}
+			and comment_type = #{comment_type}
+	</insert>		
+	<update id="updateExamUserAnswerComment" parameterType="com.usher.dto.InternalExamsUseranswerCommentDto" >
+		update internal_exams_useranswer_comment set
+			modified = now(),
+			comment_id = #{comment_id},
+			comment = #{comment}
+		where
+			practice_result_id = #{practice_result_id}
+			and comment_type = #{comment_type}
+	</update>	
+	<delete id="deleteExamUserAnswerComment" parameterType="com.usher.dto.InternalExamsUseranswerCommentDto" >
+		delete from internal_exams_useranswer_comment
+		where
+			id = #{id}
+	</delete>		
+</mapper>

@@ -1,0 +1,91 @@
+#note{
+    margin-top:20px;
+    line-height:40px;
+    position:relative;
+    text-align:left;
+    height: 530px;
+    overflow-y: scroll;
+    padding-top:20px;
+}
+#note span{
+    font-size:18px;
+}
+#rst{
+    margin-top:20px;
+    line-height:40px;
+    padding-top:20px;
+}
+#rst span{
+    font-size:18px;
+}
+#wrap{
+    line-height:40px;
+}
+.left_s{
+    border-left: black 4px dotted;
+}
+.right_s{
+    border-right: black 4px dotted;
+}
+.red{
+    background:red;
+    }
+.green{
+    background:lime;
+    }
+.blue{
+    background:blue;
+    }
+.antiquewhite{
+    background:antiquewhite;
+
+    }
+.cornflowerblue{
+    background:cornflowerblue;
+    background:yellow;
+}
+.hotpink{
+    background:hotpink;
+    background:antiquewhite;
+}
+.coral{
+    background:coral;
+}
+.yellow{
+    background:yellow;
+    }
+
+#contents #wrap #note .wrong{
+    color:red;
+    font-weight: normal;
+    /*text-decoration:line-through;*/
+    text-decoration:none;
+}
+.wrong{
+    color:red;
+    /*text-decoration:line-through;*/
+}
+.correct{
+    /*color:green;
+    background:#ddd*/
+    }
+#control{
+    display:none;
+    position:absolute;
+    padding:10px;
+    background-color:#ededed;
+}
+#control input{
+    width: 75px;
+    height: 35px;
+}
+#control_one_word{
+    display:none;
+    position:absolute;
+    padding:10px;
+    background-color:#ededed;
+}
+#control_one_word input{
+    width: 75px;
+    height: 35px;
+}

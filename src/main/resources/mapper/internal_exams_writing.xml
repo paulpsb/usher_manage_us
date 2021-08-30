@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsWritingDao">
+	<select id="getInternalExamsWritingCount" resultType="com.usher.dto.InternalExamsWritingDto" parameterType="com.usher.dto.InternalExamsWritingDto">
+		select count(*) as total_count
+		from 
+			internal_exams_writing
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and book = #{book}
+		</if>
+	</select>
+	
+	<select id="getInternalExamsWritingList" resultType="com.usher.dto.InternalExamsWritingDto" parameterType="com.usher.dto.InternalExamsWritingDto">
+		select 
+			id,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+			question
+		from
+			internal_exams_writing
+		where 1 = 1
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		<if test="book != null and book !='' ">			
+			and book = #{book}
+		</if>
+		order by book, article
+		limit #{row_num} offset #{first_num}
+	</select>
+
+	<select id="getInternalExamsWritingExcelList" resultType="com.usher.dto.InternalExamsWritingDto" parameterType="com.usher.dto.InternalExamsWritingDto">
+		select 
+			id,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+			passage,
+			question
+		from
+			internal_exams_writing
+		order by book, article
+	</select>
+	
+	<select id="getInternalExamsWriting" resultType="com.usher.dto.InternalExamsWritingDto" parameterType="com.usher.dto.InternalExamsWritingDto">
+		select 
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.passage,
+			a.question,
+			a.sound,
+			a.sound_script
+		from
+			internal_exams_writing a
+		where
+			a.id = #{id}
+	</select>
+	
+	<select id="getInternalExamsWritingAsArticle" resultType="com.usher.dto.InternalExamsWritingDto" parameterType="com.usher.dto.InternalExamsWritingDto">
+		select 
+			a.id,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			a.passage,
+			a.question,
+			a.sound,
+			a.sound_script
+		from
+			internal_exams_writing a
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume = #{volume}
+			and a."group" = #{group}
+			and a.article = #{article}
+	</select>
+	
+	<insert id="insertInternalExamsWriting" parameterType="com.usher.dto.InternalExamsWritingDto"  useGeneratedKeys="true" keyProperty="id">
+		insert into internal_exams_writing (
+			created,
+			modified,
+			section,
+			book,
+			volume,
+			"group",
+			article,
+			passage,
+			question,
+			sound_script
+		) values (
+			now(),
+			now(),
+			#{section},
+			#{book},
+			#{volume},
+			#{group},
+			#{article},
+			#{passage},
+			#{question},
+			#{sound_script}
+		)
+	</insert>
+	
+	<update id="updateInternalExamsWriting" parameterType="com.usher.dto.InternalExamsWritingDto">
+		update internal_exams_writing set
+			modified = now(),
+			passage = #{passage},
+			question = #{question},
+			sound_script = #{sound_script}
+		where
+			id = #{id}	
+	</update>
+	
+	<delete id="deleteInternalExamsWriting" parameterType="com.usher.dto.InternalExamsWritingDto">
+		delete from internal_exams_writing
+		where
+			id = #{id}	
+	</delete>
+</mapper>

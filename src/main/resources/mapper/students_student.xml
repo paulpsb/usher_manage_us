@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.StudentsStudentDao">
+	<select id="getStudentsStudentSearchList" resultType="com.usher.dto.StudentsStudentDto" parameterType="com.usher.dto.StudentsStudentDto">
+		select
+			user_id,
+			student_id,
+			student_name,
+			username,
+			mobile_no,
+			mobile_parent_no,
+			batch_yn,
+			school_gubun,
+			school_foreign_gubun,
+			school_area1,
+			school_area2,
+			school_name,
+			memoirs_yn,
+			memoirs_id
+		from
+			(
+				select
+					a.id as user_id,
+					b.id as student_id,
+					concat(a.last_name,a.first_name) as student_name,
+					a.username,
+					c.mobile_no,
+					coalesce(c.tel_emergency_number,'') as mobile_parent_no,
+					case when e.id is not null then 'Y' else 'N' end as batch_yn,
+					coalesce(d.school_gubun,'') as school_gubun,
+					coalesce(d.school_foreign_gubun,'') as school_foreign_gubun,
+					coalesce(d.school_area1,'') as school_area1,
+					coalesce(d.school_area2,'') as school_area2,
+					coalesce(d.school_name,'') as school_name,
+					case when f.id is not null then 'Y' else 'N' end as memoirs_yn,
+					f.id as memoirs_id
+				from
+					auth_user a
+					join students_student b on a.id = b.user_id
+					join users_personalinfo c on a.id = c.user_id
+					left join users_school d on a.id = d.user_id
+					left join ( select user_id, max(id) as id from batch_result where course_id = 0 group by user_id) e on a.id = e.user_id
+					left join board_memoirs f on a.username = f.write_id
+					join auth_user_groups g on a.id = g.user_id and g.group_id = 1
+			) a
+		where
+			a.student_name like concat('%',#{student_name},'%')
+			or a.school_name like concat('%',#{student_name},'%')
+		order by a.student_name
+	</select>
+	<select id="getStudentsStudentSearchEnrollmentList" resultType="com.usher.dto.StudentsStudentDto" parameterType="com.usher.dto.StudentsStudentDto">
+		select
+			a.student_id,
+			a.id as semester_enrollment_id,
+			b.id as course_enrollment_id,
+			e.id as semester_id,
+			d.id as course_group_id,
+			c.id as course_id,	
+			to_char(e.date,'yyyy.mm') as semester_month,
+			d.name as course_group_name,
+			c.name as course_name,
+			b.status,
+			b.chamgang_yn
+		from 
+			enrollments_semesterenrollment a
+			join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+			join courses_course c on b.course_id = c.id
+			join courses_coursegroup d on c.course_group_id = d.id
+			join courses_semester e on d.semester_id = e.id
+		where 1=1
+			and ( b.status = 'PAID' or  b.status = 'REFUND_REQUESTED' or (b.status = 'REFUND_COMPLETED' and b.refund_status = 'PARTIAL_REFUND'))
+			and a.student_id in (
+				select
+					student_id
+				from
+					(
+						select
+							a.id as user_id,
+							b.id as student_id,
+							concat(a.last_name,a.first_name) as student_name,
+							a.username,
+							c.mobile_no,
+							coalesce(c.tel_emergency_number,'') as mobile_parent_no,
+							case when e.id is not null then 'Y' else 'N' end as batch_yn,
+							coalesce(d.school_gubun,'') as school_gubun,
+							coalesce(d.school_foreign_gubun,'') as school_foreign_gubun,
+							coalesce(d.school_area1,'') as school_area1,
+							coalesce(d.school_area2,'') as school_area2,
+							coalesce(d.school_name,'') as school_name,
+							case when f.id is not null then 'Y' else 'N' end as memoirs_yn,
+							f.id as memoirs_id
+						from
+							auth_user a
+							join students_student b on a.id = b.user_id
+							join users_personalinfo c on a.id = c.user_id
+							left join users_school d on a.id = d.user_id
+							left join batch_result e on a.id = e.user_id and e.course_id = 0
+							left join board_memoirs f on a.username = f.write_id
+							join auth_user_groups g on a.id = g.user_id and g.group_id = 1
+					) a
+				where
+					a.student_name like concat('%',#{student_name},'%')
+					or a.school_name like concat('%',#{student_name},'%')
+			)
+		order by e.id, d.id, c.id	
+	</select>
+	<select id="getStudentsStudentSemesterList" resultType="com.usher.dto.StudentsStudentDto" parameterType="com.usher.dto.StudentsStudentDto">
+	<![CDATA[
+		select
+			a.student_id,
+			a.id as semester_enrollment_id,
+			b.id as course_enrollment_id,
+			e.id as semester_id,
+			d.id as course_group_id,
+			c.id as course_id,	
+			to_char(e.date,'yyyy.mm') as semester_month,
+			d.name as course_group_name,
+			c.name as course_name
+		from 
+			enrollments_semesterenrollment a
+			join enrollments_courseenrollment b on a.id = b.semester_enrollment_id
+			join courses_course c on b.course_id = c.id
+			join courses_coursegroup d on c.course_group_id = d.id
+			join courses_semester e on d.semester_id = e.id
+		where
+			b.status = 'PAID'
+			and to_char(e.date,'yyyy-mm') < #{semester_date}
+			and a.student_id in (
+				select
+					c.student_id
+				from
+					courses_allocation a
+					join enrollments_courseenrollment b on a.course_enrollment_id = b.id
+					join enrollments_semesterenrollment c on b.semester_enrollment_id = c.id
+					join courses_course f on b.course_id = f.id
+					join courses_coursegroup e on f.course_group_id = e.id 
+					join courses_semester d on c.semester_id = d.id and e.semester_id = d.id
+
+				where
+					COALESCE(b.status,'') != 'REGISTERED'
+					and COALESCE(b.status,'') != 'CANCEL_COMPLETED'
+					and to_char(d.date,'yyyy-mm') in (#{prev_semester_date},#{semester_date})
+			)
+		order by a.student_id, e.id desc, d.id, c.id	
+	]]>
+	</select>
+	<select id="getExcelUser" resultType="com.usher.dto.StudentsStudentDto" parameterType="com.usher.dto.StudentsStudentDto">
+		select
+			a.id as user_id
+		from
+			auth_user a
+			join users_personalinfo b on a.id = b.user_id
+		where
+			b.mobile_no like concat('%',#{mobile_no},'%')
+			and concat(a.last_name,a.first_name) = #{student_name}
+		order by a.id desc
+		limit 1	
+	</select>
+</mapper>

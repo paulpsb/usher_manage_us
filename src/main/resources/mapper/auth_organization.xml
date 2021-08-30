@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.AuthOrganizationDao">
+	<select id="getAuthOrganizationList" resultType="com.usher.dto.AuthOrganizationDto">
+		select
+			id,
+			organization_name,
+			organization_up_id,
+			organization_icon,
+			organization_level,
+			organization_sort
+		from
+			auth_organization
+		order by organization_level, organization_sort
+	</select>
+	<select id="getAuthOrganizationDownList" resultType="com.usher.dto.AuthOrganizationDto">
+		select
+			a.id,
+			a.organization_name,
+			a.organization_up_id,
+			a.organization_up_name,
+			a.organization_icon,
+			a.organization_level,
+			a.organization_sort,
+			a.organization_down_count
+		from
+			(
+				select
+					a.id,
+					a.organization_name,
+					a.organization_up_id,
+					coalesce(c.organization_name,'어셔어학원') as organization_up_name,
+					a.organization_icon,
+					a.organization_level,
+					a.organization_sort,
+					coalesce(b.organization_down_count,0) as organization_down_count
+				from
+					auth_organization a
+					left join (
+						select
+							organization_up_id,
+							count(*) as organization_down_count
+						from
+							auth_organization
+						group by organization_up_id
+		
+					) b on a.id = b.organization_up_id
+					left join auth_organization c on a.organization_up_id = c.id
+			) a
+		where
+			a.organization_down_count = 0
+		order by a.id 
+	</select>	
+	<select id="getAuthOrganizationTeamList" resultType="com.usher.dto.AuthOrganizationDto">
+		select
+			id,
+			organization_name,
+			organization_up_id,
+			organization_icon,
+			organization_level,
+			organization_sort
+		from
+			auth_organization
+		where
+			organization_level = 3
+		order by organization_level, organization_sort
+	</select>		
+	<select id="getAuthOrganization" parameterType="com.usher.dto.AuthOrganizationDto" resultType="com.usher.dto.AuthOrganizationDto">
+		select
+			a.id,
+			a.organization_name,
+			a.organization_up_id,
+			coalesce(c.organization_name,'어셔어학원') as organization_up_name,
+			a.organization_icon,
+			a.organization_level,
+			a.organization_sort,
+			coalesce(b.organization_down_count,0) as organization_down_count
+		from
+			auth_organization a
+			left join (
+				select
+					organization_up_id,
+					count(*) as organization_down_count
+				from
+					auth_organization
+				where
+					organization_up_id  = #{id}
+				group by organization_up_id
+				
+			) b on a.id = b.organization_up_id
+			left join auth_organization c on a.organization_up_id = c.id
+		where a.id = #{id}
+	</select>
+	<select id="getAuthOrganizationSort" parameterType="com.usher.dto.AuthOrganizationDto" resultType="com.usher.dto.AuthOrganizationDto">
+		select
+			coalesce(max(organization_sort),0)+1 as organization_sort
+		from
+			auth_organization
+		where
+			organization_up_id = #{organization_up_id}
+	</select>	
+	<insert id="insertAuthOrganization" parameterType="com.usher.dto.AuthOrganizationDto">
+		insert into auth_organization(
+			created,
+			modified,
+			organization_name,
+			organization_up_id,
+			organization_icon,
+			organization_level,
+			organization_sort
+		)values(
+			now(),
+			now(),
+			#{organization_name},
+			#{organization_up_id},
+			#{organization_icon},
+			#{organization_level},
+			#{organization_sort}
+		)
+	</insert>
+	<update id="updateAuthOrganization" parameterType="com.usher.dto.AuthOrganizationDto">
+		update auth_organization set
+			modified = now(),
+			organization_name = #{organization_name},
+			organization_icon = #{organization_icon}
+		where 
+			id = #{id}
+	</update>
+
+	<delete id="deleteAuthOrganization" parameterType="com.usher.dto.AuthOrganizationDto">
+		delete from auth_organization
+		where 
+			id = #{id}
+	</delete>
+	
+	<delete id="deleteAuthOrganizationAsMenu" parameterType="com.usher.dto.AuthOrganizationDto">
+		delete from auth_organization_menu
+		where 
+			organization_id = #{id}
+	</delete>
+
+	<delete id="deleteAuthOrganizationAsUser" parameterType="com.usher.dto.AuthOrganizationDto">
+		delete from auth_user_organization
+		where 
+			organization_id = #{id}
+	</delete>
+
+</mapper>

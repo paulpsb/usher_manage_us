@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseCoursegroupTimescheduleDao">
+	<select id="getBaseCoursegroupTimescheduleList" parameterType="com.usher.dto.BaseCoursegroupTimescheduleDto" resultType="com.usher.dto.BaseCoursegroupTimescheduleDto">
+		select
+			id,
+			test_type,
+			student_type,
+			lecture_type,
+			start_time,
+			end_time
+		from
+			base_coursegroup_timeschedule
+		where
+			test_type = #{test_type}
+			and student_type = #{student_type}
+			and lecture_type = #{lecture_type}
+		order by start_time
+	</select>
+	
+	<insert id="insertBaseCoursegroupTimeschedule" parameterType="com.usher.dto.BaseExamRuburicDto">
+		insert into base_coursegroup_timeschedule(
+			created,
+			modified,
+			test_type,
+			student_type,
+			lecture_type,
+			start_time,
+			end_time
+		) values (
+			now(),
+			now(),
+			#{test_type},
+			#{student_type},
+			#{lecture_type},
+			#{start_time},
+			#{end_time}
+		)
+	</insert>	
+	<delete id="deleteBaseCoursegroupTimeschedule" parameterType="com.usher.dto.BaseExamRuburicDto">
+		delete from base_coursegroup_timeschedule
+		where
+			test_type = #{test_type}
+			and student_type = #{student_type}
+			and lecture_type = #{lecture_type}
+	</delete>	
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CoursesCourseAchieveDao">
+	<select id="getCourseAchieveList" resultType="com.usher.dto.CoursesCourseAchieveDto" parameterType="com.usher.dto.CoursesCourseAchieveDto">
+		select
+			id,
+			status,
+			section,
+			practice_type,
+			course_id,
+			achieve_point,
+			scholarship,
+			late_amt,
+			absent_amt
+		from 
+			courses_course_achieve 
+		where
+			course_id = #{course_id}
+		order by section, practice_type
+	</select>
+	
+	<insert id="insertCourseAchieve" parameterType="com.usher.dto.CoursesCourseAchieveDto">
+		insert into courses_course_achieve(
+			created,
+			modified,
+			status,
+			section,
+			practice_type,
+			course_id,
+			achieve_point,
+			scholarship,
+			late_amt,
+			absent_amt
+		)values(
+			now(),
+			now(),
+			#{status},
+			#{section},
+			#{practice_type},
+			#{course_id},
+			#{achieve_point},
+			#{scholarship},
+			#{late_amt},
+			#{absent_amt}			
+		)
+	</insert>
+
+	<delete id="deleteCourseAchieve" parameterType="com.usher.dto.CoursesCourseAchieveDto">
+		delete from courses_course_achieve
+		where
+			course_id = #{course_id}
+	</delete>
+</mapper>

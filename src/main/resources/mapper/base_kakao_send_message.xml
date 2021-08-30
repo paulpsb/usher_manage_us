@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseKakaoSendMessageDao">
+	<select id="getBaseKakaoSendMessageList" resultType="com.usher.dto.BaseKakaoSendMessageDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			a.created_id,
+			concat(coalesce(b.last_name,''),coalesce(b.first_name,'')) as created_name,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.modified_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as modified_name,
+			a.send_message_gubun,
+			a.send_message_name
+		from
+			base_kakao_send_message a
+			left join auth_user b on a.created_id = b.id
+			left join auth_user c on a.modified_id = c.id
+		order by a.id
+	</select>
+
+	<select id="getBaseKakaoSendMessage" parameterType="com.usher.dto.BaseKakaoSendMessageDto" resultType="com.usher.dto.BaseKakaoSendMessageDto">
+		select
+			a.id,
+			to_char(a.created,'yyyy-mm-dd hh24:mi:ss') as created,
+			a.created_id,
+			concat(coalesce(b.last_name,''),coalesce(b.first_name,'')) as created_name,
+			to_char(a.modified,'yyyy-mm-dd hh24:mi:ss') as modified,
+			a.modified_id,
+			concat(coalesce(c.last_name,''),coalesce(c.first_name,'')) as modified_name,
+			a.send_message_gubun,
+			a.send_message_name,
+			a.send_message_desc
+		from
+			base_kakao_send_message a
+			left join auth_user b on a.created_id = b.id
+			left join auth_user c on a.modified_id = c.id
+		where
+			a.id = #{id}
+	</select>
+	
+	<insert id="insertBaseKakaoSendMessage" parameterType="com.usher.dto.BaseKakaoSendMessageDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into base_kakao_send_message(
+			created,
+			created_id,
+			modified,
+			modified_id,
+			send_message_gubun,
+			send_message_name,
+			send_message_desc
+		) values (
+			now(),
+			#{created_id},
+			now(),
+			#{modified_id},
+			#{send_message_gubun},
+			#{send_message_name},
+			#{send_message_desc}
+		)
+	</insert>	
+	<update id="updateBaseKakaoSendMessage" parameterType="com.usher.dto.BaseKakaoSendMessageDto">
+		update base_kakao_send_message set
+			modified = now(),
+			modified_id = #{modified_id},
+			send_message_name = #{send_message_name},
+			send_message_desc = #{send_message_desc}
+		where
+			id = #{id}
+	</update>
+
+	<delete id="deleteBaseKakaoSendMessage" parameterType="com.usher.dto.BaseKakaoSendMessageDto">
+		delete from base_kakao_send_message
+		where
+			id = #{id}
+	</delete>	
+	
+	<delete id="deleteBaseKakaoSendMessageDetailAll" parameterType="com.usher.dto.BaseKakaoSendMessageDto">
+		delete from base_kakao_send_message
+		where
+			id = #{id}
+	</delete>	
+		
+</mapper>

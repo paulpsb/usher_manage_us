@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.CorrectionExamsAnswerDao">
+	<select id="getCorrectionExamsAnswerCourseList" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select course_name 
+		from 
+			correction_exams_answer
+		where 1=1
+			and coalesce(course_name,'') != ''
+		<if test="section != null and section !='' ">			
+			and section = #{section}
+		</if>
+		group by course_name 
+		order by 1
+	</select>
+	
+	<select id="getCorrectionExamsAnswerCount" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select count(*) as total_count
+		from
+			correction_exams_answer a
+			join auth_user b on a.user_id = b.id
+			left join (
+				select
+					correction_exams_answer_id,
+					count(*) as comment_count
+				from 
+					correction_exams_comment
+				where
+					comment_yn = 'N'
+				group by correction_exams_answer_id
+			) e on a.id = e.correction_exams_answer_id
+		where
+			a.section = #{section}
+		<if test="practice_schedule_id > 0 ">			
+			and a.practice_schedule_id = #{practice_schedule_id}
+		</if>	
+		<if test="status != null and status !='' ">			
+			and a.status = #{status}
+		</if>
+		<if test="book != null and book !='' ">			
+			and a.book = #{book}
+		</if>					
+		<if test="out_yn == null or out_yn =='' ">			
+			<if test="course_name != null and course_name !='' ">			
+				and a.course_name = #{course_name}
+			</if>
+		</if>
+		<if test="out_yn != null and out_yn !='' ">			
+			and coalesce(a.course_name,'') = ''
+		</if>		
+		<if test="comment_answer_yn != null and comment_answer_yn !='' ">			
+			and ( case when coalesce(e.comment_count,0) > 0 then 'Y' else 'N' end ) = #{comment_answer_yn}
+		</if>				
+		<if test="user_name != null and user_name !='' ">			
+			and concat(b.last_name,b.first_name) like concat('%',#{user_name},'%')
+		</if>	
+		<if test="answer_appeal_status != null and answer_appeal_status !='' ">			
+			and a.answer_appeal_status = #{answer_appeal_status}
+		</if>		
+	</select>
+	
+	<select id="getCorrectionExamsAnswerList" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.user_id,
+			concat(b.last_name,b.first_name) as user_name,
+			b.username as user_username,
+			a.question,
+			a.answer_student_pen_yn,
+			to_char(a.answer_pen_date,'yyyy-mm-dd hh24:mi:ss') as answer_pen_date,
+			a.answer_correct_pen_yn,
+			to_char(a.answer_correct_pen_date,'yyyy-mm-dd hh24:mi:ss') as answer_correct_pen_date,
+			a.answer_rublic_yn,
+			a.answer_rublic_score,
+			to_char(a.answer_rublic_date,'yyyy-mm-dd hh24:mi:ss') as answer_rublic_date,
+			a.answer_student_note_yn,
+			a.course_name,
+			a.course_id,
+			a.course_enrollment_id,
+			a.exam_time,
+			a.answer_correct_pen_id,
+			concat(c.last_name,c.first_name) as answer_correct_pen_name,
+			a.answer_rublic_id,
+			concat(d.last_name,d.first_name) as answer_rublic_name,
+			coalesce(a.legacy_id,0) as legacy_id,
+			case when coalesce(e.comment_count,0) > 0 then 'Y' else 'N' end as comment_answer_yn,
+			to_char(a.request_date,'yyyy-mm-dd hh24:mi:ss') as request_date,
+			case when a.status = 'COMPLETE' then cast(extract(epoch from (a.answer_rublic_date - coalesce(a.request_date,a.answer_rublic_date))) / 60 as integer) else 
+				case when a.status = 'REQUEST' then cast(extract(epoch from (now() - coalesce(a.request_date,a.answer_pen_date))) / 60 as integer) else 0 end end as rublic_time,
+				
+			a.answer_appeal_status,
+			to_char(a.answer_appeal_date,'yyyy-mm-dd hh24:mi:ss') as answer_appeal_date,
+			case when a.answer_appeal_status = 'REQUEST' then cast(extract(epoch from (now() - a.answer_appeal_date)) / 60 as integer) else 0 end as answer_appeal_time,
+			a.answer_review_yn,
+			a.answer_review_score,
+			coalesce(a.answer_count,0) as answer_count,
+			coalesce(a.answer_correct_pen_count,0) as answer_correct_pen_count
+		from
+			correction_exams_answer a
+			join auth_user b on a.user_id = b.id
+			left join auth_user c on a.answer_correct_pen_id = c.id
+			left join auth_user d on a.answer_rublic_id = d.id
+			left join (
+				select
+					correction_exams_answer_id,
+					count(*) as comment_count
+				from 
+					correction_exams_comment
+				where
+					comment_yn = 'N'
+				group by correction_exams_answer_id
+			) e on a.id = e.correction_exams_answer_id
+		where
+			a.section = #{section}
+		<if test="practice_schedule_id > 0 ">			
+			and a.practice_schedule_id = #{practice_schedule_id}
+		</if>			
+		<if test="status != null and status !='' ">			
+			and a.status = #{status}
+		</if>
+		<if test="book != null and book !='' ">			
+			and a.book = #{book}
+		</if>					
+		<if test="out_yn == null or out_yn =='' ">			
+			<if test="course_name != null and course_name !='' ">			
+				and a.course_name = #{course_name}
+			</if>
+		</if>
+		<if test="out_yn != null and out_yn !='' ">			
+			and coalesce(a.course_name,'') = ''
+		</if>		
+		<if test="comment_answer_yn != null and comment_answer_yn !='' ">			
+			and ( case when coalesce(e.comment_count,0) > 0 then 'Y' else 'N' end ) = #{comment_answer_yn}
+		</if>	
+		<if test="user_name != null and user_name !='' ">			
+			and concat(b.last_name,b.first_name) like concat('%',#{user_name},'%')
+		</if>	
+		<if test="answer_appeal_status != null and answer_appeal_status !='' ">			
+			and a.answer_appeal_status = #{answer_appeal_status}
+		</if>			
+		order by a.id desc
+		limit #{row_num} offset #{first_num}
+	</select>
+	
+	<select id="getCorrectionExamsAnswerAppealCount" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select count(*) as total_count
+		from
+			correction_exams_answer a
+			join correction_exams_appeal b on a.id = b.correction_exams_answer_id
+			join auth_user c on a.user_id = c.id
+			left join auth_user d on a.answer_correct_pen_id = d.id
+			left join auth_user e on b.appeal_answer_id = e.id
+		where 1=1
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		<if test="course_name != null and course_name !='' ">			
+			and a.course_name = #{course_name}
+		</if>	
+		<if test="user_name != null and user_name !='' ">			
+			and concat(b.last_name,b.first_name) like concat('%',#{user_name},'%')
+		</if>	
+		<if test="appeal_answer_yn != null and appeal_answer_yn !='' ">			
+			and b.appeal_answer_yn = #{appeal_answer_yn}
+		</if>			
+	</select>
+	
+	<select id="getCorrectionExamsAnswerAppealList" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			to_char(a.date,'yyyy-mm-dd hh24:mi:ss') as date,
+			a.user_id,
+			concat(c.last_name,c.first_name) as user_name,
+			a.question,
+			c.username as user_username,
+			a.answer_correct_pen_yn,
+			to_char(a.answer_correct_pen_date,'yyyy-mm-dd hh24:mi:ss') as answer_correct_pen_date,
+			a.answer_correct_pen_id,
+			concat(c.last_name,c.first_name) as answer_correct_pen_name,
+			to_char(b.appeal_date,'yyyy-mm-dd hh24:mi:ss') as appeal_date,
+			b.appeal_comment,
+			b.appeal_question,
+			b.appeal_answer_id,
+			concat(coalesce(e.last_name,''), coalesce(e.first_name,'')) as appeal_answer_name,
+			to_char(b.appeal_answer_date,'yyyy-mm-dd hh24:mi:ss') as appeal_answer_date,
+			b.appeal_answer,
+			b.appeal_answer_comment,
+			b.appeal_answer_yn,
+			b.appeal_answer_review_yn,
+			b.appeal_answer_review_score,
+			coalesce(a.answer_count,0) as answer_count,
+			coalesce(a.answer_correct_pen_count,0) as answer_correct_pen_count
+		from
+			correction_exams_answer a
+			join correction_exams_appeal b on a.id = b.correction_exams_answer_id
+			join auth_user c on a.user_id = c.id
+			left join auth_user d on a.answer_correct_pen_id = d.id
+			left join auth_user e on b.appeal_answer_id = e.id
+		where 1=1
+		<if test="section != null and section !='' ">			
+			and a.section = #{section}
+		</if>
+		<if test="course_name != null and course_name !='' ">			
+			and a.course_name = #{course_name}
+		</if>	
+		<if test="user_name != null and user_name !='' ">			
+			and concat(b.last_name,b.first_name) like concat('%',#{user_name},'%')
+		</if>	
+		<if test="appeal_answer_yn != null and appeal_answer_yn !='' ">			
+			and b.appeal_answer_yn = #{appeal_answer_yn}
+		</if>	
+		order by b.id desc
+		limit #{row_num} offset #{first_num}
+	</select>
+	
+	<select id="getCorrectionExamsAnswerAppealReviewList" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select
+			correction_exams_answer_id as id,
+			appeal_answer_review_yn as answer_review_yn,
+			appeal_answer_review_score as answer_review_score
+		from
+			correction_exams_appeal
+		where
+			correction_exams_answer_id in (
+				select
+					a.id
+				from
+					correction_exams_answer a
+					join auth_user b on a.user_id = b.id
+					left join auth_user c on a.answer_correct_pen_id = c.id
+					left join auth_user d on a.answer_rublic_id = d.id
+					left join (
+						select
+							correction_exams_answer_id,
+							count(*) as comment_count
+						from 
+							correction_exams_comment
+						where
+							comment_yn = 'N'
+						group by correction_exams_answer_id
+					) e on a.id = e.correction_exams_answer_id
+				where
+					a.section = #{section}
+				<if test="practice_schedule_id > 0 ">			
+					and a.practice_schedule_id = #{practice_schedule_id}
+				</if>			
+				<if test="status != null and status !='' ">			
+					and a.status = #{status}
+				</if>
+				<if test="book != null and book !='' ">			
+					and a.book = #{book}
+				</if>					
+				<if test="course_name != null and course_name !='' ">			
+					and a.course_name = #{course_name}
+				</if>	
+				<if test="comment_answer_yn != null and comment_answer_yn !='' ">			
+					and ( case when coalesce(e.comment_count,0) > 0 then 'Y' else 'N' end ) = #{comment_answer_yn}
+				</if>	
+				<if test="user_name != null and user_name !='' ">			
+					and concat(b.last_name,b.first_name) like concat('%',#{user_name},'%')
+				</if>	
+				<if test="answer_appeal_status != null and answer_appeal_status !='' ">			
+					and a.answer_appeal_status = #{answer_appeal_status}
+				</if>			
+				order by a.id desc
+				limit #{row_num} offset #{first_num}
+			)
+	</select>
+	
+	<select id="getCorrectionExamsAnswer" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			to_char(a.date,'yyyy-mm-dd hh24:mi:ss') as date,
+			a.user_id,
+			concat(b.last_name,b.first_name) as user_name,
+			b.username as user_username,
+			a.question,
+			a.answer,
+			to_char(a.answer_pen_date,'yyyy-mm-dd hh24:mi:ss') as answer_pen_date,
+			a.answer_pen,
+			a.answer_student_pen_yn,
+			a.answer_correct_pen_yn,
+			a.answer_rublic_yn,
+			a.answer_rublic_score,
+			a.answer_student_note_yn,
+			a.course_name,
+			a.course_id,
+			a.course_enrollment_id,
+			a.practice_result_id,
+			a.practice_schedule_id,
+			a.practice_problem_id,
+			a.exam_time,
+			a.correction_user_product_id,
+			a.answer_correct_pen_id,
+			a.answer_rublic_id,
+			coalesce(a.legacy_id,0) as legacy_id,
+			coalesce(answer_review_yn,'N') as answer_review_yn,
+			coalesce(answer_review_score,0) as answer_review_score,
+			answer_appeal_status,
+			coalesce(a.answer_count,0) as answer_count,
+			coalesce(a.answer_correct_pen_count,0) as answer_correct_pen_count
+		from
+			correction_exams_answer a
+			join auth_user b on a.user_id = b.id
+		where a.id = #{id}
+	</select>
+		
+	<select id="getCorrectionExamsAnswerAsResult" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			to_char(a.date,'yyyy-mm-dd hh24:mi:ss') as date,
+			a.user_id,
+			concat(b.last_name,b.first_name) as user_name,
+			b.username as user_username,
+			a.question,
+			a.answer,
+			to_char(a.answer_pen_date,'yyyy-mm-dd hh24:mi:ss') as answer_pen_date,
+			a.answer_pen,
+			a.answer_student_pen_yn,
+			a.answer_correct_pen_yn,
+			a.answer_rublic_yn,
+			a.answer_rublic_score,
+			a.answer_student_note_yn,
+			a.course_name,
+			a.course_id,
+			a.course_enrollment_id,
+			a.practice_result_id,
+			a.practice_schedule_id,
+			a.practice_problem_id,
+			a.exam_time,
+			a.correction_user_product_id,
+			a.answer_correct_pen_id,
+			a.answer_rublic_id,
+			coalesce(a.legacy_id,0) as legacy_id,
+			coalesce(a.answer_review_yn,'N') as answer_review_yn,
+			coalesce(a.answer_review_score,0) as answer_review_score,
+			a.answer_appeal_status,
+			coalesce(a.answer_count,0) as answer_count,
+			coalesce(a.answer_correct_pen_count,0) as answer_correct_pen_count
+		from
+			correction_exams_answer a
+			join auth_user b on a.user_id = b.id
+		where
+			a.section = #{section}
+			and a.book = #{book}
+			and a.volume = #{volume}
+			and a."group" = #{group}
+			and a.article = #{article}
+			and a.course_enrollment_id = #{course_enrollment_id}
+			and to_char(a.date,'yyyy-mm-dd') = #{date}
+		limit 1
+	</select>
+	<select id="getCorrectionExamsAnswerMonthlyPenCountList" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select
+			b.username as answer_correct_pen_user_id,
+			concat(b.last_name, b.first_name) as answer_correct_pen_name,
+			count(*) as total_count
+		from 
+			correction_exams_answer a
+			join auth_user b on a.answer_correct_pen_id = b.id
+		where
+			a.section = #{section}
+			and a.answer_correct_pen_yn = 'Y'
+			and to_char(a.answer_correct_pen_date,'yyyy-mm') = #{answer_correct_pen_date}
+			and b.id not in (29178, 24544)
+		group by b.username, concat(b.last_name, b.first_name)
+		order by 2
+	</select>		
+	<select id="getCorrectionExamsAnswerDailyPenCountList" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select
+			to_char(a.answer_correct_pen_date,'yyyy-mm-dd') as answer_correct_pen_date,
+			b.username as answer_correct_pen_user_id,
+			concat(b.last_name, b.first_name) as answer_correct_pen_name,
+			count(*) as total_count
+		from 
+			correction_exams_answer a
+			join auth_user b on a.answer_correct_pen_id = b.id
+		where
+			a.section = #{section}
+			and a.answer_correct_pen_yn = 'Y'
+			and to_char(a.answer_correct_pen_date,'yyyy-mm') = #{answer_correct_pen_date}
+			and b.id not in (29178, 24544)
+		group by to_char(answer_correct_pen_date,'yyyy-mm-dd'), b.username, concat(b.last_name, b.first_name)
+		order by 1, 2
+	</select>	
+	
+	<select id="getCorrectionExamsAnswerTAList" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select
+			a.id,
+			a.status,
+			a.section,
+			a.book,
+			a.volume,
+			a."group",
+			a.article,
+			to_char(a.date,'yyyy-mm-dd') as date,
+			a.user_id,
+			concat(b.last_name,b.first_name) as user_name,
+			b.username as user_username,
+			a.question,
+			a.answer_student_pen_yn,
+			to_char(a.answer_pen_date,'yyyy-mm-dd hh24:mi:ss') as answer_pen_date,
+			a.answer_correct_pen_yn,
+			to_char(a.answer_correct_pen_date,'yyyy-mm-dd hh24:mi:ss') as answer_correct_pen_date,
+			a.answer_rublic_yn,
+			a.answer_rublic_score,
+			to_char(a.answer_rublic_date,'yyyy-mm-dd hh24:mi:ss') as answer_rublic_date,
+			a.answer_student_note_yn,
+			a.course_name,
+			a.course_id,
+			a.course_enrollment_id,
+			a.exam_time,
+			a.answer_correct_pen_id,
+			concat(c.last_name,c.first_name) as answer_correct_pen_name,
+			a.answer_rublic_id,
+			concat(d.last_name,d.first_name) as answer_rublic_name,
+			coalesce(a.legacy_id,0) as legacy_id,
+			case when coalesce(e.comment_count,0) > 0 then 'Y' else 'N' end as comment_answer_yn,
+			to_char(a.request_date,'yyyy-mm-dd hh24:mi:ss') as request_date,
+			case when a.status = 'COMPLETE' then cast(extract(epoch from (a.answer_rublic_date - coalesce(a.request_date,a.answer_rublic_date))) / 60 as integer) else 
+				case when a.status = 'REQUEST' then cast(extract(epoch from (now() - coalesce(a.request_date,a.answer_pen_date))) / 60 as integer) else 0 end end as rublic_time,
+				
+			a.answer_appeal_status,
+			to_char(a.answer_appeal_date,'yyyy-mm-dd hh24:mi:ss') as answer_appeal_date,
+			case when a.answer_appeal_status = 'REQUEST' then cast(extract(epoch from (now() - a.answer_appeal_date)) / 60 as integer) else 0 end as answer_appeal_time,
+			a.answer_review_yn,
+			a.answer_review_score,
+			coalesce(a.answer_count,0) as answer_count,
+			coalesce(a.answer_correct_pen_count,0) as answer_correct_pen_count
+		from
+			correction_exams_answer a
+			join auth_user b on a.user_id = b.id
+			left join auth_user c on a.answer_correct_pen_id = c.id
+			left join auth_user d on a.answer_rublic_id = d.id
+			left join (
+				select
+					correction_exams_answer_id,
+					count(*) as comment_count
+				from 
+					correction_exams_comment
+				where
+					comment_yn = 'N'
+				group by correction_exams_answer_id
+			) e on a.id = e.correction_exams_answer_id
+		where
+			a.section = #{section}
+		<if test="answer_correct_pen_user_id != null and answer_correct_pen_user_id !='' ">
+			and c.username = #{answer_correct_pen_user_id}
+			and to_char(a.answer_correct_pen_date,'yyyy-mm-dd') >= '2021-05-01'
+		</if>
+		<if test="book != null and book !='' ">			
+			and case when a.section = 'SPEAKING' then case when a.book = 'task1' then 'independent' else 'integrated' end else a.book end = #{book}
+		</if>					
+		<if test="answer_correct_pen_date != null and answer_correct_pen_date !='' ">			
+			and to_char(a.answer_correct_pen_date,'yyyy-mm-dd') = #{answer_correct_pen_date}
+		</if>	
+		<if test="answer_correct_pen_month != null and answer_correct_pen_month !='' ">			
+			and to_char(a.answer_correct_pen_date,'yyyy-mm') = #{answer_correct_pen_month}
+		</if>
+			
+		<if test="appeal_answer_date != null and appeal_answer_date !='' ">			
+			and a.id in (
+				select 
+					correction_exams_answer_id
+				from 
+					correction_exams_appeal
+				where 
+					appeal_answer_yn != 'Y' 
+					and to_char(appeal_date,'yyyy-mm-dd') = #{appeal_answer_date}
+			)
+		</if>	
+		<if test="appeal_answer_month != null and appeal_answer_month !='' ">			
+			and a.id in (
+				select 
+					correction_exams_answer_id
+				from 
+					correction_exams_appeal
+				where 
+					appeal_answer_yn != 'Y' 
+					and to_char(appeal_date,'yyyy-mm') = #{appeal_answer_month}
+			)
+		</if>	
+		<if test="marketin_correction_answer_type != null and marketin_correction_answer_type !='' ">		
+			<if test="marketin_correction_answer_type == 'per_day' ">		
+				<![CDATA[ and a.status = 'REQUEST' and a.request_date < (now() - interval '1 day') ]]>
+			</if>
+			<if test="marketin_correction_answer_type == 'pen_request' ">
+				and a.status = 'REQUEST'	
+				and a.answer_correct_pen_yn = 'N'
+			</if>
+			<if test="marketin_correction_answer_type == 'pen_complete' ">
+				and a.answer_correct_pen_yn = 'Y'
+				and to_char(a.answer_correct_pen_date,'yyyy-mm-dd') = #{marketin_correction_answer_date}	
+			</if>
+			<if test="marketin_correction_answer_type == 'comment_request' ">
+				and a.id in (
+					select correction_exams_answer_id from correction_exams_comment where comment_yn = 'N'
+				)	
+			</if>
+			<if test="marketin_correction_answer_type == 'appeal_request' ">
+				and a.id in (
+					select correction_exams_answer_id from correction_exams_appeal where appeal_answer_yn = 'N'
+				)	
+			</if>
+			<if test="marketin_correction_answer_type == 'appeal_total' ">
+				and a.id in (
+					select correction_exams_answer_id from correction_exams_appeal where to_char(b.appeal_answer_date,'yyyy-mm-dd') = #{marketin_correction_answer_date}
+				)	
+			</if>
+			<if test="marketin_correction_answer_type == 'review_score' ">
+				and a.answer_review_score > 0
+			</if>
+		</if>
+		order by a.id desc
+	</select>
+		
+	<select id="getCorrectionExamsAnswerAppealTAReviewList" parameterType="com.usher.dto.CorrectionExamsAnswerDto" resultType="com.usher.dto.CorrectionExamsAnswerDto">
+		select
+			correction_exams_answer_id as id,
+			appeal_answer_review_yn as answer_review_yn,
+			appeal_answer_review_score as answer_review_score
+		from
+			correction_exams_appeal
+		where
+			correction_exams_answer_id in (
+				select
+					a.id
+				from
+					correction_exams_answer a
+					join auth_user b on a.user_id = b.id
+					left join auth_user c on a.answer_correct_pen_id = c.id
+					left join auth_user d on a.answer_rublic_id = d.id
+					left join (
+						select
+							correction_exams_answer_id,
+							count(*) as comment_count
+						from 
+							correction_exams_comment
+						where
+							comment_yn = 'N'
+						group by correction_exams_answer_id
+					) e on a.id = e.correction_exams_answer_id
+				where
+					a.section = #{section}
+					and c.username = #{answer_correct_pen_user_id}
+				<if test="book != null and book !='' ">			
+					and case when a.section = 'SPEAKING' then case when a.book = 'task1' then 'independent' else 'integrated' end else a.book end = #{book}
+				</if>					
+				<if test="answer_correct_pen_date != null and answer_correct_pen_date !='' ">			
+					and to_char(a.answer_correct_pen_date,'yyyy-mm-dd') = #{answer_correct_pen_date}
+				</if>	
+				<if test="answer_correct_pen_month != null and answer_correct_pen_month !='' ">			
+					and to_char(a.answer_correct_pen_date,'yyyy-mm') = #{answer_correct_pen_month}
+				</if>
+					
+				<if test="appeal_answer_date != null and appeal_answer_date !='' ">			
+					and a.id in (
+						select 
+							correction_exams_answer_id
+						from 
+							correction_exams_appeal
+						where 
+							appeal_answer_yn != 'Y' 
+							and to_char(appeal_date,'yyyy-mm-dd') = #{appeal_answer_date}
+					)
+				</if>	
+				<if test="appeal_answer_month != null and appeal_answer_month !='' ">			
+					and a.id in (
+						select 
+							correction_exams_answer_id
+						from 
+							correction_exams_appeal
+						where 
+							appeal_answer_yn != 'Y' 
+							and to_char(appeal_date,'yyyy-mm') = #{appeal_answer_month}
+					)
+				</if>		
+			)
+	</select>
+		
+	<update id="updateCorrectionExamsAnswerCorrectPen" parameterType="com.usher.dto.CorrectionExamsAnswerDto">
+		update correction_exams_answer set
+			answer_correct_pen_yn = 'Y',
+			answer_correct_pen_date = now(),
+			answer_correct_pen_id = #{answer_correct_pen_id},
+			answer_correct_pen_count = #{answer_correct_pen_count}
+		where
+			id = #{id}
+	</update>	
+	<update id="updateCorrectionExamsAnswerRubric" parameterType="com.usher.dto.CorrectionExamsAnswerDto">
+		update correction_exams_answer set
+			answer_rublic_yn = 'Y',
+			answer_rublic_date = now(),
+			answer_rublic_score = #{answer_rublic_score},
+			answer_rublic_id = #{answer_rublic_id}
+		where
+			id = #{id}
+	</update>
+	<update id="updateCorrectionExamsAnswerStatus" parameterType="com.usher.dto.CorrectionExamsAnswerDto">
+		update correction_exams_answer set
+			status = #{status}
+		where
+			id = #{id}
+	</update>
+	<update id="updateCorrectionExamsAnswerAppealStatus" parameterType="com.usher.dto.CorrectionExamsAnswerDto">
+		update correction_exams_answer set
+			answer_appeal_status = 'COMPLETE'
+		where
+			id = #{id}
+	</update>
+</mapper>

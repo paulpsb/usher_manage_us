@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseAreaDao">
+	<select id="getBaseArea1List" resultType="com.usher.dto.BaseAreaDto">
+		select
+			id,
+			area1
+		from 
+			base_area1 
+		order by 1
+	</select>
+
+	<select id="getBaseArea1" resultType="com.usher.dto.BaseAreaDto" parameterType="com.usher.dto.BaseAreaDto">
+		select
+			id,
+			area1
+		from 
+			base_area1 
+		where
+			id = #{id}
+	</select>
+
+	<select id="getBaseArea2List" resultType="com.usher.dto.BaseAreaDto" parameterType="com.usher.dto.BaseAreaDto">
+		select
+			id,
+			area1,
+			area2
+		from
+			base_area2
+		where
+			area1 = #{area1}
+		order by id
+	</select>
+
+	<select id="getBaseArea2" resultType="com.usher.dto.BaseAreaDto" parameterType="com.usher.dto.BaseAreaDto">
+		select
+			id,
+			area1,
+			area2
+		from
+			base_area2
+		where
+			id = #{id}
+	</select>
+
+	<insert id="insertBaseArea1" parameterType="com.usher.dto.BaseAreaDto">
+		insert into base_area1(
+			area1
+		) values (
+			#{area1}
+		)
+	</insert>	
+	<update id="updateBaseArea1" parameterType="com.usher.dto.BaseAreaDto">
+		update base_area1 set
+			area1 = #{area1}
+		where
+			id = #{id}
+	</update>
+	<update id="updateBaseArea1AsBaseArea2" parameterType="com.usher.dto.BaseAreaDto">
+		update base_area2 set
+			area1 = #{area1}
+		where
+			area1 = #{old_area1}
+	</update>
+	
+	<update id="updateBaseArea1AsUserSchool" parameterType="com.usher.dto.BaseAreaDto">
+		update users_school set
+			school_area1 = #{area1}
+		where
+			school_area1 = #{old_area1}
+	</update>
+
+	<insert id="insertBaseArea2" parameterType="com.usher.dto.BaseAreaDto">
+		insert into base_area2(
+			area1,
+			area2
+		) values (
+			#{area1}
+		)
+	</insert>	
+	<update id="updateBaseArea2" parameterType="com.usher.dto.BaseAreaDto">
+		update base_area2 set
+			area1 = #{area1},
+			area2 = #{area2}
+		where
+			id = #{id}
+	</update>
+	<update id="updateBaseArea2AsUserSchool" parameterType="com.usher.dto.BaseAreaDto">
+		update users_school set
+			school_area1 = #{area1},
+			school_area2 = #{area2}
+		where
+			school_area1 = #{old_area1}
+			and school_area2 = #{old_area2}
+	</update>	
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.NoticesRoutineTransCoursegroupDao">
+	<select id="getRoutineTransCoursegroup" resultType="com.usher.dto.NoticesRoutineTransCoursegroupDto" parameterType="com.usher.dto.NoticesRoutineTransCoursegroupDto">
+		select
+			id,
+		    test_type,
+		    student_type,
+		    lecture_type,
+		    routine_category,
+		    routine_schedule
+		from
+			notices_routine_trans_coursegroup
+		where
+			test_type = #{test_type}
+		    and student_type = #{student_type}
+		    and lecture_type = #{lecture_type}
+		    and routine_category = #{routine_category}
+			and routine_schedule = #{routine_schedule}	
+	</select>
+	<select id="getRoutineTransCoursegroupScheuleList" resultType="com.usher.dto.NoticesRoutineTransCoursegroupDto" parameterType="com.usher.dto.NoticesRoutineDto">
+		select
+		    routine_schedule
+		from
+			notices_routine_trans_coursegroup
+		where
+			test_type = #{test_type}
+		    and student_type = #{student_type}
+		    and lecture_type = #{lecture_type}
+		    and routine_category = #{routine_category}
+		order by routine_schedule
+	</select>
+	
+	<insert id="insertRoutineTransCoursegroup" parameterType="com.usher.dto.NoticesRoutineTransCoursegroupDto" useGeneratedKeys="true" keyProperty="id" >
+		insert into notices_routine_trans_coursegroup (
+			created,
+			modified,
+			test_type,
+		    student_type,
+		    lecture_type,
+		    routine_category,
+		    routine_schedule
+		) values (
+			now(),
+			now(),
+			#{test_type},
+		    #{student_type},
+		    #{lecture_type},
+		    #{routine_category},
+		    #{routine_schedule}
+		)
+	</insert>
+	<delete id="deleteRoutineTransCoursegroup" parameterType="com.usher.dto.NoticesRoutineTransCoursegroupDto">
+		delete from notices_routine_trans_coursegroup 
+		where
+			id = #{id}
+	</delete>
+</mapper>

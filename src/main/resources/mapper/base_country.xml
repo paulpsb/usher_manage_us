@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseCountryDao">
+	<select id="getBaseCountry1List" resultType="com.usher.dto.BaseCountryDto">
+		select
+			id,
+			country1
+		from 
+			base_country1 
+		order by 1
+	</select>
+
+	<select id="getBaseCountry1" resultType="com.usher.dto.BaseCountryDto" parameterType="com.usher.dto.BaseCountryDto">
+		select
+			id,
+			country1
+		from 
+			base_country1 
+		where
+			id = #{id}
+	</select>
+
+	<select id="getBaseCountry2List" resultType="com.usher.dto.BaseCountryDto" parameterType="com.usher.dto.BaseCountryDto">
+		select
+			id,
+			country1,
+			country2
+		from
+			base_country2
+		where
+			country1 = #{country1}
+		order by id
+	</select>
+
+	<select id="getBaseCountry2" resultType="com.usher.dto.BaseCountryDto" parameterType="com.usher.dto.BaseCountryDto">
+		select
+			id,
+			country1,
+			country2
+		from
+			base_country2
+		where
+			id = #{id}
+	</select>
+
+	<insert id="insertBaseCountry1" parameterType="com.usher.dto.BaseCountryDto">
+		insert into base_country1(
+			country1
+		) values (
+			#{country1}
+		)
+	</insert>	
+	<update id="updateBaseCountry1" parameterType="com.usher.dto.BaseCountryDto">
+		update base_country1 set
+			country1 = #{country1}
+		where
+			id = #{id}
+	</update>
+	<update id="updateBaseCountry1AsBaseCountry2" parameterType="com.usher.dto.BaseCountryDto">
+		update base_country2 set
+			country1 = #{country1}
+		where
+			country1 = #{old_country1}
+	</update>
+	
+	<update id="updateBaseCountry1AsUserSchool" parameterType="com.usher.dto.BaseCountryDto">
+		update users_school set
+			school_area1 = #{country1}
+		where
+			school_area1 = #{old_country1}
+	</update>
+
+	<insert id="insertBaseCountry2" parameterType="com.usher.dto.BaseCountryDto">
+		insert into base_country2(
+			country1,
+			country2
+		) values (
+			#{country1}
+		)
+	</insert>	
+	<update id="updateBaseCountry2" parameterType="com.usher.dto.BaseCountryDto">
+		update base_country2 set
+			country1 = #{country1},
+			country2 = #{country2}
+		where
+			id = #{id}
+	</update>
+	<update id="updateBaseCountry2AsUserSchool" parameterType="com.usher.dto.BaseCountryDto">
+		update users_school set
+			school_area1 = #{country1},
+			school_area2 = #{country2}
+		where
+			school_area1 = #{old_country1}
+			and school_area2 = #{old_country2}
+	</update>	
+</mapper>

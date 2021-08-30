@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.InternalExamsVocaspeechpartDao">
+	<select id="getVocaSpeechPartList" parameterType="com.usher.dto.InternalExamsVocaspeechpartDto" resultType="com.usher.dto.InternalExamsVocaspeechpartDto">
+		select
+			id,
+			speech_part,
+			meaning,
+			synonym,
+			extra_meaning,
+			extra_synonym,
+			voca_word_id
+		from
+			internal_exams_vocaspeechpart
+		where
+			voca_word_id in (
+				select id
+				from 
+					internal_exams_vocaword 
+				where
+					book = #{book}
+					and day = #{day}
+				order by id
+				limit #{row_num} offset #{first_num}
+			)
+		order by voca_word_id, id
+	</select>
+	<select id="getVocaSpeechPart" parameterType="com.usher.dto.InternalExamsVocaspeechpartDto" resultType="com.usher.dto.InternalExamsVocaspeechpartDto">
+		select
+			id,
+			speech_part,
+			meaning,
+			synonym,
+			extra_meaning,
+			extra_synonym,
+			voca_word_id
+		from
+			internal_exams_vocaspeechpart
+		where
+			voca_word_id = #{voca_word_id}
+		order by voca_word_id, id
+	</select>	
+	<insert id="insertVocaWordspeechpart" parameterType="com.usher.dto.InternalExamsVocawordDto">
+		insert into internal_exams_vocaspeechpart(
+			created,
+			modified,
+			speech_part,
+			meaning,
+			synonym,
+			voca_word_id			
+		)values(
+			now(),
+			now(),
+			#{speech_part},
+			#{meaning},
+			#{synonym},
+			#{voca_word_id}			
+		)
+	</insert>	
+		
+	<update id="updateVocaWordspeechpart" parameterType="com.usher.dto.InternalExamsVocawordDto">
+		update internal_exams_vocaspeechpart set
+			speech_part = #{speech_part},
+			meaning = #{meaning},
+			synonym = #{synonym}
+		where
+			id = #{id}
+	</update>		
+	<delete id="deleteVocaWordspeechpart" parameterType="com.usher.dto.InternalExamsVocawordDto">
+		delete from internal_exams_vocaspeechpart
+		where
+			id = #{id}
+	</delete>		
+</mapper>

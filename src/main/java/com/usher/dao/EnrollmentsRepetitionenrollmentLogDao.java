@@ -1,0 +1,24 @@
+package com.usher.dao;
+
+
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import com.usher.dto.EnrollmentsRepetitionenrollmentLogDto;
+
+@Repository
+public interface EnrollmentsRepetitionenrollmentLogDao{
+	public void insertRepetitaionGoalScoreLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionAttendStartDateLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionNeedDateLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionAttendDateLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionGoalRepetitionAdviseLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionFirstRepetitionResultLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionFirstRepetitionAdviseLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionSecondRepetitionResultLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionSecondRepetitionAdviseLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionThirdRepetitionResultLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionThirdRepetitionAdviseLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+	public void insertRepetitaionUnregisteredReasonLog(EnrollmentsRepetitionenrollmentLogDto dto) throws Exception;
+}

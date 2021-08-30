@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usher.dao.BaseCoursesCoursegroupDao">
+	<select id="getBaseCoursesCoursegroupList" parameterType="com.usher.dto.BaseCoursesCoursegroupDto" resultType="com.usher.dto.BaseCoursesCoursegroupDto">
+		select
+			id,
+			test_type,
+			student_type,
+			lecture_type,
+			name,
+			days,
+			"time",
+			life_cycle
+		from
+			base_courses_coursegroup
+		where
+			1 = 1
+		<if test="test_type != null and test_type !='' ">			
+			and test_type = #{test_type}
+		</if>				
+		<if test="student_type != null and student_type !='' ">			
+			and student_type = #{student_type}
+		</if>				
+		<if test="lecture_type != null and lecture_type !='' ">			
+			and lecture_type = #{lecture_type}
+		</if>				
+		order by test_type, student_type, lecture_type, name
+	</select>
+	
+	<select id="getBaseCoursesCoursegroup" parameterType="com.usher.dto.BaseCoursesCoursegroupDto" resultType="com.usher.dto.BaseCoursesCoursegroupDto">
+		select
+			id,
+			test_type,
+			student_type,
+			lecture_type,
+			name,
+			days,
+			"time",
+			life_cycle
+		from
+			base_courses_coursegroup
+		where
+			id = #{id}
+	</select>
+	
+	<insert id="insertBaseCoursesCoursegroup" parameterType="com.usher.dto.BaseCoursesCoursegroupDto">
+		insert into base_courses_coursegroup(
+			created,
+			modified,
+			test_type,
+			student_type,
+			lecture_type,
+			name,
+			days,
+			"time",
+			life_cycle
+		) values (
+			now(),
+			now(),
+			#{test_type},
+			#{student_type},
+			#{lecture_type},
+			#{name},
+			#{days},
+			#{time},
+			#{life_cycle}
+		)
+	</insert>	
+	<update id="updateBaseCoursesCoursegroup" parameterType="com.usher.dto.BaseCoursesCoursegroupDto">
+		update base_courses_coursegroup set
+			modified = now(),
+			test_type = #{test_type},
+			student_type = #{student_type},
+			lecture_type = #{lecture_type},
+			name = #{name},
+			days = #{days},
+			"time" = #{time},
+			life_cycle = #{life_cycle}
+		where
+			id = #{id}
+	</update>	
+	<delete id="deleteBaseCoursesCoursegroup" parameterType="com.usher.dto.BaseCoursesCoursegroupDto">
+		delete from base_courses_coursegroup
+		where
+			id = #{id}
+	</delete>	
+		<delete id="deleteBaseCoursesCourseAll" parameterType="com.usher.dto.BaseCoursesCoursegroupDto">
+		delete from base_courses_course
+		where
+			base_course_group_id = #{id}
+	</delete>	
+</mapper>
