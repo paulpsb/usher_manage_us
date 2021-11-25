@@ -175,6 +175,7 @@ function form_init()
 						}else{
 							bg_class = "bg-grey-darker";
 						}
+						console.log(concentrationPracticeList[a_idx]);
 						var program_use       = concentrationPracticeList[a_idx].program_use;
 						var pass_user_score   = concentrationPracticeList[a_idx].pass_user_score;
 						var pass_course_score = concentrationPracticeList[a_idx].pass_course_score;
